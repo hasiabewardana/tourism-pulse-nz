@@ -1,0 +1,9 @@
+{
+  "name": "tourism-pulse-nz",
+  "private": true,
+  "workspaces": [
+    "frontend/*",
+    "api-gateway/*",
+    "backend/*"
+  ]
+}
