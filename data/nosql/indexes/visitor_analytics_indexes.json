@@ -1,0 +1,6 @@
+{
+  "indexes": [
+    { "key": { "destination_id": 1 }, "name": "idx_destination_id" },
+    { "key": { "date": -1 }, "name": "idx_date" }
+  ]
+}
