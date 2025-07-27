@@ -1,0 +1,10 @@
+{
+  "collection": "visitor_analytics",
+  "schema": {
+    "destination_id": { "type": "number", "required": true },
+    "date": { "type": "date", "required": true },
+    "visitor_count": { "type": "number", "required": true },
+    "peak_time": { "type": "string" },
+    "created_at": { "type": "date", "default": "now" }
+  }
+}
