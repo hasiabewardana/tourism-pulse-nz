@@ -10,8 +10,8 @@ app.use(express.json()); // Parse JSON bodies
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(helmet()); // Add security middleware
 
-app.use("/api", authRoutes); // Mount auth routes under /api
-app.use("/api", healthRoutes); // Mount health routes under /api
+app.use("/auth-service/api", authRoutes); // Mount auth routes under /api
+app.use("/auth-service/api", healthRoutes); // Mount health routes under /api
 
 const PORT = process.env.PORT || 3001; // Use PORT from .env or default to 3001
 app.listen(PORT, () => console.log(`Auth service running on port ${PORT}`)); // Start server
