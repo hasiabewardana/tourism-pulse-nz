@@ -14,7 +14,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB")) // Log successful connection
   .catch((err) => console.error("MongoDB connection error:", err)); // Log connection errors
 
-app.use("/api", analyticsRoutes); // Mount analytics routes under /api prefix
+app.use("/analytics-service/api", analyticsRoutes); // Mount analytics routes under /api prefix
 
 const PORT = 3002; // Set port for the analytics service
 app.listen(PORT, () => {
