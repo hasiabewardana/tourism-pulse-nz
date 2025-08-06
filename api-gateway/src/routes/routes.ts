@@ -1,3 +1,7 @@
+import dotenv from "dotenv"; // Load environment variables
+
+dotenv.config(); // Load .env file
+
 export interface RouteConfig {
   // Defining interface for route configuration
   url: string; // URL path for the route
@@ -19,7 +23,8 @@ export const ROUTES: RouteConfig[] = [
     creditCheck: false, // No credit check required
     rateLimit: { windowMs: 15 * 60 * 1000, max: 5 }, // Limiting to 5 requests per 15 minutes
     proxy: {
-      target: "http://host.docker.internal:3001/auth-service",
+      target:
+        String(process.env.AUTH_SERVICE_URL) || "http://auth:3001/auth-service", // Fallback to default if env variable is not set
       changeOrigin: true,
       pathRewrite: { "^/auth(/api/.*|$)": "$1" }, // Rewrites /auth/api/... to /api/..., preserving sub-paths
     }, // Proxying to auth service
@@ -29,7 +34,9 @@ export const ROUTES: RouteConfig[] = [
     auth: false, // No authentication required
     creditCheck: false, // No credit check required
     proxy: {
-      target: "http://host.docker.internal:3002/analytics-service",
+      target:
+        String(process.env.ANALYTICS_SERVICE_URL) ||
+        "http://analytics:3002/analytics-service", // Fallback to default if env variable is not set
       changeOrigin: true,
       pathRewrite: { "^/analytics(/api/.*|$)": "$1" }, // Rewrites /analytics/api/... to /api/..., preserving sub-paths
     }, // Proxying to analytics service
