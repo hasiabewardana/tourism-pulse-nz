@@ -1,40 +1,40 @@
-services:
-  api-gateway:
-    build:
+services: # Service definitions for Tourism Pulse NZ
+  api-gateway: # API Gateway Service
+    build: # Define the build context and Dockerfile for the API Gateway
       context: ./api-gateway
       dockerfile: Dockerfile
-    ports:
+    image: api-gateway:latest # Define the image name for the API Gateway
+    ports: # Expose the API Gateway on port 3000
       - "3000:3000"
-    environment:
-      - NODE_ENV=development
-    depends_on:
+    container_name: gateway # Set a custom container name for the API Gateway
+    depends_on: # Define dependencies for the API Gateway
       - auth-service
       - analytics-service
-    networks:
+    networks: # Use a custom network for the API Gateway
       - tourism-pulse-nz-network
 
-  auth-service:
-    build:
+  auth-service: # Authentication Service
+    build: # Define the build context and Dockerfile for the Authentication Service
       context: ./backend/auth-service
       dockerfile: Dockerfile
-    ports:
+    image: auth-service:latest # Define the image name for the Authentication Service
+    ports: # Expose the Authentication Service on port 3001
       - "3001:3001"
-    environment:
-      - NODE_ENV=development
-    networks:
+    container_name: auth # Set a custom container name for the Authentication Service
+    networks: # Use a custom network for the Authentication Service
       - tourism-pulse-nz-network
 
-  analytics-service:
-    build:
+  analytics-service: # Analytics Service
+    build: # Define the build context and Dockerfile for the Analytics Service
       context: ./backend/analytics-service
       dockerfile: Dockerfile
-    ports:
+    image: analytics-service:latest # Define the image name for the Analytics Service
+    ports: # Expose the Analytics Service on port 3002
       - "3002:3002"
-    environment:
-      - NODE_ENV=development
-    networks:
+    container_name: analytics # Set a custom container name for the Analytics Service
+    networks: # Use a custom network for the Analytics Service
       - tourism-pulse-nz-network
 
-networks:
-  tourism-pulse-nz-network:
-    driver: bridge
+networks: # Define custom networks for the services
+  tourism-pulse-nz-network: # Custom network for the Tourism Pulse NZ services
+    driver: bridge # Define a custom bridge network for the services
