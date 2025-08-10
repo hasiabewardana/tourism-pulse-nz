@@ -49,13 +49,13 @@ export async function authAction({ request }) {
       const data = await response.json();
 
       // Redirect after successful login
-      if (role === "operator") {
+      if (role === "public") {
+        return redirect("/tourist");
+      } else if (role === "operator") {
         return redirect("/manager");
-      } else if (role === "admin") {
+      } else {
         return redirect("/admin");
       }
-
-      return null;
     }
   } catch (error) {
     return json(

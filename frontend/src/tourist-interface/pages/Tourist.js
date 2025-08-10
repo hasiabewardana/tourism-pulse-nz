@@ -7,8 +7,8 @@ const TouristInterface = () => {
   // Fetch destination data from API
   const fetchDestinations = async () => {
     try {
-      const response = await fetch("/api/destinations");
-      const data = await response.json();
+      // const response = await fetch("/api/destinations");
+      // const data = await response.json();
       setDestinations(data);
     } catch (error) {
       console.error("Failed to fetch destinations:", error);
