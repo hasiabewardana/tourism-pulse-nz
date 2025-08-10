@@ -3,6 +3,7 @@ import RootLayout from "./shared/pages/Root"; // Importing the RootLayout compon
 import Home from "./shared/pages/Home"; // Importing the Home component for the main content
 import Authentication from "./shared/pages/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/AuthAction";
+import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
 import "./styles.css"; // Importing global styles
 
 const router = createBrowserRouter([
@@ -14,11 +15,14 @@ const router = createBrowserRouter([
         index: true, // default child route for "/"
         element: <Home />,
       },
-      // other routes can go here later
       {
         path: "auth",
         element: <Authentication />, // route for authentication page
         action: authAction,
+      },
+      {
+        path: "manager",
+        element: <Manager />, // route for manager page
       },
     ],
   },

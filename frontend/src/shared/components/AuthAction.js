@@ -26,7 +26,7 @@ export async function authAction({ request }) {
       const data = await response.json();
 
       // Redirect after successful login
-      return redirect("/");
+      return redirect("/manager");
     } else {
       const response = await fetch("http://localhost:3000/auth/api/register", {
         method: "POST",
@@ -49,7 +49,11 @@ export async function authAction({ request }) {
       const data = await response.json();
 
       // Redirect after successful login
-      return redirect("/");
+      if (role === "operator") {
+        return redirect("/manager");
+      }
+
+      return null;
     }
   } catch (error) {
     return json(

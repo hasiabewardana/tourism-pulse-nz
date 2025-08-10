@@ -7,8 +7,8 @@ const ManagerDashboard = () => {
   // Fetch analytics data from API
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch("/api/analytics");
-      const data = await response.json();
+      // const response = await fetch("/api/analytics");
+      // const data = await response.json();
       setAnalytics(data);
     } catch (error) {
       console.error("Failed to fetch analytics:", error);
@@ -36,4 +36,4 @@ const ManagerDashboard = () => {
   );
 };
 
-export default ManagerDashboard;
+export default ManagerDashboard; // Main component for the manager dashboard
