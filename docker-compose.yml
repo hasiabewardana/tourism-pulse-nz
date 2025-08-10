@@ -1,18 +1,4 @@
 services: # Service definitions for Tourism Pulse NZ
-  api-gateway: # API Gateway Service
-    build: # Define the build context and Dockerfile for the API Gateway
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    image: api-gateway:latest # Define the image name for the API Gateway
-    ports: # Expose the API Gateway on port 3000
-      - "3000:3000"
-    container_name: gateway # Set a custom container name for the API Gateway
-    depends_on: # Define dependencies for the API Gateway
-      - auth-service
-      - analytics-service
-    networks: # Use a custom network for the API Gateway
-      - tourism-pulse-nz-network
-
   auth-service: # Authentication Service
     build: # Define the build context and Dockerfile for the Authentication Service
       context: ./backend/auth-service
@@ -33,6 +19,31 @@ services: # Service definitions for Tourism Pulse NZ
       - "3002:3002"
     container_name: analytics # Set a custom container name for the Analytics Service
     networks: # Use a custom network for the Analytics Service
+      - tourism-pulse-nz-network
+
+  api-gateway: # API Gateway Service
+    build: # Define the build context and Dockerfile for the API Gateway
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    image: api-gateway:latest # Define the image name for the API Gateway
+    ports: # Expose the API Gateway on port 3000
+      - "3000:3000"
+    container_name: gateway # Set a custom container name for the API Gateway
+    depends_on: # Define dependencies for the API Gateway
+      - auth-service
+      - analytics-service
+    networks: # Use a custom network for the API Gateway
+      - tourism-pulse-nz-network
+
+  frontend: # Frontend Service
+    build: # Define the build context and Dockerfile for the frontend
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: tourism-pulse-nz-frontend:latest # Define the image name for the frontend
+    ports: # Expose the frontend on port 3000
+      - "3005:3005"
+    container_name: frontend # Set a custom container name for the frontend
+    networks: # Use a custom network for the frontend
       - tourism-pulse-nz-network
 
 networks: # Define custom networks for the services

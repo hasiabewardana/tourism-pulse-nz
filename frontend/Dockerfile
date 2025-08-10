@@ -10,8 +10,8 @@ COPY . .
 # Install dependencies from the package.json file
 RUN npm install
 
-# Expose port 3000 for the API gateway to receive incoming requests
-EXPOSE 3000
+# Expose port 3005 for the frontend to receive incoming requests
+EXPOSE 3005
 
 # Run the application using the start script defined in package.json
 CMD ["npm", "start"]
