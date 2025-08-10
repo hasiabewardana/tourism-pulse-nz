@@ -41,18 +41,21 @@ export default function App() {
       <div id="tabs">
         <menu>
           <button
+            // Button to switch to the Tourist Interface tab
             className={activeContentIndex === 0 ? "active" : ""}
             onClick={() => setActiveContentIndex(0)}
           >
             Tourist Interface
           </button>
           <button
+            // Button to switch to the Manager Dashboard tab
             className={activeContentIndex === 1 ? "active" : ""}
             onClick={() => setActiveContentIndex(1)}
           >
             Manager Dashboard
           </button>
           <button
+            // Button to switch to the Admin Panel tab
             className={activeContentIndex === 2 ? "active" : ""}
             onClick={() => setActiveContentIndex(2)}
           >
@@ -61,9 +64,12 @@ export default function App() {
         </menu>
         <div id="tab-content">
           <ul>
-            {content[activeContentIndex].map((item) => (
-              <li key={item}>{item}</li>
-            ))}
+            {
+              // Mapping through the content array to display the items for the active tab
+              content[activeContentIndex].map((item) => (
+                <li key={item}>{item}</li>
+              ))
+            }
           </ul>
         </div>
       </div>
