@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; // Importing React and useState for component state management
 
 // Admin panel component for system configuration and reporting
 const AdminPanel = () => {
@@ -7,8 +7,8 @@ const AdminPanel = () => {
   // Generate report by calling API
   const generateReport = async () => {
     try {
-      const response = await fetch("/api/reports/generate");
-      const data = await response.json();
+      // const response = await fetch("/api/reports/generate");
+      // const data = await response.json();
       setReports([...reports, data]);
     } catch (error) {
       console.error("Failed to generate report:", error);
@@ -34,4 +34,4 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel;
+export default AdminPanel; // Exporting the AdminPanel component for use in other parts of the application

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Importing React and hooks for state management and side effects
 
 // Manager dashboard component for analytics and booking management
 const ManagerDashboard = () => {

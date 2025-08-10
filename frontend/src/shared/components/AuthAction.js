@@ -51,6 +51,8 @@ export async function authAction({ request }) {
       // Redirect after successful login
       if (role === "operator") {
         return redirect("/manager");
+      } else if (role === "admin") {
+        return redirect("/admin");
       }
 
       return null;

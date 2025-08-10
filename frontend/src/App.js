@@ -4,6 +4,7 @@ import Home from "./shared/pages/Home"; // Importing the Home component for the 
 import Authentication from "./shared/pages/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/AuthAction";
 import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
+import Admin from "./admin-panel/pages/Admin"; // Importing the Admin page for administrative tasks
 import "./styles.css"; // Importing global styles
 
 const router = createBrowserRouter([
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "manager",
         element: <Manager />, // route for manager page
+      },
+      {
+        path: "admin",
+        element: <Admin />, // route for admin page
       },
     ],
   },
