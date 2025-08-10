@@ -1,5 +1,5 @@
 // Header component for shared navigation
-const Header = () => {
+function Header() {
   return (
     <header>
       <img src="tourism-pulse-nz-logo.png" alt="TourismPulseNZ Logo" />
@@ -9,6 +9,6 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
 export default Header; // Exporting the Header component for use in other parts of the application
