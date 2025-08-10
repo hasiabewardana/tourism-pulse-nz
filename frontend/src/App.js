@@ -1,5 +1,7 @@
 import { useState } from "react"; // Importing useState for managing state in functional components
 import "./styles.css"; // Importing styles for the application
+import Header from "./shared/components/Header"; // Importing the Header component for shared navigation
+import Footer from "./shared/components/Footer";
 
 // Content for the tabs in the application
 const content = [
@@ -30,14 +32,7 @@ export default function App() {
 
   return (
     <div>
-      <header>
-        <img src="tourism-pulse-nz-logo.png" alt="TourismPulseNZ Logo" />
-        <div>
-          <h1>TourismPulseNZ</h1>
-          <p>A Smart Web-Based Tourism Management Platform</p>
-        </div>
-      </header>
-
+      <Header /> {/* Rendering the Header component for navigation */}
       <div id="tabs">
         <menu>
           <button
@@ -73,6 +68,8 @@ export default function App() {
           </ul>
         </div>
       </div>
+      <Footer />{" "}
+      {/* Rendering the Footer component for shared footer content */}
     </div>
   );
 }

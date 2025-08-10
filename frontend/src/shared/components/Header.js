@@ -1,12 +1,14 @@
-import React from "react";
-
 // Header component for shared navigation
 const Header = () => {
   return (
-    <div style={{ padding: "10px", backgroundColor: "#f5f5f5" }}>
-      <h3>TourismPulseNZ</h3>
-    </div>
+    <header>
+      <img src="tourism-pulse-nz-logo.png" alt="TourismPulseNZ Logo" />
+      <div>
+        <h1>TourismPulseNZ</h1>
+        <p>A Smart Web-Based Tourism Management Platform</p>
+      </div>
+    </header>
   );
 };
 
-export default Header;
+export default Header; // Exporting the Header component for use in other parts of the application
