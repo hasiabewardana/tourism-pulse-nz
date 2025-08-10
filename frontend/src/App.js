@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
 import RootLayout from "./shared/pages/Root"; // Importing the RootLayout component for shared layout structure
 import Home from "./shared/pages/Home"; // Importing the Home component for the main content
+import Authentication from "./shared/pages/Authentication"; // Importing the Authentication page for user login/signup
 import "./styles.css"; // Importing global styles
 
 const router = createBrowserRouter([
@@ -13,6 +14,10 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       // other routes can go here later
+      {
+        path: "auth",
+        element: <Authentication />, // route for authentication page
+      },
     ],
   },
 ]);

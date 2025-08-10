@@ -1,4 +1,6 @@
 import { useState } from "react"; // Importing useState for managing state in functional components
+import { useNavigate } from "react-router-dom"; // For navigation
+import { Button, Box } from "@mui/material"; // Material-UI components
 
 // Content for the tabs in the application
 const content = [
@@ -26,6 +28,11 @@ const content = [
 // Home component that renders the main interface with tabs for different functionalities
 function Home() {
   const [activeContentIndex, setActiveContentIndex] = useState(0); // State to track the currently active tab content index
+  const navigate = useNavigate(); // Hook for navigation
+  // Function to handle login button click, navigating to the authentication page
+  const handleLoginClick = () => {
+    navigate("/auth");
+  };
 
   return (
     <div id="tabs">
@@ -62,6 +69,12 @@ function Home() {
           }
         </ul>
       </div>
+      {/* Login button at the bottom */}
+      <Box sx={{ textAlign: "center", mt: 4 }}>
+        <Button variant="contained" color="primary" onClick={handleLoginClick}>
+          Login
+        </Button>
+      </Box>
     </div>
   );
 }

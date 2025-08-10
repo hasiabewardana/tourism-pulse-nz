@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { Form } from "react-router-dom";
+import { useState } from "react"; // Importing useState for managing state in functional components
+import { Form } from "react-router-dom"; // Importing Form from react-router-dom for form handling
+import classes from "./AuthForm.module.css"; // Importing styles for the authentication form
 
+// AuthForm component that handles user authentication (login/signup)
 function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
 
