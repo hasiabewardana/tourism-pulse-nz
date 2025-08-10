@@ -1,73 +1,72 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import TouristInterface from "./tourist-interface/components/TouristInterface";
-import ManagerDashboard from "./manager-dashboard/components/ManagerDashboard";
-import AdminPanel from "./admin-panel/components/AdminPanel";
-import Login from "./shared/components/Login";
+import { useState } from "react"; // Importing useState for managing state in functional components
+import "./styles.css"; // Importing styles for the application
 
-// Main application component handling routing and authentication
-function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null);
+// Content for the tabs in the application
+const content = [
+  [
+    "Offer real-time availability information for popular destinations",
+    "Provide personalized recommendations for alternative destinations",
+    "Enable advance planning with capacity-based booking suggestions",
+    "Enhance overall visit experience through better information",
+  ],
+  [
+    "Provide real-time visitor capacity monitoring and alerts",
+    "Enable dynamic pricing and booking management",
+    "Deliver predictive analytics for staffing and resource planning",
+    "Facilitate coordinated capacity management across multiple destinations",
+  ],
+  [
+    "Monitor and manage visitor capacity across multiple destinations",
+    "Provide real-time data for informed decision-making",
+    "Enable predictive analytics for future planning",
+    "Facilitate collaboration with tourism operators and stakeholders",
+    "Support sustainable tourism practices through data-driven insights",
+  ],
+];
 
-  // Authenticate user by calling auth-service API
-  const authenticateUser = async (role) => {
-    try {
-      const response = await fetch("/auth-service/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: role === "admin" ? "admin1@tourismpulsenz.nz" : "manager",
-          password: "admin1",
-        }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setIsAuthenticated(true);
-        setUserRole(role);
-      }
-    } catch (error) {
-      console.error("Authentication error:", error);
-    }
-  };
-
-  // Perform initial authentication
-  useEffect(() => {
-    authenticateUser("manager"); // Default role for demo
-  }, []);
+// Main App component that renders the application
+export default function App() {
+  const [activeContentIndex, setActiveContentIndex] = useState(0); // State to track the currently active tab content index
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/tourist" />} />
-        <Route path="/tourist/*" element={<TouristInterface />} />
-        <Route
-          path="/manager/*"
-          element={
-            isAuthenticated && userRole === "manager" ? (
-              <ManagerDashboard />
-            ) : (
-              <Navigate to="/login?role=manager" />
-            )
-          }
-        />
-        <Route
-          path="/admin/*"
-          element={
-            isAuthenticated && userRole === "admin" ? (
-              <AdminPanel />
-            ) : (
-              <Navigate to="/login?role=admin" />
-            )
-          }
-        />
-        <Route
-          path="/login"
-          element={<Login authenticate={authenticateUser} />}
-        />
-      </Routes>
-    </BrowserRouter>
+    <div>
+      <header>
+        <img src="tourism-pulse-nz-logo.png" alt="TourismPulseNZ Logo" />
+        <div>
+          <h1>TourismPulseNZ</h1>
+          <p>A Smart Web-Based Tourism Management Platform</p>
+        </div>
+      </header>
+
+      <div id="tabs">
+        <menu>
+          <button
+            className={activeContentIndex === 0 ? "active" : ""}
+            onClick={() => setActiveContentIndex(0)}
+          >
+            Tourist Interface
+          </button>
+          <button
+            className={activeContentIndex === 1 ? "active" : ""}
+            onClick={() => setActiveContentIndex(1)}
+          >
+            Manager Dashboard
+          </button>
+          <button
+            className={activeContentIndex === 2 ? "active" : ""}
+            onClick={() => setActiveContentIndex(2)}
+          >
+            Admin Panel
+          </button>
+        </menu>
+        <div id="tab-content">
+          <ul>
+            {content[activeContentIndex].map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
-
-export default App;
