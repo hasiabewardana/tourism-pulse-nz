@@ -14,6 +14,7 @@ function AuthForm() {
     <>
       <Form method="post" className={classes.form}>
         <h1>{isLogin ? "Log in" : "Create a new user"}</h1>
+        <input type="hidden" name="mode" value={isLogin ? "login" : "signup"} />
         <p>
           <label htmlFor="email">Email</label>
           <input id="email" type="email" name="email" required />
@@ -22,6 +23,12 @@ function AuthForm() {
           <label htmlFor="image">Password</label>
           <input id="password" type="password" name="password" required />
         </p>
+        {!isLogin && (
+          <p>
+            <label htmlFor="role">Role</label>
+            <input id="role" type="text" name="role" required />
+          </p>
+        )}
         <div className={classes.actions}>
           <button onClick={switchAuthHandler} type="button">
             {isLogin ? "Create new user" : "Login"}
