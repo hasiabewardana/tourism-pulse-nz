@@ -9,7 +9,7 @@ app.use(express.json()); // Parse incoming JSON requests
 mongoose
   .connect(
     process.env.MONGODB_URI ||
-      "mongodb://localhost:27017/tourismpulsenz_analytics"
+      "mongodb://host.docker.internal:27017/tourismpulsenz_analytics"
   )
   .then(() => console.log("Connected to MongoDB")) // Log successful connection
   .catch((err) => console.error("MongoDB connection error:", err)); // Log connection errors

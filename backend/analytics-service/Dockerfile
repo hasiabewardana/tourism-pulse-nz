@@ -1,20 +1,17 @@
-   # Use Node.js 18 Alpine as the base image for a lightweight container
-   FROM node:18-alpine
+# Use Node.js 22 Alpine LTS as the base image for a lightweight container
+FROM node:22-alpine
 
-   # Set the working directory inside the container to the service path
-   WORKDIR /app/analytics-service
+# Set the working directory inside the container
+WORKDIR /app
 
-   # Copy the service's package.json to install its listed dependencies
-   COPY package.json ./
+# Copy the whole content except Dockerfile to the working directory
+COPY . .
 
-   # Install dependencies from the monorepo root, using the central node_modules
-   RUN npm install --prefix /app/analytics-service
+# Install dependencies using npm from package.json in the working directory
+RUN npm install
 
-   # Copy all service files into the container, preserving the directory structure
-   COPY . .
+# Expose port 3002 for the analytics service to receive incoming requests
+EXPOSE 3002
 
-   # Expose port 3002 for the analytics service to receive incoming requests
-   EXPOSE 3002
-
-   # Run the application using the start script defined in package.json
-   CMD ["npm", "start"]
+# Run the application using the start script defined in package.json
+CMD ["npm", "start"]

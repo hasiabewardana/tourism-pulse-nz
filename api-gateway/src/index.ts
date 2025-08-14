@@ -8,8 +8,6 @@ import { ROUTES } from "./routes/routes"; // Importing route configurations for 
 const app = express(); // Initializing Express application as the API gateway
 const port = process.env.PORT || 3000; // Setting port from environment variable or default to 3000
 
-app.use(express.json()); // Enabling JSON body parsing for incoming requests
-
 // Applying middleware in sequence for request processing
 setupLogging(app); // Configuring logging to track all incoming requests
 setupRateLimit(app, ROUTES); // Applying rate limiting based on route configurations

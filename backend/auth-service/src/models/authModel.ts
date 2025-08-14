@@ -15,9 +15,10 @@ export const createUser = async (
 
 export const findUserByEmail = async (email: string) => {
   // Find user by email
-  const result = await query("SELECT * FROM auth.users WHERE email = $1", [
-    email,
-  ]);
+  const result = await query(
+    "SELECT user_id, password_hash, role FROM auth.users WHERE email = $1",
+    [email]
+  );
   return result[0] || null;
 };
 
