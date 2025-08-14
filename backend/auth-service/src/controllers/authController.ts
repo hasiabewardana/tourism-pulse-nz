@@ -35,8 +35,9 @@ const login = async (req: Request, res: Response) => {
       process.env.JWT_SECRET!,
       { expiresIn: "1h" }
     ); // Generate JWT
+    const role = user.role;
     await createSession(user.user_id, token); // Create session
-    res.json({ token }); // Return token
+    res.json({ token, role }); // Return token
   } catch (error) {
     res.status(500).json({ error: "Internal server error" }); // Handle errors
   }

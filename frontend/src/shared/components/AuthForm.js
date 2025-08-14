@@ -33,7 +33,7 @@ function AuthForm() {
           <button onClick={switchAuthHandler} type="button">
             {isLogin ? "Create new user" : "Login"}
           </button>
-          <button>Save</button>
+          <button type="submit"> {!isLogin ? "Register" : "Login"}</button>
         </div>
       </Form>
     </>

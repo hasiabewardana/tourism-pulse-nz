@@ -21,7 +21,7 @@ export const ROUTES: RouteConfig[] = [
     url: "/auth", // Route for authentication service
     auth: false, // No authentication required
     creditCheck: false, // No credit check required
-    rateLimit: { windowMs: 15 * 60 * 1000, max: 5 }, // Limiting to 5 requests per 15 minutes
+    rateLimit: { windowMs: 1 * 60 * 1000, max: 60 }, // Limiting to 60 requests per 1 minute
     proxy: {
       target:
         String(process.env.AUTH_SERVICE_URL) || "http://auth:3001/auth-service", // Fallback to default if env variable is not set

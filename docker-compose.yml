@@ -39,7 +39,7 @@ services: # Service definitions for Tourism Pulse NZ
     build: # Define the build context and Dockerfile for the frontend
       context: ./frontend
       dockerfile: Dockerfile
-    image: tourism-pulse-nz-frontend:latest # Define the image name for the frontend
+    image: frontend:latest # Define the image name for the frontend
     ports: # Expose the frontend on port 3000
       - "3005:3005"
     container_name: frontend # Set a custom container name for the frontend
