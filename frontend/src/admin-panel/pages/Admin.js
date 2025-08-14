@@ -1,4 +1,5 @@
 import React, { useState } from "react"; // Importing React and useState for component state management
+import { Form } from "react-router-dom";
 
 // Admin panel component for system configuration and reporting
 const AdminPanel = () => {
@@ -30,6 +31,9 @@ const AdminPanel = () => {
       <button onClick={() => alert("Settings update initiated...")}>
         Update Settings
       </button>
+      <Form action="/logout" method="post">
+        <button>Logout</button>
+      </Form>
     </div>
   );
 };

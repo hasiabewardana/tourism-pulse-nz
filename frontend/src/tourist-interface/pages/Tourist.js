@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Form } from "react-router-dom";
 
 // Tourist interface component for destination browsing
 const TouristInterface = () => {
@@ -32,6 +33,9 @@ const TouristInterface = () => {
         ))}
       </ul>
       <button onClick={fetchDestinations}>Refresh Availability</button>
+      <Form action="/logout" method="post">
+        <button>Logout</button>
+      </Form>
     </div>
   );
 };

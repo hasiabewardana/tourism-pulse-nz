@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"; // Importing React and hooks for state management and side effects
+import { Form } from "react-router-dom";
 
 // Manager dashboard component for analytics and booking management
 const ManagerDashboard = () => {
@@ -32,6 +33,9 @@ const ManagerDashboard = () => {
       <button onClick={() => alert("Booking management initiated...")}>
         Manage Bookings
       </button>
+      <Form action="/logout" method="post">
+        <button>Logout</button>
+      </Form>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { authAction } from "./shared/components/AuthAction";
 import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
 import Admin from "./admin-panel/pages/Admin"; // Importing the Admin page for administrative tasks
 import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
+import { action as logoutAction } from "./shared/pages/Logout";
 import "./styles.css"; // Importing global styles
 
 const router = createBrowserRouter([
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
         path: "admin",
         element: <Admin />, // route for admin page
       },
+      { path: "logout", action: logoutAction },
     ],
   },
 ]);
