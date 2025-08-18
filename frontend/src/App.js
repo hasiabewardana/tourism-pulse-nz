@@ -8,6 +8,7 @@ import Admin from "./admin-panel/pages/Admin"; // Importing the Admin page for a
 import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
 import { action as logoutAction } from "./shared/pages/Logout";
 import "./styles.css"; // Importing global styles
+import { checkAuthLoader } from "./util/auth";
 
 const router = createBrowserRouter([
   {
@@ -26,14 +27,17 @@ const router = createBrowserRouter([
       {
         path: "tourist",
         element: <Tourist />, // route for tourist page
+        loader: checkAuthLoader, // Protect the route
       },
       {
         path: "manager",
         element: <Manager />, // route for manager page
+        loader: checkAuthLoader, // Protect the route
       },
       {
         path: "admin",
         element: <Admin />, // route for admin page
+        loader: checkAuthLoader, // Protect the route
       },
       { path: "logout", action: logoutAction },
     ],
