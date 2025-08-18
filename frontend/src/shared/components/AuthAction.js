@@ -15,11 +15,29 @@ export async function authAction({ request }) {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) {
+      // Check and return validation errors
+      if (response.status === 404) {
         const errorData = await response.json().catch(() => ({}));
         return json(
-          { error: errorData.message || "Login failed" },
-          { status: 401 }
+          {
+            errors: { form: errorData.message || "Invalid user" },
+          },
+          { status: response.status }
+        );
+      } else if (response.status === 401) {
+        const errorData = await response.json().catch(() => ({}));
+        return json(
+          {
+            errors: { form: errorData.message || "Invalid credentials" },
+          },
+          { status: response.status }
+        );
+      }
+
+      if (!response.ok) {
+        throw json(
+          { errors: { form: "Could not authenticate user." } },
+          { status: 500 }
         );
       }
 
@@ -51,11 +69,23 @@ export async function authAction({ request }) {
         }),
       });
 
-      if (!response.ok) {
+      // Check and return validation errors
+      if (response.status === 400) {
         const errorData = await response.json().catch(() => ({}));
         return json(
-          { error: errorData.message || "Signup failed" },
-          { status: 401 }
+          {
+            errors: errorData.errors || {
+              form: errorData.message || "Invalid role",
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!response.ok) {
+        throw json(
+          { errors: { form: "Could not create user." } },
+          { status: 500 }
         );
       }
 
