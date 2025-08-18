@@ -41,11 +41,14 @@ export async function authAction({ request }) {
         );
       }
 
-      // Extract the auth token from response data and store in a local storage
+      // Extract the auth token from response data and store in a local storage with expiration
       const data = await response.json();
       const token = data.token;
       const role = data.role;
       localStorage.setItem("token", data.token);
+      const expiration = new Date();
+      expiration.setHours(expiration.getHours + 1);
+      localStorage.setItem("expiration", expiration.toISOString());
 
       // Redirect based on role after successful login
       if (token) {
