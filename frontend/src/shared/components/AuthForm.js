@@ -1,11 +1,14 @@
 import { useState } from "react"; // Importing useState for managing state in functional components
-import { Form, useActionData } from "react-router-dom"; // Importing Form from react-router-dom for form handling
+import { Form, useActionData, useNavigation } from "react-router-dom"; // Importing Form from react-router-dom for form handling
 import classes from "./AuthForm.module.css"; // Importing styles for the authentication form
 
 // AuthForm component that handles user authentication (login/signup)
 function AuthForm() {
   const data = useActionData(); // Get data from route action
+  const navigation = useNavigation(); // use navigation hook
+
   const [isLogin, setIsLogin] = useState(true);
+  const isSubmitting = navigation.state === "submitting"; // Get submitting state
 
   function switchAuthHandler() {
     setIsLogin((isCurrentlyLogin) => !isCurrentlyLogin);
@@ -48,7 +51,9 @@ function AuthForm() {
           <button onClick={switchAuthHandler} type="button">
             {isLogin ? "Create new user" : "Login"}
           </button>
-          <button type="submit"> {!isLogin ? "Register" : "Login"}</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : !isLogin ? "Register" : "Login"}
+          </button>
         </div>
       </Form>
     </>
