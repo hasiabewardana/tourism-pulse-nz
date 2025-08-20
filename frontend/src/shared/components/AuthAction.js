@@ -45,9 +45,9 @@ export async function authAction({ request }) {
       const data = await response.json();
       const token = data.token;
       const role = data.role;
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", token);
       const expiration = new Date();
-      expiration.setHours(expiration.getHours + 1);
+      expiration.setHours(expiration.getHours() + 1);
       localStorage.setItem("expiration", expiration.toISOString());
 
       // Redirect based on role after successful login

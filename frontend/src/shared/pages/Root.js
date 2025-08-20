@@ -5,25 +5,31 @@ import { useEffect } from "react";
 import { getAuthDuration } from "../../util/auth";
 
 function RootLayout() {
-  // const token = useLoaderData();
-  // const submit = useSubmit();
+  const token = useLoaderData();
+  const submit = useSubmit();
 
-  // useEffect(() => {
-  //   if (!token) {
-  //     return null;
-  //   }
+  // Allow functional components to perform side effects
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
 
-  //   if (token === "EXPIRED") {
-  //     submit(null, { action: "/logout", method: "POST" });
-  //   }
+    if (token === "EXPIRED") {
+      submit(null, { action: "/logout", method: "post" });
+      return;
+    }
 
-  //   const tokenDuration = getAuthDuration();
-  //   console.log(tokenDuration);
+    const tokenDuration = getAuthDuration();
+    console.log(tokenDuration);
 
-  //   setTimeout(() => {
-  //     submit(null, { action: "/logout", method: "POST" });
-  //   }, tokenDuration);
-  // }, [token, submit]);
+    // schedule auto-logout
+    const timer = setTimeout(() => {
+      submit(null, { action: "/logout", method: "post" });
+    }, tokenDuration);
+
+    // Cleanup
+    return () => clearTimeout(timer);
+  }, [token, submit]);
 
   return (
     <>
