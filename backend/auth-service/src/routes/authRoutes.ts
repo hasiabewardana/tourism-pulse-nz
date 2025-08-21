@@ -3,7 +3,7 @@ import { register, login } from "../controllers/authController"; // Import contr
 
 const router = Router(); // Create router instance
 
-router.post("/register", register); // Define register route
-router.post("/login", login); // Define login route
+router.post("/v1/register", register); // Define register route
+router.post("/v1/login", login); // Define login route
 
 export default router; // Export router for use in index.ts

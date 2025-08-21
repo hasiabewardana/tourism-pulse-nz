@@ -3,6 +3,6 @@ import { healthCheck } from "../controllers/healthController"; // Import control
 
 const router = Router(); // Create router instance
 
-router.get("/health", healthCheck); // Define health check route
+router.get("/v1/health", healthCheck); // Define health check route
 
 export default router; // Export router for use in index.ts

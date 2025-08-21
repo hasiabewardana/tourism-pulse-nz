@@ -9,7 +9,7 @@ export async function authAction({ request }) {
 
   try {
     if (mode === "login") {
-      const response = await fetch("http://localhost:3000/auth/api/login", {
+      const response = await fetch("http://localhost:3000/auth/api/v1/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -62,15 +62,18 @@ export async function authAction({ request }) {
       }
       return null;
     } else {
-      const response = await fetch("http://localhost:3000/auth/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          role,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:3000/auth/api/v1/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            role,
+          }),
+        }
+      );
 
       // Check and return validation errors
       if (response.status === 400) {

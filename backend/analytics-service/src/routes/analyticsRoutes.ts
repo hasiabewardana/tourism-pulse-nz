@@ -3,6 +3,6 @@ import { createAnalytics } from "../controllers/analyticsController"; // Import 
 
 const router = Router(); // Create router instance
 
-router.post("/analytics", createAnalytics); // Define POST route for creating analytics data
+router.post("/v1/analytics", createAnalytics); // Define POST route for creating analytics data
 
 export default router; // Export router for use in index.ts
