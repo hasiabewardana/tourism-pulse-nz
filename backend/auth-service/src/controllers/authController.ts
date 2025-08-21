@@ -9,13 +9,19 @@ import {
 
 const register = async (req: Request, res: Response) => {
   // Handle user registration
-  const { email, password, role } = req.body;
+  const { email, password, firstName, lastName, role } = req.body;
   if (!["admin", "operator", "public"].includes(role)) {
     return res.status(400).json({ error: "Invalid role" }); // Validate role
   }
   try {
     const passwordHash = await bcrypt.hash(password, 10); // Hash password
-    const userId = await createUser(email, passwordHash, role); // Create user
+    const userId = await createUser(
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      role
+    ); // Create user
     res.status(201).json({ userId }); // Return user ID
   } catch (error) {
     res.status(500).json({ error: "Internal server error" }); // Handle errors

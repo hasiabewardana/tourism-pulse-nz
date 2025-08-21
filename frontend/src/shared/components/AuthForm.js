@@ -43,6 +43,18 @@ function AuthForm() {
         </p>
         {!isLogin && (
           <p>
+            <label htmlFor="firstName">First Name</label>
+            <input id="firstName" type="text" name="firstName" required />
+          </p>
+        )}
+        {!isLogin && (
+          <p>
+            <label htmlFor="lastName">Last Name</label>
+            <input id="lastName" type="text" name="lastName" required />
+          </p>
+        )}
+        {!isLogin && (
+          <p>
             <label htmlFor="role">Role</label>
             <input id="role" type="text" name="role" required />
           </p>

@@ -5,6 +5,8 @@ export async function authAction({ request }) {
   const mode = formData.get("mode"); // "login" or "signup"
   const email = formData.get("email");
   const password = formData.get("password");
+  const firstName = formData.get("firstName"); // Only for signup
+  const lastName = formData.get("lastName"); // Only for signup
   const role = formData.get("role"); // Only for signup
 
   try {
@@ -70,6 +72,8 @@ export async function authAction({ request }) {
           body: JSON.stringify({
             email,
             password,
+            firstName,
+            lastName,
             role,
           }),
         }
