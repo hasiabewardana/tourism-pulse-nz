@@ -1,0 +1,4 @@
+-- Alter auth.users table to incorporate first name and last name
+ALTER TABLE AUTH.USERS
+ADD COLUMN FIRST_NAME VARCHAR(255) NOT NULL DEFAULT '',
+ADD COLUMN LAST_NAME VARCHAR(255) NOT NULL DEFAULT '';
