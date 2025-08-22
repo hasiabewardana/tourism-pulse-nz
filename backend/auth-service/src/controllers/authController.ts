@@ -4,11 +4,12 @@ import jwt from "jsonwebtoken"; // For token generation
 import {
   createUser,
   findUserByEmail,
+  getAllUsers,
   createSession,
 } from "../models/authModel"; // Import models
 
+// Handle user registration
 const register = async (req: Request, res: Response) => {
-  // Handle user registration
   const { email, password, firstName, lastName, role } = req.body;
   if (!["admin", "operator", "public"].includes(role)) {
     return res.status(400).json({ error: "Invalid role" }); // Validate role
@@ -28,8 +29,8 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
+// Handle user login
 const login = async (req: Request, res: Response) => {
-  // Handle user login
   const { email, password } = req.body;
   try {
     const user = await findUserByEmail(email); // Find user by email
@@ -49,4 +50,17 @@ const login = async (req: Request, res: Response) => {
   }
 };
 
-export { register, login };
+// Get all users
+const users = async (req: Request, res: Response) => {
+  try {
+    const users = await getAllUsers();
+    if (!users) {
+      return res.status(404).json({ error: "Users not found" });
+    }
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" }); // Handle errors
+  }
+};
+
+export { register, login, users };
