@@ -1,4 +1,4 @@
-import AuthForm from "../components/AuthForm"; // Importing styles for the authentication form
+import AuthForm from "../../components/authentication/AuthForm"; // Importing styles for the authentication form
 
 // Authentication component that renders the authentication form
 function Authentication() {
