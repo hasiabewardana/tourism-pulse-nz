@@ -1,23 +1,35 @@
 import { useState, useEffect } from "react";
-import User from "./User"; // Import the User component
+import User from "./User";
+import "./User.module.css";
 
 function UserList() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch user data (e.g., from an API)
     fetch("http://localhost:3000/auth/api/v1/users")
-      .then((response) => response.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching users:", error));
+      .then((res) => res.json())
+      .then((data) => {
+        setUsers(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching users:", err);
+        setLoading(false);
+      });
   }, []);
 
+  if (loading) return <p>Loading users...</p>;
+  if (users.length === 0) return <p>No users found.</p>;
+
   return (
-    <div>
-      <h1>User List</h1>
-      {users.map((user) => (
-        <User key={user.id} user={user} />
-      ))}
+    <div className="user-list">
+      <h1 className="title">Users</h1>
+      <div className="grid">
+        {users.map((user) => (
+          <User key={user.user_id} user={user} />
+        ))}
+      </div>
     </div>
   );
 }
