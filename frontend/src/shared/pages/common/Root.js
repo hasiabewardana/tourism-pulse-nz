@@ -3,6 +3,7 @@ import Header from "../../components/common/Header"; // Importing the Header com
 import Footer from "../../components/common/Footer"; // Importing the Footer component for shared footer content
 import { useEffect } from "react";
 import { getAuthDuration } from "../../../util/auth";
+import MainNavigation from "../../components/navigation/MainNavigation";
 
 function RootLayout() {
   const token = useLoaderData();
@@ -34,6 +35,7 @@ function RootLayout() {
   return (
     <>
       <Header /> {/* Rendering the Header component for navigation */}
+      <MainNavigation />
       <main>
         <Outlet /> {/* This renders the matched child route element */}
       </main>

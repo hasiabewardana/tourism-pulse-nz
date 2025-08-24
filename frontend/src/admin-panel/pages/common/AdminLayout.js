@@ -4,12 +4,12 @@ import AdminNavigation from "../../components/navigation/AdminNavigation";
 
 function AdminLayout() {
   return (
-    <div style={{ display: "flex" }}>
-      <AdminNavigation />
-      <div style={{ flex: 1, padding: "20px" }}>
-        <Outlet />
-      </div>
-    </div>
+    <>
+      <AdminNavigation /> {/* Navigation for admin panel */}
+      <main>
+        <Outlet /> {/* Render admin panel child routes */}
+      </main>
+    </>
   );
 }
 
