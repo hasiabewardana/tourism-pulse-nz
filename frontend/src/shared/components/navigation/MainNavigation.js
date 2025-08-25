@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import classes from "./MainNavigation.module.css";
 
-function MainNavigation({ isAuthenticated, role }) {
+function MainNavigation({ isAuthenticated }) {
   return (
     <header className={classes["main-header"]}>
       <nav>
@@ -22,22 +22,6 @@ function MainNavigation({ isAuthenticated, role }) {
           {!isAuthenticated && (
             <li>
               <Link to="/auth">Login / Sign Up</Link>
-            </li>
-          )}
-
-          {isAuthenticated && role === "public" && (
-            <li>
-              <Link to="/tourist">My Dashboard</Link>
-            </li>
-          )}
-          {isAuthenticated && role === "operator" && (
-            <li>
-              <Link to="/manager">Manager Dashboard</Link>
-            </li>
-          )}
-          {isAuthenticated && role === "admin" && (
-            <li>
-              <Link to="/admin">Admin Panel</Link>
             </li>
           )}
         </ul>

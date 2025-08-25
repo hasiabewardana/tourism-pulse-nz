@@ -8,6 +8,7 @@ import MainNavigation from "../../components/navigation/MainNavigation";
 function RootLayout() {
   const token = useLoaderData();
   const submit = useSubmit();
+  let isAuthenticated = false;
 
   // Allow functional components to perform side effects
   useEffect(() => {
@@ -20,6 +21,7 @@ function RootLayout() {
       return;
     }
 
+    isAuthenticated = true;
     const tokenDuration = getAuthDuration();
     console.log(tokenDuration);
 
@@ -35,7 +37,7 @@ function RootLayout() {
   return (
     <>
       <Header /> {/* Rendering the Header component for navigation */}
-      <MainNavigation />
+      <MainNavigation isAuthenticated={isAuthenticated} />
       <main>
         <Outlet /> {/* This renders the matched child route element */}
       </main>

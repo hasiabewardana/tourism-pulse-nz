@@ -1,66 +1,81 @@
 import { Request, Response } from "express"; // Import Express types
 import bcrypt from "bcrypt"; // For password hashing
 import jwt from "jsonwebtoken"; // For token generation
+import z from "zod"; // For input validation
 import {
   createUser,
   findUserByEmail,
-  getAllUsers,
   createSession,
 } from "../models/authModel"; // Import models
 
+// Schema for registration
+const registerSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  role: z.enum(["admin", "operator", "public"]),
+});
+
+// Schema for login
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
 // Handle user registration
-const register = async (req: Request, res: Response) => {
-  const { email, password, firstName, lastName, role } = req.body;
-  if (!["admin", "operator", "public"].includes(role)) {
-    return res.status(400).json({ error: "Invalid role" }); // Validate role
-  }
+export const register = async (req: Request, res: Response) => {
   try {
-    const passwordHash = await bcrypt.hash(password, 10); // Hash password
+    // Validate input
+    const { email, password, firstName, lastName, role } = registerSchema.parse(
+      req.body
+    );
+    // Check if user already exists
+    const existingUser = await findUserByEmail(email);
+    if (existingUser)
+      return res.status(409).json({ error: "User already exists" });
+    // Hash password and create user
+    const passwordHash = await bcrypt.hash(password, 10);
+    // Create user in DB
     const userId = await createUser(
       email,
       passwordHash,
       firstName,
       lastName,
       role
-    ); // Create user
-    res.status(201).json({ userId }); // Return user ID
+    );
+    res.status(201).json({ userId });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" }); // Handle errors
+    if (error instanceof z.ZodError)
+      return res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 // Handle user login
-const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+export const login = async (req: Request, res: Response) => {
   try {
-    const user = await findUserByEmail(email); // Find user by email
+    // Validate input
+    const { email, password } = loginSchema.parse(req.body);
+    // Find user by email
+    const user = await findUserByEmail(email);
     if (!user) return res.status(404).json({ error: "User not found" });
-    const match = await bcrypt.compare(password, user.password_hash); // Compare passwords
+    // Compare passwords
+    const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: "Invalid credentials" });
+
+    // Generate JWT token
     const token = jwt.sign(
       { userId: user.user_id, role: user.role },
       process.env.JWT_SECRET!,
       { expiresIn: "1h" }
-    ); // Generate JWT
-    const role = user.role;
-    await createSession(user.user_id, token); // Create session
-    res.json({ token, role }); // Return token
+    );
+    // Store session in DB
+    await createSession(user.user_id, token);
+    res.json({ token, role: user.role });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" }); // Handle errors
+    if (error instanceof z.ZodError)
+      return res.status(400).json({ error: error.message });
+    res.status(500).json({ error: "Internal server error" });
   }
 };
-
-// Get all users
-const users = async (req: Request, res: Response) => {
-  try {
-    const users = await getAllUsers();
-    if (!users) {
-      return res.status(404).json({ error: "Users not found" });
-    }
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: "Internal server error" }); // Handle errors
-  }
-};
-
-export { register, login, users };

@@ -1,10 +1,14 @@
 import { Router } from "express"; // Import Express Router
-import { register, login, users } from "../controllers/authController"; // Import controllers
+import { register, login } from "../controllers/authController"; // Import auth controllers
+import { authenticate } from "../middleware/authMiddleware"; // Import auth middleware
 
 const router = Router(); // Create router instance
 
-router.post("/v1/register", register); // Define register route
-router.post("/v1/login", login); // Define login route
-router.get("/v1/users", users); // Define getAllUsers route
+// Public routes
+router.post("/v1/register", register);
+router.post("/v1/login", login);
+
+// Protected routes
+router.use(authenticate); // All below require authentication
 
 export default router; // Export router for use in index.ts
