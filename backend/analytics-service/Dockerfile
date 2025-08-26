@@ -10,8 +10,8 @@ COPY . .
 # Install dependencies using npm from package.json in the working directory
 RUN npm install
 
-# Expose port 3002 for the analytics service to receive incoming requests
-EXPOSE 3002
+# Expose port 3003 for the analytics service to receive incoming requests
+EXPOSE 3003
 
 # Run the application using the start script defined in package.json
 CMD ["npm", "start"]

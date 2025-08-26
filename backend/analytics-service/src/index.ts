@@ -16,7 +16,7 @@ mongoose
 
 app.use("/analytics-service/api", analyticsRoutes); // Mount analytics routes under /api prefix
 
-const PORT = 3002; // Set port for the analytics service
+const PORT = 3003; // Set port for the analytics service
 app.listen(PORT, () => {
   // Start the server
   console.log(`Analytics service running on port ${PORT}`);
