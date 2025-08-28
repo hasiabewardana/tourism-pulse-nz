@@ -22,3 +22,5 @@ router.delete("/v1/destinations/:id", authorize(["admin"]), removeDestination);
 
 // Public access
 router.get("/v1/destinations/public", getDestinations); // Public list with thumbnails
+
+export default router; // Export router for use in index.ts
