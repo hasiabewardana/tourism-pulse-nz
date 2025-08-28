@@ -1,12 +1,17 @@
 import express from "express"; // Import Express
 import cors from "cors"; // Enable CORS
 import helmet from "helmet"; // Add security headers
+import destinationRoutes from "./routes/destinationRoutes"; // Import destination routes
+import bookingRoutes from "./routes/bookingRoutes"; // Import booking routes
 
 const app = express(); // Create Express application
 
 app.use(express.json()); // Parse JSON bodies
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(helmet()); // Add security middleware
+
+app.use("/dest-service/api", destinationRoutes); // Mount destination routes under /api
+app.use("/dest-service/api", bookingRoutes); // Mount booking routes under /api
 
 const PORT = process.env.PORT || 3002; // Use PORT from .env or default to 3002
 app.listen(PORT, () =>
