@@ -8,6 +8,7 @@ import {
   deleteDestination,
 } from "../models/destinationModel";
 
+// Zod schema for destination validation
 const destinationSchema = z.object({
   name: z.string().min(1),
   location: z.string().optional(), // GeoJSON or WKT string
@@ -15,6 +16,7 @@ const destinationSchema = z.object({
   photos: z.array(z.string().url()).min(1).optional(),
 });
 
+// Get all destinations
 export const getDestinations = async (req: Request, res: Response) => {
   try {
     const destinations = await getAllDestinations();
@@ -29,6 +31,7 @@ export const getDestinations = async (req: Request, res: Response) => {
   }
 };
 
+// Get destination by ID
 export const getDestinationById = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
@@ -41,6 +44,7 @@ export const getDestinationById = async (req: Request, res: Response) => {
   }
 };
 
+// Add new destination
 export const addDestination = async (req: Request, res: Response) => {
   try {
     const data = destinationSchema.parse(req.body);
@@ -58,6 +62,7 @@ export const addDestination = async (req: Request, res: Response) => {
   }
 };
 
+// Update existing destination
 export const modifyDestination = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
@@ -77,6 +82,7 @@ export const modifyDestination = async (req: Request, res: Response) => {
   }
 };
 
+// Delete destination
 export const removeDestination = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
