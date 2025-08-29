@@ -33,16 +33,43 @@ export const createBooking = async (
 // Update an existing booking
 export const updateBooking = async (
   bookingId: number,
-  destinationId: number,
-  userId: number,
-  bookingDate: string,
-  visitorCount: number,
+  destinationId: number | undefined,
+  userId: number | undefined,
+  bookingDate: string | undefined,
+  visitorCount: number | undefined,
   status: string
 ) => {
-  const result = await query(
-    "UPDATE dest.bookings SET destination_id = $1, user_id = $2, booking_date = $3, visitor_count = $4, status = $5 WHERE booking_id = $6 RETURNING booking_id",
-    [destinationId, userId, bookingDate, visitorCount, status, bookingId]
-  );
+  const fields = [];
+  const values = [];
+  let index = 1;
+
+  if (destinationId !== undefined) {
+    fields.push(`destination_id = $${index++}`);
+    values.push(destinationId);
+  }
+  if (userId !== undefined) {
+    fields.push(`user_id = $${index++}`);
+    values.push(userId);
+  }
+  if (bookingDate !== undefined) {
+    fields.push(`booking_date = $${index++}`);
+    values.push(bookingDate);
+  }
+  if (visitorCount !== undefined) {
+    fields.push(`visitor_count = $${index++}`);
+    values.push(visitorCount);
+  }
+  fields.push(`status = $${index++}`);
+  values.push(status);
+
+  if (fields.length === 0) throw new Error("No fields to update");
+
+  const queryStr = `UPDATE dest.bookings SET ${fields.join(
+    ", "
+  )} WHERE booking_id = $${index} RETURNING booking_id`;
+  values.push(bookingId);
+
+  const result = await query(queryStr, values);
   return result[0].booking_id;
 };
 

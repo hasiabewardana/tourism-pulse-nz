@@ -17,6 +17,20 @@ const bookingSchema = z.object({
   status: z.enum(["confirmed", "cancelled", "pending"]),
 });
 
+// Schema for updating a booking (all fields optional, status required for this example)
+const updateBookingSchema = z
+  .object({
+    destinationId: z.number().min(1).optional(),
+    userId: z.number().min(1).optional(),
+    bookingDate: z.string().datetime().optional(),
+    visitorCount: z.number().min(1).optional(),
+    status: z.enum(["confirmed", "cancelled", "pending"]),
+  })
+  .refine((data) => data.status !== undefined, {
+    message: "Status is required for update",
+    path: ["status"],
+  });
+
 // Get all bookings
 export const getBookings = async (req: Request, res: Response) => {
   try {
@@ -62,19 +76,36 @@ export const addBooking = async (req: Request, res: Response) => {
 export const modifyBooking = async (req: Request, res: Response) => {
   try {
     const bookingId = parseInt(req.params.id, 10);
-    const data = bookingSchema.parse(req.body);
+    const data = updateBookingSchema.parse(req.body);
+
+    // Fetch existing booking to preserve unchanged fields
+    const existingBooking = await findBookingById(bookingId);
+    if (!existingBooking)
+      return res.status(404).json({ error: "Booking not found" });
+
+    // Use existing values for unspecified fields
     const updatedId = await updateBooking(
       bookingId,
-      data.destinationId,
-      data.userId,
-      data.bookingDate,
-      data.visitorCount,
+      data.destinationId ?? existingBooking.destination_id,
+      data.userId ?? existingBooking.user_id,
+      data.bookingDate ?? existingBooking.booking_date.toISOString(),
+      data.visitorCount ?? existingBooking.visitor_count,
       data.status
     );
     res.json({ bookingId: updatedId });
   } catch (error) {
     if (error instanceof z.ZodError)
       return res.status(400).json({ error: error.message });
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as any).name === "DatabaseError"
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Database error: " + (error as any).message });
+    }
     res.status(500).json({ error: "Internal server error" });
   }
 };
