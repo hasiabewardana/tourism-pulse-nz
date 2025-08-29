@@ -30,13 +30,26 @@ export const ROUTES: RouteConfig[] = [
     }, // Proxying to auth service
   },
   {
+    url: "/dest", // Route for destination service
+    auth: false, // No authentication required for public endpoints; service handles auth internally
+    creditCheck: false, // No credit check required
+    rateLimit: { windowMs: 1 * 60 * 1000, max: 60 }, // Limiting to 60 requests per 1 minute (higher due to public access)
+    proxy: {
+      target:
+        String(process.env.DESTINATION_SERVICE_URL) ||
+        "http://destination:3002/dest-service", // Fallback to default if env variable is not set
+      changeOrigin: true,
+      pathRewrite: { "^/dest(/api/.*|$)": "$1" }, // Rewrites /dest/api/... to /api/..., preserving sub-paths
+    }, // Proxying to destination services
+  },
+  {
     url: "/analytics", // Route for analytics service
     auth: false, // No authentication required
     creditCheck: false, // No credit check required
     proxy: {
       target:
         String(process.env.ANALYTICS_SERVICE_URL) ||
-        "http://analytics:3002/analytics-service", // Fallback to default if env variable is not set
+        "http://analytics:3003/analytics-service", // Fallback to default if env variable is not set
       changeOrigin: true,
       pathRewrite: { "^/analytics(/api/.*|$)": "$1" }, // Rewrites /analytics/api/... to /api/..., preserving sub-paths
     }, // Proxying to analytics service
