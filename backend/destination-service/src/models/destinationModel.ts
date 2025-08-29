@@ -24,7 +24,7 @@ export const createDestination = async (
 ) => {
   const result = await query(
     "INSERT INTO dest.destinations (name, location, capacity, photos) VALUES ($1, ST_GeomFromText($2), $3, $4) RETURNING destination_id",
-    [name, location || "POINT(0 0)", capacity, photos]
+    [name, location || "POINT(0 0)", capacity, JSON.stringify(photos)]
   );
   return result[0].destination_id;
 };
@@ -39,7 +39,13 @@ export const updateDestination = async (
 ) => {
   const result = await query(
     "UPDATE dest.destinations SET name = $1, location = ST_GeomFromText($2), capacity = $3, photos = $4, updated_at = CURRENT_TIMESTAMP WHERE destination_id = $5 RETURNING destination_id",
-    [name, location || "POINT(0 0)", capacity, photos, destinationId]
+    [
+      name,
+      location || "POINT(0 0)",
+      capacity,
+      JSON.stringify(photos),
+      destinationId,
+    ]
   );
   return result[0].destination_id;
 };
