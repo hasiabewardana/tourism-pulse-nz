@@ -1,11 +1,14 @@
+/* content/admin-panel/src/styles.css */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   font-family: sans-serif;
-  background-color: #181c1f;
-  color: #bdd1d4;
+  background-color: #181c1f; /* Matches input background and body background */
+  color: #bdd1d4; /* Main text color */
   margin: 2rem;
 }
 
@@ -14,6 +17,9 @@ header {
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  background-color: #2d3942; /* Matches content background */
+  padding: 1rem;
+  border-radius: 4px;
 }
 
 header img {
@@ -23,12 +29,12 @@ header img {
 
 header h1 {
   margin: 0;
-  color: #48d9f3;
+  color: #48d9f3; /* Primary accent color */
 }
 
 header p {
   margin: 0;
-  color: #82c2ce;
+  color: #82c2ce; /* Secondary text color for labels */
 }
 
 #tabs {
@@ -46,10 +52,10 @@ header p {
 #tabs button {
   font: inherit;
   font-size: 0.85rem;
-  background-color: #282f33;
+  background-color: #282f33; /* Matches card background */
   border: none;
-  border-bottom-color: #48d9f3;
-  color: #e0eff1;
+  border-bottom: 2px solid #48d9f3; /* Primary accent for active state */
+  color: #e0eff1; /* Light text for contrast */
   border-radius: 4px 4px 0 0;
   padding: 0.75rem 1rem;
   cursor: pointer;
@@ -58,16 +64,65 @@ header p {
 
 #tabs button:hover,
 #tabs button.active {
-  background-color: #48d9f3;
-  color: #273133;
+  background-color: #48d9f3; /* Primary accent on hover/active */
+  color: #273133; /* Dark text for contrast on accent */
 }
 
 #tab-content {
-  background-color: #2d3942;
+  background-color: #2d3942; /* Matches content background */
   border-radius: 0 4px 4px 4px;
   padding: 1rem;
+  color: #bdd1d4; /* Main text color */
 }
 
 #tab-content li {
   margin: 0.75rem 0;
+}
+
+/* Additional global styles to align with modules */
+button {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #48d9f3;
+  color: #273133;
+  transition: all 0.2s ease-out;
+}
+
+button:hover {
+  background-color: #e0eff1;
+}
+
+input,
+select {
+  padding: 0.75rem;
+  border: 1px solid #282f33; /* Matches card borders */
+  border-radius: 4px;
+  background-color: #181c1f; /* Matches input background */
+  color: #bdd1d4; /* Matches input text */
+  font-family: sans-serif;
+}
+
+label {
+  color: #82c2ce; /* Matches label text */
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive media query */
+@media (max-width: 768px) {
+  body {
+    margin: 1rem;
+  }
+  header {
+    flex-direction: column;
+    text-align: center;
+  }
+  #tabs menu {
+    flex-direction: column;
+  }
+  #tabs button {
+    width: 100%;
+    border-radius: 4px;
+  }
 }
