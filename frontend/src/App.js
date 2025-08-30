@@ -8,8 +8,10 @@ import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Touris
 import { action as logoutAction } from "./shared/pages/authentication/Logout";
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
-import UserManagement from "./admin-panel/pages/user-management/UserManagement";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";
+import UserManagement from "./admin-panel/pages/user-management/UserManagement";
+import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
+import Reports from "./admin-panel/pages/reports/Reports"; // Added import for Reports
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,16 @@ const router = createBrowserRouter([
           {
             path: "user-management",
             element: <UserManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "booking-management",
+            element: <BookingManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "reports",
+            element: <Reports />,
             loader: checkAuthLoader, // Protect the route
           },
         ],

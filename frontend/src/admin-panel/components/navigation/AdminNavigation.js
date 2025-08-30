@@ -11,6 +11,10 @@ const AdminPanel = () => {
             <Link to="user-management">User Management</Link>
           </li>
           <li>
+            <Link to="booking-management">Booking Management</Link>{" "}
+            {/* Added link for Booking Management */}
+          </li>
+          <li>
             <Link to="reports">Reports</Link>
           </li>
           <li>
