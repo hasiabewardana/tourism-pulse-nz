@@ -25,6 +25,7 @@ function Navigation() {
     admin: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
+      { to: "/admin/destination-management", label: "Destination Management" },
       { to: "/admin/user-management", label: "User Management" },
       { to: "/admin/booking-management", label: "Booking Management" },
       { to: "/admin/reports", label: "Reports" },

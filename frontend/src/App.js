@@ -1,6 +1,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
 import RootLayout from "./shared/pages/common/Root"; // Importing the RootLayout component for shared layout structure
 import Home from "./shared/pages/common/Home"; // Importing the Home component for the main content
+import Destinations from "./shared/pages/destinations/Destinations";
 import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/authentication/AuthAction";
 import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
@@ -10,6 +11,7 @@ import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";
 import UserManagement from "./admin-panel/pages/user-management/UserManagement";
+import DestinationManagement from "./admin-panel/pages/destination-management/DestinationManagement";
 import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
 import Reports from "./admin-panel/pages/reports/Reports"; // Added import for Reports
 
@@ -21,6 +23,10 @@ const router = createBrowserRouter([
       {
         index: true, // default child route for "/"
         element: <Home />,
+      },
+      {
+        path: "destinations",
+        element: <Destinations />,
       },
       {
         path: "auth",
@@ -49,6 +55,11 @@ const router = createBrowserRouter([
           {
             path: "user-management",
             element: <UserManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "destination-management",
+            element: <DestinationManagement />,
             loader: checkAuthLoader, // Protect the route
           },
           {
