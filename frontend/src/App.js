@@ -5,7 +5,7 @@ import Authentication from "./shared/pages/authentication/Authentication"; // Im
 import { authAction } from "./shared/components/authentication/AuthAction";
 import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
 import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
-import { action as logoutAction } from "./shared/pages/authentication/Logout";
+import { action as logoutAction } from "./shared/components/authentication/Logout";
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";

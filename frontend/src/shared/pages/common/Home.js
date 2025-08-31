@@ -1,82 +1,108 @@
-import { useState } from "react"; // Importing useState for managing state in functional components
-import { useNavigate } from "react-router-dom"; // For navigation
-import { Button, Box } from "@mui/material"; // Material-UI components
+// src/shared/pages/common/Home.js
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button, Box, Typography, Container } from "@mui/material";
+import classes from "./Home.module.css"; // New CSS module for custom styling
 
-// Content for the tabs in the application
-const content = [
-  [
-    "Offer real-time availability information for popular destinations",
-    "Provide personalized recommendations for alternative destinations",
-    "Enable advance planning with capacity-based booking suggestions",
-    "Enhance overall visit experience through better information",
-  ],
-  [
-    "Provide real-time visitor capacity monitoring and alerts",
-    "Enable dynamic pricing and booking management",
-    "Deliver predictive analytics for staffing and resource planning",
-    "Facilitate coordinated capacity management across multiple destinations",
-  ],
-  [
-    "Monitor and manage visitor capacity across multiple destinations",
-    "Provide real-time data for informed decision-making",
-    "Enable predictive analytics for future planning",
-    "Facilitate collaboration with tourism operators and stakeholders",
-    "Support sustainable tourism practices through data-driven insights",
-  ],
-];
+// Content for the tabs tailored to each role
+const content = {
+  public: {
+    title: "Explore New Zealand with TourismPulseNZ",
+    items: [
+      "Discover real-time availability for top destinations",
+      "Get personalized travel recommendations",
+      "Plan ahead with capacity-based booking insights",
+      "Enjoy a seamless travel experience",
+    ],
+  },
+  operator: {
+    title: "Manage Operations Efficiently",
+    items: [
+      "Monitor visitor capacity in real-time",
+      "Optimize booking management with dynamic pricing",
+      "Plan staffing with predictive analytics",
+      "Coordinate across multiple destinations",
+    ],
+  },
+  admin: {
+    title: "Administer with Confidence",
+    items: [
+      "Oversee visitor capacity across all sites",
+      "Make data-driven decisions with real-time insights",
+      "Plan future strategies with predictive analytics",
+      "Collaborate with operators for sustainability",
+    ],
+  },
+};
 
-// Home component that renders the main interface with tabs for different functionalities
 function Home() {
-  const [activeContentIndex, setActiveContentIndex] = useState(0); // State to track the currently active tab content index
-  const navigate = useNavigate(); // Hook for navigation
-  // Function to handle login button click, navigating to the authentication page
+  const [activeRole, setActiveRole] = useState("public"); // State to track the active role tab
+  const navigate = useNavigate();
+
   const handleLoginClick = () => {
     navigate("/auth");
   };
 
   return (
-    <div id="tabs">
-      <menu>
-        <button
-          // Button to switch to the Tourist Interface tab
-          className={activeContentIndex === 0 ? "active" : ""}
-          onClick={() => setActiveContentIndex(0)}
-        >
-          Tourist Interface
-        </button>
-        <button
-          // Button to switch to the Manager Dashboard tab
-          className={activeContentIndex === 1 ? "active" : ""}
-          onClick={() => setActiveContentIndex(1)}
-        >
-          Manager Dashboard
-        </button>
-        <button
-          // Button to switch to the Admin Panel tab
-          className={activeContentIndex === 2 ? "active" : ""}
-          onClick={() => setActiveContentIndex(2)}
-        >
-          Admin Panel
-        </button>
-      </menu>
-      <div id="tab-content">
-        <ul>
-          {
-            // Mapping through the content array to display the items for the active tab
-            content[activeContentIndex].map((item) => (
-              <li key={item}>{item}</li>
-            ))
-          }
-        </ul>
+    <Container maxWidth="lg" className={classes.homeContainer}>
+      <Typography variant="h2" className={classes.title}>
+        Welcome to TourismPulseNZ
+      </Typography>
+      <div id="tabs" className={classes.tabs}>
+        <menu className={classes.tabMenu}>
+          <button
+            className={`${classes.tabButton} ${
+              activeRole === "public" ? classes.active : ""
+            }`}
+            onClick={() => setActiveRole("public")}
+            aria-label="Switch to Tourist Interface"
+          >
+            Tourist
+          </button>
+          <button
+            className={`${classes.tabButton} ${
+              activeRole === "operator" ? classes.active : ""
+            }`}
+            onClick={() => setActiveRole("operator")}
+            aria-label="Switch to Manager Dashboard"
+          >
+            Operator
+          </button>
+          <button
+            className={`${classes.tabButton} ${
+              activeRole === "admin" ? classes.active : ""
+            }`}
+            onClick={() => setActiveRole("admin")}
+            aria-label="Switch to Admin Panel"
+          >
+            Admin
+          </button>
+        </menu>
+        <div id="tab-content" className={classes.tabContent}>
+          <Typography variant="h4" className={classes.contentTitle}>
+            {content[activeRole].title}
+          </Typography>
+          <ul className={classes.contentList}>
+            {content[activeRole].items.map((item, index) => (
+              <li key={index} className={classes.contentItem}>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-      {/* Login button at the bottom */}
       <Box sx={{ textAlign: "center", mt: 4 }}>
-        <Button variant="contained" color="primary" onClick={handleLoginClick}>
-          Login
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleLoginClick}
+          className={classes.loginButton}
+        >
+          Get Started
         </Button>
       </Box>
-    </div>
+    </Container>
   );
 }
 
-export default Home; // Exporting the Home component for use in other parts of the application
+export default Home;

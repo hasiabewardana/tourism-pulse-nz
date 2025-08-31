@@ -48,6 +48,7 @@ export async function authAction({ request }) {
       const token = data.token;
       const role = data.role;
       localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
       const expiration = new Date();
       expiration.setHours(expiration.getHours() + 1);
       localStorage.setItem("expiration", expiration.toISOString());

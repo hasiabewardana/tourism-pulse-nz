@@ -1,48 +1,14 @@
-import { Outlet, useLoaderData, useSubmit } from "react-router-dom"; // Importing Outlet to render child routes in the layout
-import Header from "../../components/common/Header"; // Importing the Header component for shared navigation
-import Footer from "../../components/common/Footer"; // Importing the Footer component for shared footer content
-import { useEffect } from "react";
-import { getAuthDuration } from "../../../util/auth";
-import MainNavigation from "../../components/navigation/MainNavigation";
+// src/shared/pages/common/RootLayout.js
+import { Outlet } from "react-router-dom";
+import Navigation from "../../components/navigation/Navigation";
 
 function RootLayout() {
-  const token = useLoaderData();
-  const submit = useSubmit();
-  let isAuthenticated = false;
-
-  // Allow functional components to perform side effects
-  useEffect(() => {
-    if (!token) {
-      return;
-    }
-
-    if (token === "EXPIRED") {
-      submit(null, { action: "/logout", method: "post" });
-      return;
-    }
-
-    isAuthenticated = true;
-    const tokenDuration = getAuthDuration();
-    console.log(tokenDuration);
-
-    // schedule auto-logout
-    const timer = setTimeout(() => {
-      submit(null, { action: "/logout", method: "post" });
-    }, tokenDuration);
-
-    // Cleanup
-    return () => clearTimeout(timer);
-  }, [token, submit]);
-
   return (
     <>
-      <Header /> {/* Rendering the Header component for navigation */}
-      <MainNavigation isAuthenticated={isAuthenticated} />
+      <Navigation />
       <main>
-        <Outlet /> {/* This renders the matched child route element */}
+        <Outlet />
       </main>
-      <Footer />{" "}
-      {/* Rendering the Footer component for shared footer content */}
     </>
   );
 }
