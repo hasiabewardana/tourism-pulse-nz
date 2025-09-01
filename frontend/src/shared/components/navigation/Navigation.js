@@ -33,13 +33,13 @@ function Navigation() {
     ],
   };
 
-  // Determine the relevant links based on role and authentication status
-  const links =
-    roleBasedLinks[role] ||
-    (isAuthenticated
-      ? roleBasedLinks[role] || roleBasedLinks.operator
-      : roleBasedLinks.public) ||
-    roleBasedLinks.public; // Fallback to public if role is undefined
+  // Determine the relevant links based on authentication status and role
+  let links = roleBasedLinks.public; // Default to public links for all users
+
+  if (isAuthenticated) {
+    // For authenticated users, use role-specific links
+    links = roleBasedLinks[role] || roleBasedLinks.public; // Fallback to operator if role is invalid
+  }
 
   return (
     <header
