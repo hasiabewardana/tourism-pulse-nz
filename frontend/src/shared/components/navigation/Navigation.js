@@ -1,5 +1,5 @@
 // src/shared/components/navigation/Navigation.js
-import { Link } from "react-router-dom";
+import { Link, Form } from "react-router-dom"; // FIX: Import Form to enable POST submission for logout action.
 import { useAuth } from "../../context/AuthContext";
 import classes from "./Navigation.module.css";
 
@@ -51,9 +51,19 @@ function Navigation() {
         <ul className={classes.list}>
           {links.map((link, index) => (
             <li key={index}>
-              <Link to={link.to} className={classes.link}>
-                {link.label}
-              </Link>
+              {/* FIX: For logout, use a Form with POST to trigger the route action (clear storage and redirect).
+                  This replaces the GET <Link>, which didn't execute the action. For other links, keep <Link>. */}
+              {link.to === "/logout" ? (
+                <Form method="post" action="/logout">
+                  <button type="submit" className={classes.link}>
+                    {link.label}
+                  </button>
+                </Form>
+              ) : (
+                <Link to={link.to} className={classes.link}>
+                  {link.label}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

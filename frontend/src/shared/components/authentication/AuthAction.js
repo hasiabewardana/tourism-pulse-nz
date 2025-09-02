@@ -53,6 +53,10 @@ export async function authAction({ request }) {
       expiration.setHours(expiration.getHours() + 1);
       localStorage.setItem("expiration", expiration.toISOString());
 
+      // FIX: Dispatch a synthetic storage event to trigger the AuthContext handler in the same tab,
+      // updating isAuthenticated and role immediately without refresh.
+      window.dispatchEvent(new StorageEvent("storage", { key: "auth-update" }));
+
       // Redirect based on role after successful login
       if (token) {
         if (role === "public") {
