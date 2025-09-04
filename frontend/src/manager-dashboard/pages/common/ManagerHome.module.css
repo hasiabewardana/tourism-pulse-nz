@@ -1,0 +1,55 @@
+.managerContainer {
+  padding: 2rem;
+  background-color: #2d3942; /* Consistent dark background */
+  border-radius: 4px;
+  color: #bdd1d4; /* Light text for readability */
+  min-height: calc(
+    100vh - 4rem
+  ); /* Adjust for header margin, consistent with AdminHome */
+}
+
+.title {
+  text-align: center;
+  color: #4caf50; /* Green accent for manager role, symbolizing growth/sustainability */
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+
+.contentTitle {
+  color: #4caf50; /* Matching green accent */
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.contentList {
+  list-style: none;
+  padding: 0;
+}
+
+.contentItem {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.contentItem::before {
+  content: "•";
+  color: #4caf50; /* Green bullet points */
+  position: absolute;
+  left: 0;
+}
+
+/* Responsive design, mirrored from AdminHome */
+@media (max-width: 768px) {
+  .managerContainer {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .contentTitle {
+    font-size: 1.25rem;
+  }
+}

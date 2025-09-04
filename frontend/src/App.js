@@ -4,11 +4,12 @@ import Home from "./shared/pages/common/Home"; // Importing the Home component f
 import Destinations from "./shared/pages/destinations/Destinations";
 import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/authentication/AuthAction";
-import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
 import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
 import { action as logoutAction } from "./shared/components/authentication/Logout";
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
+import ManagerLayout from "./manager-dashboard/pages/common/ManagerLayout";
+import ManagerHome from "./manager-dashboard/pages/common/ManagerHome";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";
 import AdminHome from "./admin-panel/pages/common/AdminHome";
 import UserManagement from "./admin-panel/pages/user-management/UserManagement";
@@ -41,8 +42,15 @@ const router = createBrowserRouter([
       },
       {
         path: "manager",
-        element: <Manager />, // route for manager page
+        element: <ManagerLayout />, // route for manager page
         loader: checkAuthLoader, // Protect the route
+        children: [
+          {
+            index: true,
+            element: <ManagerHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+        ],
       },
       {
         path: "admin",
