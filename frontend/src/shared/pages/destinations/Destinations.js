@@ -111,7 +111,7 @@ function Destinations() {
                   component="img"
                   height="200"
                   image={
-                    "/images/destinations/" + dest.photos[0] ||
+                    "/images/destinations/" + dest.thumbnail ||
                     "/images/destinations/default-thumbnail.jpg"
                   } // Fallback image
                   alt={dest.name}
@@ -127,7 +127,7 @@ function Destinations() {
                     {dest.description}
                   </Typography>
                   <Typography variant="body1" className={classes.cardInfo}>
-                    Current Visitors: {dest.currentVisitors} /{" "}
+                    Current Visitors: {dest.current_visitors} /{" "}
                     {dest.maxCapacity}
                   </Typography>
                   <Typography variant="body1" className={classes.cardStatus}>
