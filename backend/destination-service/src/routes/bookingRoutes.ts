@@ -14,7 +14,7 @@ const router = Router();
 router.use(authenticate);
 
 // Admin-only
-router.get("/v1/bookings", authorize(["admin"]), getBookings);
+router.get("/v1/bookings", authorize(["operator", "admin"]), getBookings);
 router.get("/v1/bookings/:id", authorize(["admin"]), getBookingById);
 router.post("/v1/bookings", authorize(["admin"]), addBooking);
 router.put("/v1/bookings/:id", authorize(["admin"]), modifyBooking);

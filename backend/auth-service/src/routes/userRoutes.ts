@@ -16,7 +16,7 @@ const router = Router(); // Create router instance
 router.use(authenticate); // All below require authentication
 
 // Admin-only
-router.get("/v1/users", authorize(["admin"]), getUsers);
+router.get("/v1/users", authorize(["operator", "admin"]), getUsers);
 router.get("/v1/users/:id", authorize(["admin"]), getUserById);
 router.put("/v1/users/:id", authorize(["admin"]), updateUserById);
 router.delete("/v1/users/:id", authorize(["admin"]), deleteUserById);
