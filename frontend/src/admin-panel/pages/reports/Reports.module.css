@@ -1,44 +1,56 @@
-/* content/admin-panel/src/admin-panel/pages/reports/Reports.module.css */
-.reports {
+.container {
   padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  background-color: #2d3942;
+  border-radius: 4px;
+  color: #bdd1d4;
+  min-height: calc(100vh - 4rem);
 }
 
 .title {
   font-size: 2rem;
   margin-bottom: 1rem;
   text-align: center;
+  color: #48d9f3; /* Match Destinations title color */
 }
 
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+  margin-top: 2rem; /* Add space below title */
 }
 
 .statCard {
-  border: 1px solid #ddd;
+  border: 1px solid #4a5b66; /* Darker border to match theme */
   border-radius: 8px;
   padding: 1rem;
-  background-color: #fafafa;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #282f33; /* Darker card background to match theme */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
 
 .statCard h2 {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  color: #bdd1d4; /* Match container text color */
 }
 
 .statCard p {
   font-size: 2rem;
-  color: #4caf50;
+  color: #4caf50; /* Keep green for stats highlight */
 }
 
 /* Responsive media query */
 @media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.5rem; /* Reduced from Destinations' 2rem for consistency */
+  }
+
   .statsGrid {
-    grid-template-columns: 1fr;
+    margin-top: 1rem; /* Reduced space on mobile */
   }
 }

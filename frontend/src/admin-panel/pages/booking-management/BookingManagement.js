@@ -1,9 +1,14 @@
-// content/admin-panel/src/admin-panel/pages/booking-management/BookingManagement.js
+import { Container } from "@mui/material";
 import BookingList from "../../components/booking-management/BookingList"; // Adjusted path
+import classes from "./BookingManagement.module.css"; // Import CSS module
 
 // Page component for booking management, renders the BookingList
 function BookingManagement() {
-  return <BookingList />;
+  return (
+    <Container maxWidth="lg" className={classes.container}>
+      <BookingList />
+    </Container>
+  );
 }
 
 export default BookingManagement;

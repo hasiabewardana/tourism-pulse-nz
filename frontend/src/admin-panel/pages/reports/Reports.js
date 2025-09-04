@@ -1,6 +1,6 @@
-// content/admin-panel/src/admin-panel/pages/reports/Reports.js
 import { useState, useEffect } from "react";
-import classes from "./Reports.module.css"; // Import CSS module for reports styles
+import { Container } from "@mui/material";
+import classes from "./Reports.module.css"; // Import updated CSS module
 
 // Reports page component to display summary statistics
 function Reports() {
@@ -55,7 +55,7 @@ function Reports() {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className={classes.reports}>
+    <Container maxWidth="lg" className={classes.container}>
       <h1 className={classes.title}>Admin Reports</h1>
       <div className={classes.statsGrid}>
         <div className={classes.statCard}>
@@ -67,7 +67,7 @@ function Reports() {
           <p>{stats.bookingCount}</p>
         </div>
       </div>
-    </div>
+    </Container>
   );
 }
 
