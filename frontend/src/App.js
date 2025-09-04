@@ -1,13 +1,20 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
-import RootLayout from "./shared/pages/Root"; // Importing the RootLayout component for shared layout structure
-import Home from "./shared/pages/Home"; // Importing the Home component for the main content
-import Authentication from "./shared/pages/Authentication"; // Importing the Authentication page for user login/signup
-import { authAction } from "./shared/components/AuthAction";
+import RootLayout from "./shared/pages/common/Root"; // Importing the RootLayout component for shared layout structure
+import Home from "./shared/pages/common/Home"; // Importing the Home component for the main content
+import Destinations from "./shared/pages/destinations/Destinations";
+import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
+import { authAction } from "./shared/components/authentication/AuthAction";
 import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
-import Admin from "./admin-panel/pages/Admin"; // Importing the Admin page for administrative tasks
 import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
-import { action as logoutAction } from "./shared/pages/Logout";
+import { action as logoutAction } from "./shared/components/authentication/Logout";
 import "./styles.css"; // Importing global styles
+import { checkAuthLoader } from "./util/auth";
+import AdminLayout from "./admin-panel/pages/common/AdminLayout";
+import AdminHome from "./admin-panel/pages/common/AdminHome";
+import UserManagement from "./admin-panel/pages/user-management/UserManagement";
+import DestinationManagement from "./admin-panel/pages/destination-management/DestinationManagement";
+import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
+import Reports from "./admin-panel/pages/reports/Reports"; // Added import for Reports
 
 const router = createBrowserRouter([
   {
@@ -19,6 +26,10 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "destinations",
+        element: <Destinations />,
+      },
+      {
         path: "auth",
         element: <Authentication />, // route for authentication page
         action: authAction,
@@ -26,16 +37,46 @@ const router = createBrowserRouter([
       {
         path: "tourist",
         element: <Tourist />, // route for tourist page
+        loader: checkAuthLoader, // Protect the route
       },
       {
         path: "manager",
         element: <Manager />, // route for manager page
+        loader: checkAuthLoader, // Protect the route
       },
       {
         path: "admin",
-        element: <Admin />, // route for admin page
+        element: <AdminLayout />, // route for admin page
+        loader: checkAuthLoader, // Protect the route
+        children: [
+          {
+            index: true,
+            element: <AdminHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "user-management",
+            element: <UserManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "destination-management",
+            element: <DestinationManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "booking-management",
+            element: <BookingManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "reports",
+            element: <Reports />,
+            loader: checkAuthLoader, // Protect the route
+          },
+        ],
       },
-      { path: "logout", action: logoutAction },
+      { path: "logout", element: <Home />, action: logoutAction },
     ],
   },
 ]);

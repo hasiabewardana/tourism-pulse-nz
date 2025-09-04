@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 // Define an array of user objects containing email and plain text passwords to be hashed
 const passwords = [
-  { email: "admin1@tourismpulsenz.nz", password: "admin1" }, // Admin user credentials
+  { email: "admin1@tourismpulsenz.nz", password: "admin1##" }, // Admin user credentials
   { email: "operator1@tourismpulsenz.nz", password: "operator1" }, // Operator user credentials
   { email: "user1@gmail.com", password: "user1" }, // Public user credentials
 ];
