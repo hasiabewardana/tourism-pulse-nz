@@ -1,4 +1,3 @@
-/* src/shared/components/navigation/Navigation.module.css */
 .header {
   margin: 2rem 0;
   background-color: #2d3942;
@@ -11,6 +10,7 @@
   display: flex;
   gap: 1.5rem;
   padding: 0;
+  align-items: center; /* Ensure all items align vertically to the center */
 }
 
 .link {
@@ -19,11 +19,27 @@
   padding: 0.75rem 1rem;
   border-radius: 4px;
   transition: all 0.2s ease-out;
+  display: inline-flex; /* Ensure consistent inline behavior */
+  align-items: center; /* Vertically center text within the link/button */
+  line-height: 1; /* Normalize line height to avoid extra spacing */
 }
 
 .link:hover {
   background-color: #48d9f3;
   color: #273133;
+}
+
+/* Ensure buttons inside forms match link alignment */
+button.link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  line-height: 1; /* Match line height with links */
+  height: 100%; /* Ensure button height matches surrounding context */
 }
 
 @media (max-width: 768px) {
