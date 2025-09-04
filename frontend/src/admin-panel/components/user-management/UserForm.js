@@ -64,7 +64,7 @@ function UserForm({ user, onSubmit, onCancel }) {
         <select name="role" value={formData.role} onChange={handleChange}>
           <option value="user">User</option>
           <option value="admin">Admin</option>
-          <option value="manager">Manager</option>
+          <option value="operator">Manager</option>
         </select>
       </label>
       {!user && (
