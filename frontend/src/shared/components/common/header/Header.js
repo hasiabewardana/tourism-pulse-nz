@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import classes from "./Header.module.css";
 
 // Header component for shared navigation
 function Header() {
@@ -13,7 +14,11 @@ function Header() {
           color: "inherit",
         }}
       >
-        <img src="tourism-pulse-nz-logo.png" alt="TourismPulseNZ Logo" />
+        <img
+          className={classes.logo}
+          src="tourism-pulse-nz-logo.png"
+          alt="TourismPulseNZ Logo"
+        />
         <div>
           <h1>TourismPulseNZ</h1>
           <p>A Smart Web-Based Tourism Management Platform</p>
