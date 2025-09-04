@@ -8,12 +8,19 @@ function Navigation() {
 
   // Define role-based link sets
   const roleBasedLinks = {
-    public: [
+    user: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
       { to: "/about", label: "About" },
       { to: "/contact", label: "Contact" },
       { to: "/auth", label: "Login / Sign Up" },
+    ],
+    public: [
+      { to: "/", label: "Home" },
+      { to: "/destinations", label: "Destinations" },
+      { to: "/about", label: "About" },
+      { to: "/contact", label: "Contact" },
+      { to: "/logout", label: "Logout" },
     ],
     operator: [
       { to: "/", label: "Home" },
@@ -34,11 +41,11 @@ function Navigation() {
   };
 
   // Determine the relevant links based on authentication status and role
-  let links = roleBasedLinks.public; // Default to public links for all users
+  let links = roleBasedLinks.user; // Default to public links for all users
 
   if (isAuthenticated) {
     // For authenticated users, use role-specific links
-    links = roleBasedLinks[role] || roleBasedLinks.public; // Fallback to operator if role is invalid
+    links = roleBasedLinks[role] || roleBasedLinks.user; // Fallback to operator if role is invalid
   }
 
   return (
