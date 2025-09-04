@@ -42,12 +42,6 @@ function About() {
           technologies to support New Zealand's tourism goals.
         </Typography>
       </Box>
-      <Box className={classes.footer}>
-        <Typography className={classes.footerText}>
-          © 2025 TourismPulseNZ. All rights reserved. Contact us at
-          support@tourismpulsenz.com.
-        </Typography>
-      </Box>
       {/* Future: Add testimonials, team photos, or a contact form */}
     </Container>
   );

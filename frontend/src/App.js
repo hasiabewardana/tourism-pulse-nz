@@ -1,5 +1,5 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
-import RootLayout from "./shared/pages/common/Root"; // Importing the RootLayout component for shared layout structure
+import RootLayout from "./shared/pages/common/root/Root"; // Importing the RootLayout component for shared layout structure
 import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
 import Destinations from "./shared/pages/destinations/Destinations";
 import About from "./shared/pages/common/about/About";

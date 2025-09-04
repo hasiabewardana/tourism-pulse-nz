@@ -1,0 +1,19 @@
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+  background-color: #2d3942; /* Dark background consistent with theme */
+  color: #bdd1d4; /* Light text */
+}
+
+.main {
+  flex: 1 0 auto; /* Allow main to grow but not shrink below content */
+  padding: 0 0 2rem; /* Added 4rem padding-bottom for space above footer */
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .main {
+    padding: 1rem 0 2rem; /* Reduced padding-bottom on mobile */
+  }
+}

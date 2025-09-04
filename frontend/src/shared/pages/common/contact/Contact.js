@@ -91,11 +91,6 @@ function Contact() {
           </Button>
         </form>
       </Box>
-      <Box className={classes.footer}>
-        <Typography className={classes.footerText}>
-          © 2025 TourismPulseNZ. All rights reserved.
-        </Typography>
-      </Box>
       {/* Future: Add a map, FAQ section, or live chat integration */}
     </Container>
   );
