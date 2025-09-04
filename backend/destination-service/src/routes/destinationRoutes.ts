@@ -14,7 +14,12 @@ const router = Router();
 router.use(authenticate);
 
 // Admin-only
-router.get("/v1/destinations", authorize(["admin"]), getDestinations);
+router.get("/v1/destinations/public", getDestinations);
+router.get(
+  "/v1/destinations",
+  authorize(["public", "operator", "admin"]),
+  getDestinations
+);
 router.get("/v1/destinations/:id", authorize(["admin"]), getDestinationById);
 router.post("/v1/destinations", authorize(["admin"]), addDestination);
 router.put("/v1/destinations/:id", authorize(["admin"]), modifyDestination);

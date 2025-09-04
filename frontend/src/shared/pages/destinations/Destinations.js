@@ -1,4 +1,4 @@
-// src/tourist-interface/pages/Destinations.js
+// src/shared/pages/common/Destinations.js
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext"; // For auth check
 import { useNavigate } from "react-router-dom";
@@ -26,18 +26,19 @@ function Destinations() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch destinations on mount
+  // Fetch destinations based on authentication status
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = isAuthenticated ? localStorage.getItem("token") : null;
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await fetch(
-          "http://localhost:3000/dest/api/v1/destinations",
-          {
-            headers,
-          }
-        );
+        const apiUrl = isAuthenticated
+          ? "http://localhost:3000/dest/api/v1/destinations"
+          : "http://localhost:3000/dest/api/v1/destinations/public";
+
+        const response = await fetch(apiUrl, {
+          headers,
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch destinations");
         }
@@ -52,7 +53,7 @@ function Destinations() {
     };
 
     fetchDestinations();
-  }, []);
+  }, [isAuthenticated]);
 
   // Handle search filtering
   useEffect(() => {
