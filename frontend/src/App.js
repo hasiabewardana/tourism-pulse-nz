@@ -3,6 +3,7 @@ import RootLayout from "./shared/pages/common/Root"; // Importing the RootLayout
 import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
 import Destinations from "./shared/pages/destinations/Destinations";
 import About from "./shared/pages/common/about/About";
+import Contact from "./shared/pages/common/contact/Contact";
 import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/authentication/AuthAction";
 import { action as logoutAction } from "./shared/components/authentication/Logout";
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
       },
       {
         path: "auth",
