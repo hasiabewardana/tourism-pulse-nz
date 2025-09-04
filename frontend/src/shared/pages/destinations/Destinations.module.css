@@ -37,6 +37,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease-out;
   height: 100%;
+  margin-top: 1rem; /* Add space from the top */
 }
 
 .card:hover {
