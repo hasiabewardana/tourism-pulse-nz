@@ -24,15 +24,6 @@ const content = {
       "Coordinate across multiple destinations",
     ],
   },
-  admin: {
-    title: "Administer with Confidence",
-    items: [
-      "Oversee visitor capacity across all sites",
-      "Make data-driven decisions with real-time insights",
-      "Plan future strategies with predictive analytics",
-      "Collaborate with operators for sustainability",
-    ],
-  },
 };
 
 function Home() {
@@ -67,15 +58,6 @@ function Home() {
             aria-label="Switch to Manager Dashboard"
           >
             Operator
-          </button>
-          <button
-            className={`${classes.tabButton} ${
-              activeRole === "admin" ? classes.active : ""
-            }`}
-            onClick={() => setActiveRole("admin")}
-            aria-label="Switch to Admin Panel"
-          >
-            Admin
           </button>
         </menu>
         <div id="tab-content" className={classes.tabContent}>

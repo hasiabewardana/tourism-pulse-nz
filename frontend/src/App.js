@@ -10,6 +10,7 @@ import { action as logoutAction } from "./shared/components/authentication/Logou
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";
+import AdminHome from "./admin-panel/pages/common/AdminHome";
 import UserManagement from "./admin-panel/pages/user-management/UserManagement";
 import DestinationManagement from "./admin-panel/pages/destination-management/DestinationManagement";
 import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
@@ -50,7 +51,8 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <p>Welcome to the Admin Panel Overview</p>, // or another component
+            element: <AdminHome />,
+            loader: checkAuthLoader, // Protect the route
           },
           {
             path: "user-management",
