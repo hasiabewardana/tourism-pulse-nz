@@ -110,7 +110,10 @@ function Destinations() {
                 <CardMedia
                   component="img"
                   height="200"
-                  image={dest.imageUrl || "https://via.placeholder.com/400x200"} // Fallback image
+                  image={
+                    "/images/destinations/" + dest.photos[0] ||
+                    "/images/destinations/default-thumbnail.jpg"
+                  } // Fallback image
                   alt={dest.name}
                 />
                 <CardContent className={classes.cardContent}>
