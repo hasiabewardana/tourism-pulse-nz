@@ -1,6 +1,6 @@
 .authContainer {
   padding: 2rem;
-  background-color: #2d3942; /* Consistent dark background */
+  background-color: #0fa4af; /* Consistent dark background */
   border-radius: 4px;
   color: #bdd1d4; /* Light text for readability */
   min-height: calc(100vh - 4rem); /* Adjust for header margin */

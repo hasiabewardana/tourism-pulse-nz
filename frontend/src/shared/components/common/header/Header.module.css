@@ -1,13 +1,33 @@
+/* Header Styles */
 .header {
-  background-color: #2d3942; /* Dark background */
+  background-color: #003135;
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
+  gap: 1.5rem;
   align-items: center;
   border-bottom: 1px solid #4a5b66; /* Subtle divider */
   position: sticky;
   top: 0;
   z-index: 1000;
+}
+
+/* Header Elements */
+header img {
+  width: 3rem;
+  object-fit: contain;
+}
+
+/* Header Text */
+header h1 {
+  margin: 0;
+  color: #ffffff; /* Primary accent color */
+}
+
+/* Subheader Text */
+header p {
+  margin: 0;
+  color: #ffffff; /* Secondary text color for labels */
 }
 
 .logoLink {

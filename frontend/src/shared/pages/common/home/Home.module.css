@@ -1,7 +1,7 @@
 /* src/shared/pages/common/Home.module.css */
 .homeContainer {
   padding: 2rem;
-  background-color: #2d3942;
+  background-color: #0fa4af;
   border-radius: 4px;
   color: #bdd1d4;
   min-height: calc(100vh - (4rem + 3rem)); /* Subtract header + footer */
@@ -9,7 +9,7 @@
 
 .title {
   text-align: center;
-  color: #48d9f3;
+  color: #ffffff;
   margin-bottom: 2rem;
   font-size: 2.5rem;
 }
@@ -54,7 +54,7 @@
 }
 
 .contentTitle {
-  color: #48d9f3;
+  color: #ffffff;
   margin-bottom: 1rem;
   font-size: 1.5rem;
 }
@@ -72,7 +72,7 @@
 
 .contentItem::before {
   content: "•";
-  color: #48d9f3;
+  color: #ffffffe7;
   position: absolute;
   left: 0;
 }

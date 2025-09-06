@@ -1,7 +1,7 @@
+/* Footer Styles */
 .footer {
-  background-color: #2d3942; /* Dark background */
+  background-color: #003135;
   padding: 1rem 2rem;
-  border-radius: 4px;
   color: #bdd1d4; /* Light text */
   text-align: center;
   margin-top: auto; /* Push to bottom in flex layout */

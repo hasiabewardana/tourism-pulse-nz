@@ -4,7 +4,7 @@ import classes from "./Header.module.css";
 // Header component for shared navigation
 function Header() {
   return (
-    <header>
+    <header className={classes.header}>
       <Link
         to="/"
         style={{
