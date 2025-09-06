@@ -38,10 +38,8 @@ export const getAllDestinations = async (
       throw new Error("Invalid date format. Use YYYY-MM-DD.");
     }
     dateParam = filters.date;
-    params.push(dateParam);
-  } else {
-    params.push(dateParam); // Use CURRENT_DATE with placeholder for consistency
   }
+  params.push(dateParam); // Always push dateParam as $1
 
   const whereConditions: string[] = [];
   const whereParams: any[] = [];
@@ -72,14 +70,21 @@ export const getAllDestinations = async (
 
   sql += " ORDER BY d.name ASC";
 
-  // Adjust params index if status present
-  const finalParams = params.slice(0, 1); // Date always $1
-  if (filters.status) {
-    finalParams.push(filters.status); // $2
-  }
+  // Ensure finalParams is always correctly populated
+  const finalParams = [...params]; // Copy params to avoid mutation issues
 
-  const result = await query(sql, finalParams);
-  return result;
+  console.log("Executing SQL:", sql, "with params:", finalParams); // Log for debugging
+  try {
+    const result = await query(sql, finalParams);
+    return result;
+  } catch (dbError: any) {
+    console.error("Database query failed:", {
+      sql,
+      params: finalParams,
+      error: dbError.message,
+    });
+    throw dbError; // Re-throw to be caught by controller
+  }
 };
 
 // Find destination by ID

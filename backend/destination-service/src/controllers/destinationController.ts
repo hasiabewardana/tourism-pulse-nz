@@ -22,7 +22,11 @@ export const getDestinations = async (req: Request, res: Response) => {
     const { status, availability, date } = req.query;
 
     // Basic validation
-    let validatedFilters: any = {};
+    let validatedFilters: {
+      status?: string;
+      availability?: "Full" | "Available";
+      date?: string;
+    } = {};
     if (status && !["Open", "Closed"].includes(status as string)) {
       return res
         .status(400)
@@ -42,12 +46,11 @@ export const getDestinations = async (req: Request, res: Response) => {
         .json({ error: "Invalid date format. Use YYYY-MM-DD." });
     }
 
-    // Only include validated filters if they exist and are valid
-    validatedFilters = {
-      status: (status as string) || undefined,
-      availability: availability as "Full" | "Available" | undefined,
-      date: (date as string) || undefined,
-    };
+    // Populate only if valid
+    if (status) validatedFilters.status = status as string;
+    if (availability)
+      validatedFilters.availability = availability as "Full" | "Available";
+    if (date) validatedFilters.date = date as string;
 
     const destinations = await getAllDestinations(validatedFilters);
 
@@ -64,7 +67,10 @@ export const getDestinations = async (req: Request, res: Response) => {
     if (error.message.includes("Invalid date")) {
       return res.status(400).json({ error: error.message });
     }
-    console.error("Destinations fetch error:", error); // Log for debugging
+    console.error("Destinations fetch error:", {
+      message: error.message,
+      stack: error.stack,
+    }); // Enhanced logging
     res.status(500).json({ error: "Internal server error" });
   }
 };
