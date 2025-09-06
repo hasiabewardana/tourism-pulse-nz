@@ -1,5 +1,6 @@
+/* Navigation header styles */
 .header {
-  margin: 2rem 0;
+  margin: 0 0 2rem 0; /* top right bottom left */
   background-color: #024950;
   padding: 1rem;
 }

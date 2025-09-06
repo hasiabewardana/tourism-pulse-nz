@@ -3,7 +3,7 @@
   padding: 2rem;
   max-width: 1200px;
   margin: 0 auto;
-  background-color: #2d3942;
+  background-color: #afdde5;
   border-radius: 0 4px 4px 4px;
   color: #bdd1d4;
 }
@@ -42,7 +42,7 @@
 }
 
 .destinationCard {
-  background-color: #282f33;
+  background-color: #0fa4af;
   border: 1px solid #282f33;
   border-radius: 4px;
   padding: 1rem;

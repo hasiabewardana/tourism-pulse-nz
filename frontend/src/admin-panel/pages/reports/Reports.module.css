@@ -1,6 +1,6 @@
 .container {
   padding: 2rem;
-  background-color: #2d3942;
+  background-color: #0fa4af;
   border-radius: 4px;
   color: #bdd1d4;
   min-height: calc(100vh - 4rem);
@@ -24,7 +24,7 @@
   border: 1px solid #4a5b66; /* Darker border to match theme */
   border-radius: 8px;
   padding: 1rem;
-  background-color: #282f33; /* Darker card background to match theme */
+  background-color: #afdde5; /* Darker card background to match theme */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
 }
