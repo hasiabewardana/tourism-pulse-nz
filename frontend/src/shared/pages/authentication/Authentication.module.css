@@ -2,7 +2,7 @@
   padding: 2rem;
   background-color: #0fa4af; /* Consistent dark background */
   border-radius: 4px;
-  color: #bdd1d4; /* Light text for readability */
+  color: #ffffff; /* Light text for readability */
   min-height: calc(100vh - 4rem); /* Adjust for header margin */
 }
 
@@ -30,7 +30,7 @@
 }
 
 .input {
-  background-color: #3c4b55; /* Slightly lighter input background */
+  background-color: #afddef; /* Slightly lighter input background */
   border-radius: 4px;
 }
 
