@@ -90,7 +90,7 @@
 }
 
 .modalContent {
-  background-color: #2d3942;
+  background-color: #024950;
   padding: 2rem;
   border-radius: 4px;
   width: 90%;
@@ -108,7 +108,7 @@
 .destinationForm label {
   display: flex;
   flex-direction: column;
-  color: #82c2ce;
+  color: #ffffff;
   font-size: 0.875rem;
 }
 
@@ -118,7 +118,7 @@
   padding: 0.75rem;
   border: 1px solid #282f33;
   border-radius: 4px;
-  background-color: #181c1f;
+  background-color: #003135;
   color: #bdd1d4;
   font-size: 0.875rem;
 }
