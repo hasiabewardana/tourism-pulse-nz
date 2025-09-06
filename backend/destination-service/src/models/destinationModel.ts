@@ -1,8 +1,84 @@
 import { query } from "../services/db";
 
 // Get all destinations
-export const getAllDestinations = async () => {
-  const result = await query("SELECT * FROM dest.destinations");
+export const getAllDestinations = async (
+  filters: {
+    status?: string;
+    availability?: "Full" | "Available";
+    date?: string;
+  } = {}
+) => {
+  let sql = `
+    SELECT 
+      d.destination_id, 
+      d.name, 
+      ST_AsText(d.location) as location,  -- Convert geography to WKT string for JSON response
+      d.capacity, 
+      COALESCE(b.total_visitors, 0) as current_visitors,
+      d.created_at, 
+      d.updated_at, 
+      d.photos, 
+      d.description, 
+      d.status
+    FROM dest.destinations d 
+    LEFT JOIN (
+      SELECT destination_id, SUM(visitor_count) as total_visitors 
+      FROM dest.bookings 
+      WHERE status = 'confirmed' 
+      AND DATE(booking_date) = $1
+      GROUP BY destination_id
+    ) b ON d.destination_id = b.destination_id
+  `;
+
+  const params: any[] = [];
+  let dateParam = "CURRENT_DATE"; // Default to today's date (2025-09-07)
+  if (filters.date) {
+    // Basic validation: YYYY-MM-DD
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
+      throw new Error("Invalid date format. Use YYYY-MM-DD.");
+    }
+    dateParam = filters.date;
+    params.push(dateParam);
+  } else {
+    params.push(dateParam); // Use CURRENT_DATE with placeholder for consistency
+  }
+
+  const whereConditions: string[] = [];
+  const whereParams: any[] = [];
+
+  if (filters.status) {
+    whereConditions.push("d.status = $2");
+    whereParams.push(filters.status);
+    params.push(...whereParams); // Append after date
+  }
+
+  let availabilityCond = "";
+  if (filters.availability) {
+    if (filters.availability === "Full") {
+      availabilityCond = "AND COALESCE(b.total_visitors, 0) >= d.capacity";
+    } else if (filters.availability === "Available") {
+      availabilityCond = "AND COALESCE(b.total_visitors, 0) < d.capacity";
+    }
+  }
+
+  if (whereConditions.length > 0 || availabilityCond) {
+    sql +=
+      " WHERE " +
+      whereConditions.join(" AND ") +
+      (whereConditions.length > 0 && availabilityCond
+        ? " " + availabilityCond
+        : availabilityCond);
+  }
+
+  sql += " ORDER BY d.name ASC";
+
+  // Adjust params index if status present
+  const finalParams = params.slice(0, 1); // Date always $1
+  if (filters.status) {
+    finalParams.push(filters.status); // $2
+  }
+
+  const result = await query(sql, finalParams);
   return result;
 };
 

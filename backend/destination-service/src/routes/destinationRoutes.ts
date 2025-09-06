@@ -14,7 +14,6 @@ const router = Router();
 router.use(authenticate);
 
 // Admin-only
-router.get("/v1/destinations/public", getDestinations);
 router.get(
   "/v1/destinations",
   authorize(["public", "operator", "admin"]),

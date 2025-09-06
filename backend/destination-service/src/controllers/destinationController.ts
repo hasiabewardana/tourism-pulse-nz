@@ -19,14 +19,52 @@ const destinationSchema = z.object({
 // Get all destinations
 export const getDestinations = async (req: Request, res: Response) => {
   try {
-    const destinations = await getAllDestinations();
-    // Return list with thumbnail (first photo)
-    const response = destinations.map((d) => ({
+    const { status, availability, date } = req.query;
+
+    // Basic validation
+    let validatedFilters: any = {};
+    if (status && !["Open", "Closed"].includes(status as string)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid status. Use 'Open' or 'Closed'." });
+    }
+    if (
+      availability &&
+      !["Full", "Available"].includes(availability as string)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid availability. Use 'Full' or 'Available'." });
+    }
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date as string)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid date format. Use YYYY-MM-DD." });
+    }
+
+    // Only include validated filters if they exist and are valid
+    validatedFilters = {
+      status: (status as string) || undefined,
+      availability: availability as "Full" | "Available" | undefined,
+      date: (date as string) || undefined,
+    };
+
+    const destinations = await getAllDestinations(validatedFilters);
+
+    // Map for thumbnail (as before)
+    const response = destinations.map((d: any) => ({
       ...d,
-      thumbnail: d.photos?.[0] || "https://default-destination-thumbnail.jpg",
+      thumbnail:
+        (d.photos as string[])?.[0] ||
+        "https://default-destination-thumbnail.jpg",
     }));
+
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message.includes("Invalid date")) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error("Destinations fetch error:", error); // Log for debugging
     res.status(500).json({ error: "Internal server error" });
   }
 };
