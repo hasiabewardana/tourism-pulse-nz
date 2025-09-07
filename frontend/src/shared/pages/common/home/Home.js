@@ -36,7 +36,7 @@ function Home() {
 
   return (
     <Container maxWidth="lg" className={classes.homeContainer}>
-      <Typography variant="h2" className={classes.title}>
+      <Typography variant="h3" className={classes.title}>
         Welcome to TourismPulseNZ
       </Typography>
       <div id="tabs" className={classes.tabs}>

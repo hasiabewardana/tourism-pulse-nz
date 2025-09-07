@@ -152,7 +152,7 @@ function Destinations() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" className={classes.container}>
-        <Typography variant="h2" className={classes.title}>
+        <Typography variant="h3" className={classes.title}>
           Explore Destinations
         </Typography>
 
