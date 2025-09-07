@@ -131,16 +131,7 @@ function DestinationList() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: destData.name,
-          description: destData.description,
-          capacity: parseInt(destData.capacity),
-          photos: destData.photos
-            ? [destData.photos]
-            : ["https://default-destination-thumbnail.jpg"],
-          status:
-            destData.status.charAt(0).toUpperCase() + destData.status.slice(1),
-        }),
+        body: JSON.stringify(destData),
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);

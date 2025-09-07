@@ -14,10 +14,10 @@ function Destination({ destination, onEdit, onDelete, selectedDate }) {
       <CardMedia
         component="img"
         height="200"
-        image={
-          "/images/destinations/" +
-          (destination.photos?.[0] || "default-thumbnail.jpg")
-        }
+        image={`/images/destinations/${
+          destination.photos?.[0] ||
+          "/images/destinations/default-thumbnail.jpg"
+        }`}
         alt={destination.name}
       />
       <CardContent className={classes.cardContent}>
@@ -38,6 +38,9 @@ function Destination({ destination, onEdit, onDelete, selectedDate }) {
               })
             : "Today"}
           ): {destination.current_visitors || 0}
+        </Typography>
+        <Typography variant="body1" className={classes.cardInfo}>
+          Location: {destination.location || "N/A"}
         </Typography>
         <Typography variant="body1" className={classes.cardStatus}>
           Status: {destination.status}

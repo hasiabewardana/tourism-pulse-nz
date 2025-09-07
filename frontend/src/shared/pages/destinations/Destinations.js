@@ -259,7 +259,8 @@ function Destinations() {
                     height="200"
                     image={
                       "/images/destinations/" +
-                      (dest.thumbnail || "default-thumbnail.jpg")
+                      (dest.thumbnail ||
+                        "/images/destinations/default-thumbnail.jpg")
                     }
                     alt={dest.name}
                   />
