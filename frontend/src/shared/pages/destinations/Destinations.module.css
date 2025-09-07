@@ -88,6 +88,41 @@
   margin: 2rem;
 }
 
+/* Filters Container */
+.filtersContainer {
+  margin-bottom: 1rem;
+}
+
+.filtersContainer .MuiFormControl-root {
+  background-color: #afddef;
+  border: 1px solid #282f33;
+}
+
+.filtersContainer .MuiInputLabel-root {
+  color: #bdd1d4;
+}
+
+.filtersContainer .MuiSelect-select {
+  color: #bdd1d4;
+}
+
+/* Search and Reset Container */
+.searchResetContainer {
+  margin-bottom: 2rem;
+}
+
+.resetButton {
+  height: 56px; /* Match TextField height */
+  border-color: #48d9f3;
+  color: #48d9f3;
+}
+
+.resetButton:hover {
+  border-color: #e0eff1;
+  background-color: #e0eff1;
+  color: #273133;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .container {
@@ -96,5 +131,17 @@
 
   .title {
     font-size: 2rem;
+  }
+
+  .filtersContainer {
+    flex-direction: column;
+  }
+
+  .searchResetContainer {
+    flex-direction: column;
+  }
+
+  .resetButton {
+    margin-top: 0.5rem;
   }
 }
