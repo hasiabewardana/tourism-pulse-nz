@@ -99,13 +99,20 @@ export const findDestinationById = async (destinationId: number) => {
 // Create a new destination
 export const createDestination = async (
   name: string,
+  description: string,
   location: string | null,
   capacity: number,
   photos: string[]
 ) => {
   const result = await query(
-    "INSERT INTO dest.destinations (name, location, capacity, photos) VALUES ($1, ST_GeomFromText($2), $3, $4) RETURNING destination_id",
-    [name, location || "POINT(0 0)", capacity, JSON.stringify(photos)]
+    "INSERT INTO dest.destinations (name, description, location, capacity, photos) VALUES ($1, $2, ST_GeomFromText($3), $4, $5) RETURNING destination_id",
+    [
+      name,
+      description,
+      location || "POINT(0 0)",
+      capacity,
+      JSON.stringify(photos),
+    ]
   );
   return result[0].destination_id;
 };

@@ -11,9 +11,10 @@ import {
 // Zod schema for destination validation
 const destinationSchema = z.object({
   name: z.string().min(1),
+  description: z.string().min(1),
   location: z.string().optional(), // GeoJSON or WKT string
   capacity: z.number().min(0),
-  photos: z.array(z.string().url()).min(1).optional(),
+  photos: z.array(z.string()).min(1).optional(),
 });
 
 // Get all destinations
@@ -94,6 +95,7 @@ export const addDestination = async (req: Request, res: Response) => {
     const data = destinationSchema.parse(req.body);
     const destinationId = await createDestination(
       data.name,
+      data.description,
       data.location ?? null,
       data.capacity,
       data.photos || ["https://default-destination-thumbnail.jpg"]
