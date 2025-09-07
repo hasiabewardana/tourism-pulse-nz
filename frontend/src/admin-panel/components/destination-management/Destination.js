@@ -15,8 +15,7 @@ function Destination({ destination, onEdit, onDelete, selectedDate }) {
         component="img"
         height="200"
         image={`/images/destinations/${
-          destination.photos?.[0] ||
-          "/images/destinations/default-thumbnail.jpg"
+          destination.thumbnail || "/images/destinations/default-thumbnail.jpg"
         }`}
         alt={destination.name}
       />

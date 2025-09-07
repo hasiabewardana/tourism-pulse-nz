@@ -10,7 +10,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import { readAndCompressImage } from "browser-image-resizer"; // Corrected import to default export
+import { readAndCompressImage } from "browser-image-resizer";
 import classes from "./Destination.module.css";
 import slugify from "slugify";
 
@@ -20,7 +20,7 @@ const config = {
   maxHeight: 200,
   autoRotate: true,
   compressFormat: "JPG",
-  outputType: "base64",
+  // Removed outputType: "base64" - returns Blob by default
 };
 
 function DestinationForm({ destination, onSubmit, onCancel }) {
@@ -56,12 +56,40 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  const saveFile = async (blob, filename, slug) => {
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", blob, filename);
+      formDataToSend.append("slug", slug);
+
+      const saveUrl = `/save-image`; // Relative URL to same-origin server (port 3005)
+      const response = await fetch(saveUrl, {
+        method: "POST",
+        body: formDataToSend,
+      });
+      if (!response.ok) {
+        throw new Error(`Save failed: ${response.statusText}`);
+      }
+      console.log("File saved:", filename);
+    } catch (error) {
+      console.error("Failed to save file:", error);
+      // Fallback: Still generate path, but log warning
+    }
+  };
+
   const handleThumbnailChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const resized = await readAndCompressImage(file, config);
-      const blob = await fetch(resized).then((r) => r.blob());
-      setThumbnail(new File([blob], file.name, { type: "image/jpeg" }));
+      try {
+        const resizedBlob = await readAndCompressImage(file, config); // Returns Blob
+        setThumbnail(resizedBlob);
+
+        const slug = slugify(formData.name, { lower: true, strict: true });
+        const filename = `${slug}-thumbnail.jpg`;
+        await saveFile(resizedBlob, filename, slug);
+      } catch (error) {
+        console.error("Thumbnail resize failed:", error);
+      }
     }
   };
 
@@ -71,16 +99,22 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       alert("Max 5 additional photos allowed");
       return;
     }
-    const resizedFiles = await Promise.all(
-      files.map((file) =>
-        readAndCompressImage(file, config).then((resized) =>
-          fetch(resized)
-            .then((r) => r.blob())
-            .then((blob) => new File([blob], file.name, { type: "image/jpeg" }))
-        )
-      )
-    );
-    setPhotos(resizedFiles);
+    try {
+      const resizedFiles = await Promise.all(
+        files.map((file) => readAndCompressImage(file, config)) // Returns array of Blobs
+      );
+      setPhotos(resizedFiles);
+
+      const slug = slugify(formData.name, { lower: true, strict: true });
+      await Promise.all(
+        resizedFiles.map(async (blob, i) => {
+          const filename = `${slug}-${i + 1}.jpg`;
+          await saveFile(blob, filename, slug);
+        })
+      );
+    } catch (error) {
+      console.error("Photos resize failed:", error);
+    }
   };
 
   const validate = () => {
