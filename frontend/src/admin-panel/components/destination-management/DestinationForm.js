@@ -6,10 +6,9 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
     name: destination?.name || "",
     description: destination?.description || "",
-    maxCapacity: destination?.maxCapacity || 0,
-    currentVisitors: destination?.currentVisitors || 0,
-    status: destination?.status || "open",
-    imageUrl: destination?.imageUrl || "",
+    capacity: destination?.capacity || 0,
+    photos: destination?.photos?.[0] || "", // Use first photo as input
+    status: destination?.status?.toLowerCase() || "open",
   });
 
   const handleChange = (e) => {
@@ -43,25 +42,24 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         />
       </label>
       <label>
-        Max Capacity:
+        Capacity:
         <input
           type="number"
-          name="maxCapacity"
-          value={formData.maxCapacity}
+          name="capacity"
+          value={formData.capacity}
           onChange={handleChange}
           min="0"
           required
         />
       </label>
       <label>
-        Current Visitors:
+        Photo URL (Thumbnail):
         <input
-          type="number"
-          name="currentVisitors"
-          value={formData.currentVisitors}
+          type="url"
+          name="photos"
+          value={formData.photos}
           onChange={handleChange}
-          min="0"
-          required
+          placeholder="https://example.com/image.jpg"
         />
       </label>
       <label>
@@ -71,15 +69,6 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           <option value="closed">Closed</option>
           <option value="maintenance">Maintenance</option>
         </select>
-      </label>
-      <label>
-        Image URL:
-        <input
-          type="url"
-          name="imageUrl"
-          value={formData.imageUrl}
-          onChange={handleChange}
-        />
       </label>
       <div className={classes.formActions}>
         <button type="submit">Save</button>
