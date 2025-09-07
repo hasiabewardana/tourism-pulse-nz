@@ -1,5 +1,13 @@
 // src/admin-panel/components/destination-management/DestinationForm.js
 import { useState } from "react";
+import {
+  TextField,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
 import classes from "./Destination.module.css";
 
 function DestinationForm({ destination, onSubmit, onCancel }) {
@@ -7,74 +15,101 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     name: destination?.name || "",
     description: destination?.description || "",
     capacity: destination?.capacity || 0,
-    photos: destination?.photos?.[0] || "", // Use first photo as input
+    photos: destination?.photos?.[0] || "",
     status: destination?.status?.toLowerCase() || "open",
   });
 
+  const [errors, setErrors] = useState({});
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
+    if (formData.capacity <= 0)
+      newErrors.capacity = "Capacity must be greater than 0";
+    return newErrors;
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     onSubmit(formData);
   };
 
   return (
     <form className={classes.destinationForm} onSubmit={handleFormSubmit}>
-      <label>
-        Name:
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Description:
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Capacity:
-        <input
-          type="number"
-          name="capacity"
-          value={formData.capacity}
-          onChange={handleChange}
-          min="0"
-          required
-        />
-      </label>
-      <label>
-        Photo URL (Thumbnail):
-        <input
-          type="url"
-          name="photos"
-          value={formData.photos}
-          onChange={handleChange}
-          placeholder="https://example.com/image.jpg"
-        />
-      </label>
-      <label>
-        Status:
-        <select name="status" value={formData.status} onChange={handleChange}>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-          <option value="maintenance">Maintenance</option>
-        </select>
-      </label>
+      <TextField
+        label="Name"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        error={!!errors.name}
+        helperText={errors.name}
+        fullWidth
+        margin="normal"
+      />
+      <TextField
+        label="Description"
+        name="description"
+        value={formData.description}
+        onChange={handleChange}
+        required
+        error={!!errors.description}
+        helperText={errors.description}
+        fullWidth
+        margin="normal"
+        multiline
+        rows={4}
+      />
+      <TextField
+        label="Capacity"
+        name="capacity"
+        type="number"
+        value={formData.capacity}
+        onChange={handleChange}
+        required
+        error={!!errors.capacity}
+        helperText={errors.capacity}
+        fullWidth
+        margin="normal"
+        inputProps={{ min: 0 }}
+      />
+      <TextField
+        label="Photo URL (Thumbnail)"
+        name="photos"
+        value={formData.photos}
+        onChange={handleChange}
+        fullWidth
+        margin="normal"
+        placeholder="https://example.com/image.jpg"
+      />
+      <FormControl fullWidth margin="normal" error={!!errors.status}>
+        <InputLabel>Status</InputLabel>
+        <Select name="status" value={formData.status} onChange={handleChange}>
+          <MenuItem value="open">Open</MenuItem>
+          <MenuItem value="closed">Closed</MenuItem>
+          <MenuItem value="maintenance">Maintenance</MenuItem>
+        </Select>
+      </FormControl>
       <div className={classes.formActions}>
-        <button type="submit">Save</button>
-        <button type="button" onClick={onCancel}>
+        <Button type="submit" variant="contained" color="primary">
+          Save
+        </Button>
+        <Button variant="outlined" onClick={onCancel}>
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

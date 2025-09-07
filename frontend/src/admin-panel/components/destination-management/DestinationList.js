@@ -1,5 +1,21 @@
 // src/admin-panel/components/destination-management/DestinationList.js
 import { useState, useEffect } from "react";
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import Destination from "./Destination";
 import DestinationForm from "./DestinationForm";
 import classes from "./Destination.module.css";
@@ -17,7 +33,7 @@ function DestinationList() {
   const [selectedAvailability, setSelectedAvailability] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
-  ); // Dynamic default (e.g., "2025-09-07")
+  );
 
   // Sort and search states
   const [sortBy, setSortBy] = useState("Name (A-Z)");
@@ -36,7 +52,6 @@ function DestinationList() {
       setLoading(true);
       setError(null);
 
-      // Build query params
       const params = new URLSearchParams();
       if (selectedStatus !== "All") params.append("status", selectedStatus);
       if (selectedAvailability !== "All")
@@ -58,7 +73,7 @@ function DestinationList() {
       }
       const data = await res.json();
       setDestinations(data);
-      applySearchAndSort(data); // Apply initial client-side search/sort
+      applySearchAndSort(data);
     } catch (err) {
       console.error("Error fetching destinations:", err);
       setError("Failed to fetch destinations.");
@@ -67,18 +82,15 @@ function DestinationList() {
     }
   };
 
-  // Initial fetch and refetch on filter changes
   useEffect(() => {
     fetchDestinations();
   }, [selectedStatus, selectedAvailability, selectedDate]);
 
-  // Apply client-side search and sort
   const applySearchAndSort = (data) => {
     let filtered = data.filter((dest) =>
       dest.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort logic
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "Name (A-Z)":
@@ -101,12 +113,10 @@ function DestinationList() {
     setFilteredDestinations(filtered);
   };
 
-  // Handle search/sort changes
   useEffect(() => {
     applySearchAndSort(destinations);
   }, [searchTerm, sortBy, destinations]);
 
-  // Handle create or update
   const handleSubmit = async (destData) => {
     const token = localStorage.getItem("token");
     const method = selectedDestination ? "PUT" : "POST";
@@ -129,17 +139,14 @@ function DestinationList() {
             ? [destData.photos]
             : ["https://default-destination-thumbnail.jpg"],
           status:
-            destData.status.charAt(0).toUpperCase() + destData.status.slice(1), // Capitalize
+            destData.status.charAt(0).toUpperCase() + destData.status.slice(1),
         }),
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const updatedDest = await res.json();
-
-      // Refetch to get updated list with current_visitors
       fetchDestinations();
-
       setShowModal(false);
       setSelectedDestination(null);
     } catch (err) {
@@ -148,26 +155,18 @@ function DestinationList() {
     }
   };
 
-  // Handle delete
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this destination?"))
       return;
-
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(
         `http://localhost:3000/dest/api/v1/destinations/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      // Refetch after delete
       fetchDestinations();
     } catch (err) {
       console.error("Error deleting destination:", err);
@@ -175,13 +174,11 @@ function DestinationList() {
     }
   };
 
-  // Open modal for edit
   const handleEdit = (destination) => {
     setSelectedDestination(destination);
     setShowModal(true);
   };
 
-  // Open modal for create
   const handleCreate = () => {
     setSelectedDestination(null);
     setShowModal(true);
@@ -198,107 +195,155 @@ function DestinationList() {
   };
 
   if (loading)
-    return <p className={classes.loading}>Loading destinations...</p>;
-  if (error) return <p className={classes.error}>Error: {error}</p>;
+    return (
+      <div className={classes.loadingContainer}>
+        <CircularProgress color="primary" />
+      </div>
+    );
+  if (error)
+    return (
+      <Alert severity="error" className={classes.errorAlert}>
+        {error}
+      </Alert>
+    );
 
   return (
-    <div className={classes.destinationList}>
-      <h1 className={classes.title}>Destination Management</h1>
-      <button className={classes.createButton} onClick={handleCreate}>
-        Create New Destination
-      </button>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Container maxWidth="lg" className={classes.container}>
+        <Typography variant="h3" className={classes.title}>
+          Destination Management
+        </Typography>
 
-      {/* Filters Section */}
-      <div className={classes.filtersSection}>
-        <label className={classes.filterLabel}>
-          Status:
-          <select
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            <option value="All">All</option>
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-          </select>
-        </label>
-        <label className={classes.filterLabel}>
-          Availability:
-          <select
-            value={selectedAvailability}
-            onChange={(e) => setSelectedAvailability(e.target.value)}
-          >
-            <option value="All">All</option>
-            <option value="Available">Available</option>
-            <option value="Full">Full</option>
-          </select>
-        </label>
-        <label className={classes.filterLabel}>
-          Date:
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
-        </label>
-        <label className={classes.filterLabel}>
-          Sort By:
-          <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="Name (A-Z)">Name (A-Z)</option>
-            <option value="Name (Z-A)">Name (Z-A)</option>
-            <option value="Visitors (Low to High)">
-              Visitors (Low to High)
-            </option>
-            <option value="Visitors (High to Low)">
-              Visitors (High to Low)
-            </option>
-            <option value="Capacity (Low to High)">
-              Capacity (Low to High)
-            </option>
-            <option value="Capacity (High to Low)">
-              Capacity (High to Low)
-            </option>
-          </select>
-        </label>
-        <label className={classes.filterLabel}>
-          Search Name:
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search destinations..."
-          />
-        </label>
-        <button className={classes.resetButton} onClick={handleResetFilters}>
-          Reset
-        </button>
-      </div>
+        <Grid container spacing={2} className={classes.filtersContainer}>
+          <Grid item xs={12} sm={3}>
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={selectedStatus}
+                label="Status"
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Open">Open</MenuItem>
+                <MenuItem value="Closed">Closed</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl fullWidth>
+              <InputLabel>Availability</InputLabel>
+              <Select
+                value={selectedAvailability}
+                label="Availability"
+                onChange={(e) => setSelectedAvailability(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Available">Available</MenuItem>
+                <MenuItem value="Full">Full</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl fullWidth>
+              <InputLabel>Date</InputLabel>
+              <DatePicker
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                label="Sort By"
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                <MenuItem value="Visitors (Low to High)">
+                  Visitors (Low to High)
+                </MenuItem>
+                <MenuItem value="Visitors (High to Low)">
+                  Visitors (High to Low)
+                </MenuItem>
+                <MenuItem value="Capacity (Low to High)">
+                  Capacity (Low to High)
+                </MenuItem>
+                <MenuItem value="Capacity (High to Low)">
+                  Capacity (High to Low)
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
 
-      {filteredDestinations.length === 0 ? (
-        <p className={classes.noResults}>No destinations found.</p>
-      ) : (
-        <div className={classes.grid}>
-          {filteredDestinations.map((destination) => (
-            <Destination
-              key={destination.destination_id}
-              destination={destination}
-              selectedDate={selectedDate} // Pass selectedDate as prop
+        <Grid container spacing={2} className={classes.searchResetContainer}>
+          <Grid item xs={12} md={8}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Search by Destination Name"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={classes.searchInput}
+              aria-label="Search destinations"
             />
-          ))}
-        </div>
-      )}
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilters}
+              className={classes.resetButton}
+            >
+              Reset Filters
+            </Button>
+          </Grid>
+        </Grid>
 
-      {showModal && (
-        <div className={classes.modal}>
-          <div className={classes.modalContent}>
-            <DestinationForm
-              destination={selectedDestination}
-              onSubmit={handleSubmit}
-              onCancel={() => setShowModal(false)}
-            />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleCreate}
+          className={classes.createButton}
+        >
+          Create New Destination
+        </Button>
+
+        {filteredDestinations.length === 0 ? (
+          <Typography className={classes.noResults}>
+            No destinations found.
+          </Typography>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredDestinations.map((destination) => (
+              <Grid item xs={12} sm={6} md={4} key={destination.destination_id}>
+                <Destination
+                  destination={destination}
+                  selectedDate={selectedDate}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        {showModal && (
+          <div className={classes.modal}>
+            <div className={classes.modalContent}>
+              <DestinationForm
+                destination={selectedDestination}
+                onSubmit={handleSubmit}
+                onCancel={() => setShowModal(false)}
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </Container>
+    </LocalizationProvider>
   );
 }
 
