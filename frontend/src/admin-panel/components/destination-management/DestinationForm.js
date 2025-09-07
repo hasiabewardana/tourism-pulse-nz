@@ -14,10 +14,19 @@ import { readAndCompressImage } from "browser-image-resizer";
 import classes from "./Destination.module.css";
 import slugify from "slugify";
 
-const config = {
+const thumbnailConfig = {
   quality: 0.8,
   maxWidth: 400,
   maxHeight: 200,
+  autoRotate: true,
+  compressFormat: "JPG",
+  // Removed outputType: "base64" - returns Blob by default
+};
+
+const photoConfig = {
+  quality: 0.8,
+  maxWidth: 800,
+  maxHeight: 400,
   autoRotate: true,
   compressFormat: "JPG",
   // Removed outputType: "base64" - returns Blob by default
@@ -81,7 +90,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     const file = e.target.files[0];
     if (file) {
       try {
-        const resizedBlob = await readAndCompressImage(file, config); // Returns Blob
+        const resizedBlob = await readAndCompressImage(file, thumbnailConfig); // Returns Blob
         setThumbnail(resizedBlob);
 
         const slug = slugify(formData.name, { lower: true, strict: true });
@@ -101,7 +110,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
     try {
       const resizedFiles = await Promise.all(
-        files.map((file) => readAndCompressImage(file, config)) // Returns array of Blobs
+        files.map((file) => readAndCompressImage(file, photoConfig)) // Returns array of Blobs
       );
       setPhotos(resizedFiles);
 

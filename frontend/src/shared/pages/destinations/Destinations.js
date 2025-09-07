@@ -18,12 +18,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Dialog, // Included for modal (though we'll use custom component)
 } from "@mui/material";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"; // Correct import
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns"; // Correct import
-import { DatePicker } from "@mui/x-date-pickers/DatePicker"; // Correct import
-import { format } from "date-fns"; // Correct import
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { format } from "date-fns";
 import classes from "./Destinations.module.css";
+import DestinationModal from "../../components/destination/DestinationModal"; // New import
 
 function Destinations() {
   const { isAuthenticated } = useAuth();
@@ -37,25 +39,26 @@ function Destinations() {
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Sort state
   const [sortBy, setSortBy] = useState("Name (A-Z)");
 
-  // Fetch destinations with dynamic filters
+  // Modal state
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedDestinationId, setSelectedDestinationId] = useState(null);
+
   const fetchDestinations = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Format selected date to YYYY-MM-DD (NZST)
       const today = format(selectedDate, "yyyy-MM-dd", {
         timeZone: "Pacific/Auckland",
       });
       const token = isAuthenticated ? localStorage.getItem("token") : null;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      // Build query params
       const params = new URLSearchParams();
       if (selectedStatus !== "All") params.append("status", selectedStatus);
       if (selectedAvailability !== "All")
@@ -66,14 +69,14 @@ function Destinations() {
         ? `http://localhost:3000/dest/api/v1/destinations?${params.toString()}`
         : `http://localhost:3000/dest/api/v1/destinations/public?${params.toString()}`;
 
-      console.log("Fetching with params:", params.toString()); // Debug log
+      console.log("Fetching with params:", params.toString());
       const response = await fetch(apiUrl, { headers });
       if (!response.ok) {
         throw new Error(`Failed to fetch destinations: ${response.statusText}`);
       }
       const data = await response.json();
       setDestinations(data);
-      applySearchAndSort(data); // Apply initial search/sort
+      applySearchAndSort(data);
       setLoading(false);
     } catch (err) {
       setError(err.message);
@@ -81,18 +84,15 @@ function Destinations() {
     }
   };
 
-  // Initial fetch and refetch on filter/auth changes
   useEffect(() => {
     fetchDestinations();
   }, [isAuthenticated, selectedStatus, selectedAvailability, selectedDate]);
 
-  // Apply search and sort
   const applySearchAndSort = (data) => {
     let filtered = data.filter((dest) =>
       dest.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort logic
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "Name (A-Z)":
@@ -115,7 +115,6 @@ function Destinations() {
     setFilteredDestinations(filtered);
   };
 
-  // Handle search change
   useEffect(() => {
     applySearchAndSort(destinations);
   }, [searchTerm, sortBy, destinations]);
@@ -124,13 +123,22 @@ function Destinations() {
     navigate(`/book/${destinationId}`);
   };
 
+  const handleViewDetails = (destinationId) => {
+    setSelectedDestinationId(destinationId);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedDestinationId(null);
+  };
+
   const handleResetFilters = () => {
     setSelectedStatus("All");
     setSelectedAvailability("All");
     setSelectedDate(new Date());
     setSearchTerm("");
     setSortBy("Name (A-Z)");
-    // Refetch will happen via useEffect
   };
 
   if (loading) {
@@ -156,7 +164,6 @@ function Destinations() {
           Explore Destinations
         </Typography>
 
-        {/* Filters Row */}
         <Grid container spacing={2} className={classes.filtersContainer}>
           <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
@@ -190,7 +197,7 @@ function Destinations() {
             <DatePicker
               label="Date"
               value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue || new Date())} // Handle null
+              onChange={(newValue) => setSelectedDate(newValue || new Date())}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
@@ -221,7 +228,6 @@ function Destinations() {
           </Grid>
         </Grid>
 
-        {/* Search and Reset */}
         <Grid container spacing={2} className={classes.searchResetContainer}>
           <Grid item xs={12} md={8}>
             <TextField
@@ -263,29 +269,42 @@ function Destinations() {
                         "/images/destinations/default-thumbnail.jpg")
                     }
                     alt={dest.name}
+                    onClick={() => handleViewDetails(dest.destination_id)}
+                    style={{ cursor: "pointer" }}
                   />
                   <CardContent className={classes.cardContent}>
-                    <Typography variant="h5" className={classes.cardTitle}>
-                      {dest.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      className={classes.cardDescription}
+                    <div
+                      onClick={() => handleViewDetails(dest.destination_id)}
+                      style={{ cursor: "pointer" }}
                     >
-                      {dest.description}
-                    </Typography>
-                    <Typography variant="body1" className={classes.cardInfo}>
-                      Current Visitors: {dest.current_visitors} /{" "}
-                      {dest.capacity}
-                    </Typography>
-                    <Typography variant="body1" className={classes.cardStatus}>
-                      Status: {dest.status}
-                    </Typography>
+                      <Typography variant="h5" className={classes.cardTitle}>
+                        {dest.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        className={classes.cardDescription}
+                      >
+                        {dest.description}
+                      </Typography>
+                      <Typography variant="body1" className={classes.cardInfo}>
+                        Current Visitors: {dest.current_visitors} /{" "}
+                        {dest.capacity}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        className={classes.cardStatus}
+                      >
+                        Status: {dest.status}
+                      </Typography>
+                    </div>
                     {isAuthenticated && (
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => handleBookNow(dest.destination_id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleBookNow(dest.destination_id);
+                        }}
                         className={classes.bookButton}
                       >
                         Book Now
@@ -297,6 +316,13 @@ function Destinations() {
             ))}
           </Grid>
         )}
+
+        <DestinationModal
+          open={openModal}
+          onClose={handleCloseModal}
+          destinationId={selectedDestinationId}
+          isAuthenticated={isAuthenticated}
+        />
       </Container>
     </LocalizationProvider>
   );
