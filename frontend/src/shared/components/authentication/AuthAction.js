@@ -45,8 +45,10 @@ export async function authAction({ request }) {
 
       // Extract the auth token from response data and store in a local storage with expiration
       const data = await response.json();
+      const userId = data.userId;
       const token = data.token;
       const role = data.role;
+      localStorage.setItem("userId", userId);
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
       const expiration = new Date();
@@ -62,7 +64,7 @@ export async function authAction({ request }) {
         if (role === "public") {
           return redirect("/tourist");
         } else if (role === "operator") {
-          return redirect("/manager");
+          return redirect("/operator");
         } else {
           return redirect("/admin");
         }

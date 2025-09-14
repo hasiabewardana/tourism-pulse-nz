@@ -4,9 +4,19 @@ import { setupProxies } from "./proxy"; // Importing proxy setup for routing to 
 import { setupRateLimit } from "./ratelimit"; // Importing rate limiting setup for load control
 import { setupCreditCheck } from "./creditcheck"; // Importing credit check setup for premium access
 import { ROUTES } from "./routes/routes"; // Importing route configurations for the API gateway
+import cors from "cors";
 
 const app = express(); // Initializing Express application as the API gateway
 const port = process.env.PORT || 3000; // Setting port from environment variable or default to 3000
+
+// Allow frontend origin
+app.use(
+  cors({
+    origin: "http://localhost:3005", // allow frontend
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 // Applying middleware in sequence for request processing
 setupLogging(app); // Configuring logging to track all incoming requests

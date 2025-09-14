@@ -25,6 +25,7 @@ function Navigation() {
     operator: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
+      { to: "/operator/destinations", label: "Operator Destinations" },
       { to: "/admin/booking-management", label: "Booking Management" },
       { to: "/admin/reports", label: "Reports" },
       { to: "/logout", label: "Logout" },

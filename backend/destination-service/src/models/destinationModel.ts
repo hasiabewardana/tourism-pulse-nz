@@ -1,5 +1,12 @@
 import { query } from "../services/db";
 
+// Format date to YYYY-MM-DD in Pacific/Auckland time zone
+const getCurrentDateNZ = () => {
+  return new Date().toLocaleDateString("en-CA", {
+    timeZone: "Pacific/Auckland",
+  });
+};
+
 // Get all destinations
 export const getAllDestinations = async (
   filters: {
@@ -31,15 +38,12 @@ export const getAllDestinations = async (
   `;
 
   const params: any[] = [];
-  let dateParam = "CURRENT_DATE"; // Default to today's date (2025-09-07)
-  if (filters.date) {
-    // Basic validation: YYYY-MM-DD
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
-      throw new Error("Invalid date format. Use YYYY-MM-DD.");
-    }
-    dateParam = filters.date;
-  }
-  params.push(dateParam); // Always push dateParam as $1
+  // Use current date in NZ time zone if no date is provided
+  const dateParam =
+    filters.date && /^\d{4}-\d{2}-\d{2}$/.test(filters.date)
+      ? filters.date
+      : getCurrentDateNZ();
+  params.push(dateParam);
 
   const whereConditions: string[] = [];
   const whereParams: any[] = [];

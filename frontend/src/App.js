@@ -13,6 +13,7 @@ import TouristLayout from "./tourist-interface/pages/common/TouristLayout";
 import TouristHome from "./tourist-interface/pages/common/TouristHome";
 import ManagerLayout from "./manager-dashboard/pages/common/ManagerLayout";
 import ManagerHome from "./manager-dashboard/pages/common/ManagerHome";
+import OperatorDestinations from "./manager-dashboard/pages/operator-destinations/OperatorDestinations";
 import AdminLayout from "./admin-panel/pages/common/AdminLayout";
 import AdminHome from "./admin-panel/pages/common/AdminHome";
 import UserManagement from "./admin-panel/pages/user-management/UserManagement";
@@ -60,13 +61,18 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "manager",
+        path: "operator",
         element: <ManagerLayout />, // route for manager page
         loader: checkAuthLoader, // Protect the route
         children: [
           {
             index: true,
             element: <ManagerHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "destinations",
+            element: <OperatorDestinations />,
             loader: checkAuthLoader, // Protect the route
           },
         ],
