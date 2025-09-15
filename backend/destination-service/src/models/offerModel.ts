@@ -81,10 +81,11 @@ export const getAllOffersModel = async (
       o.created_at,
       o.updated_at,
       COALESCE(
-        (SELECT ARRAY_AGG(oi.destination_id)
+        (SELECT json_agg(json_build_object('id', oi.destination_id, 'name', d.name))
          FROM dest.offer_items oi
+         JOIN dest.destinations d ON oi.destination_id = d.destination_id
          WHERE oi.offer_id = o.offer_id),
-        '{}'
+        '[]'
       ) as destinations
     FROM dest.offers o
   `;
@@ -142,10 +143,11 @@ export const getOffersByOperatorModel = async (
       o.created_at,
       o.updated_at,
       COALESCE(
-        (SELECT ARRAY_AGG(oi.destination_id)
+        (SELECT json_agg(json_build_object('id', oi.destination_id, 'name', d.name))
          FROM dest.offer_items oi
+         JOIN dest.destinations d ON oi.destination_id = d.destination_id
          WHERE oi.offer_id = o.offer_id),
-        '{}'
+        '[]'
       ) as destinations
     FROM dest.offers o
     WHERE o.operator_id = $1
