@@ -1,4 +1,3 @@
-// src/manager-dashboard/components/offer-management/OfferList.js
 import { useState, useEffect } from "react";
 import {
   Container,
@@ -28,13 +27,11 @@ function OfferList() {
   const [showModal, setShowModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [userName, setUserName] = useState("");
-  const [destinations, setDestinations] = useState([]);
+  const [operatorDestinations, setOperatorDestinations] = useState([]);
 
   // Filter states
   const [selectedViewMode, setSelectedViewMode] = useState("All");
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
-  );
+  const [selectedDate, setSelectedDate] = useState(null); // Initialize to null for no date filter
 
   // Sort and search states
   const [sortBy, setSortBy] = useState("Offer Name (A-Z)");
@@ -61,9 +58,12 @@ function OfferList() {
     }
   };
 
-  const fetchDestinations = async () => {
+  const fetchOperatorDestinations = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token || !userId) {
+      setError("No authentication token or user ID found. Please log in.");
+      return;
+    }
     try {
       const res = await fetch(
         `http://localhost:3000/dest/api/v1/operator-destinations/operator/${userId}`,
@@ -71,11 +71,12 @@ function OfferList() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (!res.ok) throw new Error("Failed to fetch destinations");
+      if (!res.ok) throw new Error("Failed to fetch operator destinations");
       const data = await res.json();
-      setDestinations(data);
+      setOperatorDestinations(data);
     } catch (err) {
-      console.error("Error fetching destinations:", err);
+      console.error("Error fetching operator destinations:", err);
+      setError("Failed to fetch operator destinations.");
     }
   };
 
@@ -92,25 +93,31 @@ function OfferList() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(
-        `http://localhost:3000/dest/api/v1/offers/operator/${userId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      // Build the API URL, omitting date if selectedDate is null
+      const baseUrl = `http://localhost:3000/dest/api/v1/offers/operator/${userId}`;
+      const url = selectedDate ? `${baseUrl}?date=${selectedDate}` : baseUrl;
+
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
       const data = await res.json();
-      // Map the response to include userName and destinationNames for consistency
+      console.log("fetchOffers response:", JSON.stringify(data, null, 2));
+      // Map the response to include userName and extract destinationNames
       const mappedData = data.map((offer) => ({
         ...offer,
+        id: offer.offer_id, // Ensure id is set for Offer component
         operatorName: userName,
-        destinationNames: offer.destinations?.map((d) => d.name) || [],
+        destinationNames:
+          offer.destinations?.map((d) => d.name).filter(Boolean) || [],
+        destination_ids:
+          offer.destinations?.map((d) => d.id).filter(Boolean) || [],
       }));
       setOffers(mappedData);
       applySearchAndSort(mappedData);
@@ -124,23 +131,27 @@ function OfferList() {
 
   useEffect(() => {
     fetchUserName();
-    fetchDestinations();
+    fetchOperatorDestinations();
   }, []);
 
   useEffect(() => {
     if (userName) {
       fetchOffers();
     }
-  }, [selectedDate, userName]); // Removed selectedViewMode since not used in API
+  }, [selectedDate, userName]);
 
   const applySearchAndSort = (data) => {
     let filtered = data.filter(
       (offer) =>
-        offer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.operatorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.destinationNames?.some((name) =>
-          name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        (selectedViewMode === "All" ||
+          offer.status === selectedViewMode.toLowerCase()) &&
+        (offer.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          offer.operatorName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          offer.destinationNames?.some((name) =>
+            name?.toLowerCase().includes(searchTerm.toLowerCase())
+          ))
     );
 
     filtered.sort((a, b) => {
@@ -163,7 +174,7 @@ function OfferList() {
 
   useEffect(() => {
     applySearchAndSort(offers);
-  }, [searchTerm, sortBy, offers]);
+  }, [searchTerm, sortBy, offers, selectedViewMode]);
 
   const handleSubmit = async (formData) => {
     const token = localStorage.getItem("token");
@@ -216,8 +227,8 @@ function OfferList() {
           },
         }
       );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
       }
       fetchOffers();
     } catch (err) {
@@ -238,9 +249,7 @@ function OfferList() {
 
   const handleResetFilters = () => {
     setSelectedViewMode("All");
-    setSelectedDate(
-      new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
-    );
+    setSelectedDate(null); // Clear date filter
     setSearchTerm("");
     setSortBy("Offer Name (A-Z)");
   };
@@ -285,10 +294,11 @@ function OfferList() {
           </Grid>
           <Grid item xs={12} sm={3}>
             <DatePicker
-              label="Date"
+              label="Filter by Date"
               value={selectedDate}
               onChange={(newValue) => setSelectedDate(newValue)}
               slotProps={{ textField: { fullWidth: true } }}
+              clearable
             />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -377,7 +387,7 @@ function OfferList() {
             <div className={classes.modalContent}>
               <OfferForm
                 offer={selectedOffer}
-                destinations={destinations}
+                destinations={operatorDestinations}
                 userId={userId}
                 onSubmit={handleSubmit}
                 onCancel={() => setShowModal(false)}
