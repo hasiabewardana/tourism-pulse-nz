@@ -9,18 +9,18 @@ import { authAction } from "./shared/components/authentication/AuthAction";
 import { action as logoutAction } from "./shared/components/authentication/Logout";
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
-import TouristLayout from "./tourist-interface/pages/common/TouristLayout";
-import TouristHome from "./tourist-interface/pages/common/TouristHome";
-import ManagerLayout from "./manager-dashboard/pages/common/ManagerLayout";
-import ManagerHome from "./manager-dashboard/pages/common/ManagerHome";
-import OperatorDestinations from "./manager-dashboard/pages/operator-destinations/OperatorDestinations";
-import OfferManagement from "./manager-dashboard/pages/offers/OfferManagement";
-import AdminLayout from "./admin-panel/pages/common/AdminLayout";
-import AdminHome from "./admin-panel/pages/common/AdminHome";
-import UserManagement from "./admin-panel/pages/user-management/UserManagement";
-import DestinationManagement from "./admin-panel/pages/destination-management/DestinationManagement";
-import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
-import Reports from "./admin-panel/pages/reports/Reports"; // Added import for Reports
+import TouristLayout from "./tourist/pages/common/TouristLayout";
+import TouristHome from "./tourist/pages/common/TouristHome";
+import ManagerLayout from "./manager/pages/common/ManagerLayout";
+import ManagerHome from "./manager/pages/common/ManagerHome";
+import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
+import OfferManagement from "./manager/pages/offers/OfferManagement";
+import AdminLayout from "./admin/pages/common/AdminLayout";
+import AdminHome from "./admin/pages/common/AdminHome";
+import UserManagement from "./admin/pages/users/UserManagement";
+import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
+import BookingManagement from "./admin/pages/bookings/BookingManagement"; // Added import for BookingManagement
+import Reports from "./admin/pages/reports/Reports"; // Added import for Reports
 
 const router = createBrowserRouter([
   {

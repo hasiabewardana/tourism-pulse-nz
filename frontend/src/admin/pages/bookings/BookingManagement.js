@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import BookingList from "../../components/booking-management/BookingList"; // Adjusted path
+import BookingList from "../../components/bookings/BookingList"; // Adjusted path
 import classes from "./BookingManagement.module.css"; // Import CSS module
 
 // Page component for booking management, renders the BookingList

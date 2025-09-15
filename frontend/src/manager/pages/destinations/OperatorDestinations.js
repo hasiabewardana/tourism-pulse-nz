@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import OperatorDestinationList from "../../components/operator-destinations/OperatorDestinationList";
+import OperatorDestinationList from "../../components/destinations/OperatorDestinationList";
 import classes from "./OperatorDestinations.module.css"; // Import CSS module
 
 function OperatorDestinations() {

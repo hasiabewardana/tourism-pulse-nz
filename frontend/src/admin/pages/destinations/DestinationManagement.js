@@ -1,5 +1,5 @@
 import { Container } from "@mui/material";
-import DestinationList from "../../components/destination-management/DestinationList";
+import DestinationList from "../../components/destinations/DestinationList";
 import classes from "./DestinationManagement.module.css"; // Import CSS module
 
 function DestinationManagement() {
