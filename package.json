@@ -2,7 +2,7 @@
   "name": "tourism-pulse-nz",
   "private": true,
   "workspaces": [
-    "frontend/*",
+    "frontend",
     "api-gateway",
     "backend/*"
   ],
