@@ -22,7 +22,11 @@ router.get(
   authorize(["public", "operator", "admin"]),
   getDestinations
 );
-router.get("/v1/destinations/:id", authorize(["admin"]), getDestinationById);
+router.get(
+  "/v1/destinations/:id",
+  authorize(["public", "admin"]),
+  getDestinationById
+);
 router.post("/v1/destinations", authorize(["admin"]), addDestination);
 router.put("/v1/destinations/:id", authorize(["admin"]), modifyDestination);
 router.delete("/v1/destinations/:id", authorize(["admin"]), removeDestination);

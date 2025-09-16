@@ -94,14 +94,7 @@ function DestinationModal({
   };
 
   const handleBookNow = () => {
-    onClose();
-    navigate(`/book/${destinationId}`);
-  };
-
-  const handleClose = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onClose();
+    navigate(`/tourist/offers/${destinationId}`);
   };
 
   if (!open) return null;
@@ -109,24 +102,18 @@ function DestinationModal({
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={onClose}
       maxWidth={false}
-      fullWidth
       classes={{ paper: classes.dialogPaper }}
       aria-labelledby="destination-modal-title"
-      aria-describedby="destination-modal-desc"
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography
-          id="destination-modal-title"
-          variant="h6"
-          className={classes.title}
-        >
-          Destination Details
+      <DialogTitle id="destination-modal-title" className={classes.dialogTitle}>
+        <Typography variant="h6" className={classes.title}>
+          {destination?.name || "Destination Details"}
         </Typography>
         <IconButton
           aria-label="close"
-          onClick={handleClose}
+          onClick={onClose}
           className={classes.closeButton}
         >
           <CloseIcon />
@@ -135,27 +122,25 @@ function DestinationModal({
       <DialogContent className={classes.dialogContent}>
         {loading ? (
           <Box className={classes.loadingContainer}>
-            <CircularProgress color="primary" />
+            <CircularProgress />
           </Box>
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : destination ? (
           <>
-            <Grid container spacing={2} className={classes.modalGrid}>
+            <Grid container className={classes.modalGrid}>
               <Grid item xs={12} md={4} className={classes.detailsPanel}>
                 <Typography variant="h4" className={classes.destTitle}>
                   {destination.name}
                 </Typography>
-                <Typography
-                  variant="body1"
-                  className={classes.description}
-                  id="destination-modal-desc"
-                >
+                <Typography variant="body1" className={classes.description}>
                   {destination.description}
                 </Typography>
                 <Typography variant="body1" className={classes.info}>
-                  Current Visitors: {destination.current_visitors} /{" "}
-                  {destination.capacity}
+                  Capacity: {destination.capacity}
+                </Typography>
+                <Typography variant="body1" className={classes.info}>
+                  Current Visitors: {destination.current_visitors}
                 </Typography>
                 <Typography variant="body1" className={classes.status}>
                   Status: {destination.status}

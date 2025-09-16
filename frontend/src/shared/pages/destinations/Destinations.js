@@ -78,49 +78,78 @@ function Destinations() {
       setDestinations(data);
       applySearchAndSort(data);
       setLoading(false);
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      setError(error.message);
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDestinations();
-  }, [isAuthenticated, selectedStatus, selectedAvailability, selectedDate]);
-
   const applySearchAndSort = (data) => {
-    let filtered = data.filter((dest) =>
-      dest.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let filtered = [...data];
 
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "Name (A-Z)":
-          return a.name.localeCompare(b.name);
-        case "Name (Z-A)":
-          return b.name.localeCompare(a.name);
-        case "Visitors (Low to High)":
-          return (a.current_visitors || 0) - (b.current_visitors || 0);
-        case "Visitors (High to Low)":
-          return (b.current_visitors || 0) - (a.current_visitors || 0);
-        case "Capacity (Low to High)":
-          return a.capacity - b.capacity;
-        case "Capacity (High to Low)":
-          return b.capacity - a.capacity;
-        default:
-          return 0;
-      }
-    });
+    // Search filter
+    if (searchTerm.trim()) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (dest) =>
+          dest.name.toLowerCase().includes(lowerSearch) ||
+          dest.description.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case "Name (A-Z)":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "Name (Z-A)":
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "Capacity (Low to High)":
+        filtered.sort((a, b) => a.capacity - b.capacity);
+        break;
+      case "Capacity (High to Low)":
+        filtered.sort((a, b) => b.capacity - a.capacity);
+        break;
+      default:
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
 
     setFilteredDestinations(filtered);
   };
 
-  useEffect(() => {
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
     applySearchAndSort(destinations);
-  }, [searchTerm, sortBy, destinations]);
+  };
 
-  const handleBookNow = (destinationId) => {
-    navigate(`/book/${destinationId}`);
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+    fetchDestinations();
+  };
+
+  const handleAvailabilityChange = (e) => {
+    setSelectedAvailability(e.target.value);
+    fetchDestinations();
+  };
+
+  const handleDateChange = (newValue) => {
+    setSelectedDate(newValue || new Date());
+    fetchDestinations();
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+    applySearchAndSort(destinations);
+  };
+
+  const handleResetFilters = () => {
+    setSelectedStatus("All");
+    setSelectedAvailability("All");
+    setSelectedDate(new Date());
+    setSortBy("Name (A-Z)");
+    setSearchTerm("");
+    fetchDestinations();
   };
 
   const handleViewDetails = (destinationId) => {
@@ -133,27 +162,33 @@ function Destinations() {
     setSelectedDestinationId(null);
   };
 
-  const handleResetFilters = () => {
-    setSelectedStatus("All");
-    setSelectedAvailability("All");
-    setSelectedDate(new Date());
-    setSearchTerm("");
-    setSortBy("Name (A-Z)");
+  const handleBookNow = (destinationId) => {
+    navigate(`/tourist/offers/${destinationId}`);
   };
+
+  useEffect(() => {
+    fetchDestinations();
+  }, []);
+
+  useEffect(() => {
+    applySearchAndSort(destinations);
+  }, [searchTerm, sortBy]);
 
   if (loading) {
     return (
-      <Box className={classes.loadingContainer}>
-        <CircularProgress color="primary" />
-      </Box>
+      <Container maxWidth="lg" className={classes.loadingContainer}>
+        <CircularProgress />
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" className={classes.errorAlert}>
-        {error}
-      </Alert>
+      <Container maxWidth="lg">
+        <Alert severity="error" className={classes.errorAlert}>
+          {error}
+        </Alert>
+      </Container>
     );
   }
 
@@ -171,11 +206,11 @@ function Destinations() {
               <Select
                 value={selectedStatus}
                 label="Status"
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                onChange={handleStatusChange}
               >
                 <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Open">Open</MenuItem>
-                <MenuItem value="Closed">Closed</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -185,19 +220,19 @@ function Destinations() {
               <Select
                 value={selectedAvailability}
                 label="Availability"
-                onChange={(e) => setSelectedAvailability(e.target.value)}
+                onChange={handleAvailabilityChange}
               >
                 <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Available">Available</MenuItem>
-                <MenuItem value="Full">Full</MenuItem>
+                <MenuItem value="available">Available</MenuItem>
+                <MenuItem value="full">Full</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={3}>
             <DatePicker
-              label="Date"
+              label="Select Date"
               value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue || new Date())}
+              onChange={handleDateChange}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
@@ -207,16 +242,10 @@ function Destinations() {
               <Select
                 value={sortBy}
                 label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={handleSortChange}
               >
                 <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
                 <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
-                <MenuItem value="Visitors (Low to High)">
-                  Visitors (Low to High)
-                </MenuItem>
-                <MenuItem value="Visitors (High to Low)">
-                  Visitors (High to Low)
-                </MenuItem>
                 <MenuItem value="Capacity (Low to High)">
                   Capacity (Low to High)
                 </MenuItem>
@@ -233,11 +262,10 @@ function Destinations() {
             <TextField
               fullWidth
               variant="outlined"
-              label="Search by Destination Name"
+              label="Search Destinations"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className={classes.searchInput}
-              aria-label="Search destinations"
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -307,7 +335,7 @@ function Destinations() {
                         }}
                         className={classes.bookButton}
                       >
-                        Book Now
+                        See Offers
                       </Button>
                     )}
                   </CardContent>

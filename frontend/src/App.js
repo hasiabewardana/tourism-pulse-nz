@@ -11,6 +11,7 @@ import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
 import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
+import OffersPage from "./tourist/pages/offers/OffersPage";
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
 import ManagerHome from "./manager/pages/common/ManagerHome";
 import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
@@ -57,6 +58,11 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <TouristHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "offers/:destinationId?",
+            element: <OffersPage />,
             loader: checkAuthLoader, // Protect the route
           },
         ],

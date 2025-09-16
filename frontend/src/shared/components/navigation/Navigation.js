@@ -18,6 +18,7 @@ function Navigation() {
     public: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
+      { to: "/tourist/offers", label: "Offers" },
       { to: "/about", label: "About" },
       { to: "/contact", label: "Contact" },
       { to: "/logout", label: "Logout" },
