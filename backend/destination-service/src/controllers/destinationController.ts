@@ -116,6 +116,7 @@ export const modifyDestination = async (req: Request, res: Response) => {
     const updatedId = await updateDestination(
       destinationId,
       data.name,
+      data.description,
       data.location ?? null,
       data.capacity,
       data.photos || ["https://default-destination-thumbnail.jpg"]
