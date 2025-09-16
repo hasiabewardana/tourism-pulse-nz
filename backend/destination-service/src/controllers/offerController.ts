@@ -79,13 +79,18 @@ export const createOffer = async (req: Request, res: Response) => {
   }
 };
 
-// Get all offers (admin)
+// Get all offers (admin) - UPDATED
 export const getAllOffers = async (req: Request, res: Response) => {
   try {
-    const { status, date } = req.query;
+    const { status, date, destination_id } = req.query;
 
     // Validate query parameters
-    let validatedFilters: { status?: string; date?: string } = {};
+    let validatedFilters: {
+      status?: string;
+      date?: string;
+      destination_id?: number;
+    } = {};
+
     if (
       status &&
       !["active", "inactive", "sold_out"].includes(status as string)
@@ -98,6 +103,15 @@ export const getAllOffers = async (req: Request, res: Response) => {
       return res
         .status(400)
         .json({ error: "Invalid date format. Use YYYY-MM-DD." });
+    }
+    if (destination_id) {
+      const destId = parseInt(destination_id as string, 10);
+      if (isNaN(destId) || destId <= 0) {
+        return res
+          .status(400)
+          .json({ error: "destination_id must be a positive integer." });
+      }
+      validatedFilters.destination_id = destId;
     }
 
     if (status) validatedFilters.status = status as string;

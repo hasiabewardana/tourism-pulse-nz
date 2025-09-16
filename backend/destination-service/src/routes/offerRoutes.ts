@@ -16,8 +16,8 @@ router.use(authenticate);
 // Operator or Admin: Create a new offer
 router.post("/v1/offers", authorize(["operator", "admin"]), createOffer);
 
-// Admin: List all offers
-router.get("/v1/offers", authorize(["admin"]), getAllOffers);
+// Public/Admin: List all offers (UPDATED: supports ?destination_id=<id> for optional filtering/ordering)
+router.get("/v1/offers", authorize(["public", "admin"]), getAllOffers);
 
 // Operator or Admin: List offers for a specific operator
 router.get(
