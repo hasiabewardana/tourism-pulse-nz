@@ -39,6 +39,17 @@ function OfferList() {
 
   const userId = localStorage.getItem("userId");
 
+  // Helper to handle API response status for empty results
+  const handleEmptyResponse = (res) => {
+    if (res.status === 404 || res.status === 204) {
+      return []; // Treat as empty success
+    }
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    return null; // Proceed to parse JSON
+  };
+
   const fetchUserName = async () => {
     if (!userId) return;
     const token = localStorage.getItem("token");
@@ -104,10 +115,11 @@ function OfferList() {
           "Content-Type": "application/json",
         },
       });
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
+
+      // Handle empty response statuses as success with empty array
+      const emptyData = handleEmptyResponse(res);
+      let data = emptyData ?? (await res.json());
+
       console.log("fetchOffers response:", JSON.stringify(data, null, 2));
       // Map the response to include userName and extract destinationNames
       const mappedData = data.map((offer) => ({
@@ -227,8 +239,8 @@ function OfferList() {
           },
         }
       );
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       fetchOffers();
     } catch (err) {
@@ -354,18 +366,26 @@ function OfferList() {
           </Grid>
         </Grid>
 
+        {/* Always show Create button for easy access */}
         <Button
           variant="contained"
           color="primary"
           onClick={handleCreate}
           className={classes.createButton}
+          size="large"
+          sx={{ mb: 2 }} // Add margin for better spacing
         >
           Create New Offer
         </Button>
 
         {filteredOffers.length === 0 ? (
-          <Typography className={classes.noResults}>
-            No offers found.
+          <Typography
+            className={classes.noResults}
+            variant="h6"
+            align="center"
+            sx={{ mt: 4, color: "text.secondary" }}
+          >
+            No offers found yet. Start by creating your first one above!
           </Typography>
         ) : (
           <Grid container spacing={3}>
