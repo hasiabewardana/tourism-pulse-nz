@@ -19,7 +19,11 @@ router.use(authenticate);
 router.get("/v1/bookings", authorize(["admin"]), getBookings);
 
 // GET bookings by user ID - user only (their own)
-router.get("/v1/users/:userId/bookings", authorize(["user"]), getUserBookings);
+router.get(
+  "/v1/users/:userId/bookings",
+  authorize(["public"]),
+  getUserBookings
+);
 
 // GET bookings by operator ID - operator only (their own)
 router.get(
@@ -32,7 +36,7 @@ router.get(
 router.get("/v1/bookings/:id", getBookingById);
 
 // POST new booking - user/operator
-router.post("/v1/bookings", authorize(["user", "operator"]), addBooking);
+router.post("/v1/bookings", authorize(["public", "operator"]), addBooking);
 
 // PUT update booking by ID - user/operator with ownership
 router.put("/v1/bookings/:id", modifyBooking);

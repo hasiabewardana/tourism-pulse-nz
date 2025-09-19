@@ -35,6 +35,15 @@ export const findBookingById = async (bookingId: number) => {
   return result[0] || null;
 };
 
+// Get offer details by ID (for price calculation)
+export const getOfferById = async (offerId: number) => {
+  const result = await query(
+    "SELECT price, operator_id FROM dest.offers WHERE offer_id = $1",
+    [offerId]
+  );
+  return result[0] || null;
+};
+
 // Create a new booking
 export const createBooking = async (
   offerId: number,
@@ -47,7 +56,7 @@ export const createBooking = async (
 ) => {
   const values = [offerId, userId, bookingDate, visitorCount, status, price];
   let queryStr =
-    "INSERT INTO dest.bookings (offer_id, user_id, booking_date, visitor_count, status, price)";
+    "INSERT INTO dest.bookings (offer_id, user_id, booking_date, visitor_count, status, price";
   const params = [];
   let index = 1;
 
@@ -63,9 +72,9 @@ export const createBooking = async (
   }
 
   queryStr +=
-    " VALUES ($1, $2, $3, $4, $5, $6)" +
+    ") VALUES ($1, $2, $3, $4, $5, $6" +
     (operatorId !== undefined ? ", $7" : "") +
-    " RETURNING booking_id";
+    ") RETURNING booking_id";
   const result = await query(queryStr, params);
   return result[0].booking_id;
 };

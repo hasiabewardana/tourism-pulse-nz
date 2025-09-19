@@ -8,9 +8,10 @@ import {
   createBooking,
   updateBooking,
   deleteBooking,
+  getOfferById,
 } from "../models/bookingModel";
 
-// Validation schema for creating a booking
+// Validation schema for creating a booking (removed price)
 const createBookingSchema = z.object({
   offerId: z.number().min(1),
   userId: z.number().min(1).optional(), // Optional for now, must be provided
@@ -20,11 +21,10 @@ const createBookingSchema = z.object({
     .enum(["confirmed", "cancelled", "pending"])
     .optional()
     .default("pending"),
-  price: z.number().min(0),
   operatorId: z.number().min(1).optional(), // Optional if fetched from offer
 });
 
-// Schema for updating a booking (all optional except at least one field)
+// Schema for updating a booking (focused on specified fields, but keeping others for partial update)
 const updateBookingSchema = z
   .object({
     offerId: z.number().min(1).optional(),
@@ -96,8 +96,15 @@ export const addBooking = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "userId is required for bookings" });
     }
 
-    // TODO: Optionally calculate price = offer.price * visitorCount (requires offers query)
-    // TODO: Auto-set operatorId from offers table if omitted
+    // Fetch offer to calculate price
+    const offer = await getOfferById(data.offerId);
+    if (!offer) {
+      return res.status(404).json({ error: "Offer not found" });
+    }
+    const calculatedPrice = offer.price * data.visitorCount;
+    const operatorId = data.operatorId ?? offer.operator_id;
+
+    // TODO: Auto-set operatorId from offer if omitted (e.g., data.operatorId ?? offer.operator_id)
 
     const bookingId = await createBooking(
       data.offerId,
@@ -105,8 +112,8 @@ export const addBooking = async (req: Request, res: Response) => {
       data.bookingDate,
       data.visitorCount,
       data.status,
-      data.price,
-      data.operatorId
+      calculatedPrice,
+      operatorId
     );
     res
       .status(201)
@@ -133,6 +140,27 @@ export const modifyBooking = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Booking not found" });
     }
 
+    // Determine if recalculation is needed
+    const needsRecalc =
+      data.visitorCount !== undefined || data.offerId !== undefined;
+
+    let calculatedPrice: number | undefined;
+    if (needsRecalc) {
+      const newOfferId = data.offerId ?? existingBooking.offer_id;
+      const newVisitorCount =
+        data.visitorCount ?? existingBooking.visitor_count;
+      const offer = await getOfferById(newOfferId);
+      if (!offer) {
+        return res.status(404).json({ error: "Offer not found" });
+      }
+      calculatedPrice = offer.price * newVisitorCount;
+    }
+
+    // Use calculated price if needed, else provided or existing
+    const finalPrice = needsRecalc
+      ? calculatedPrice
+      : data.price ?? existingBooking.price;
+
     // Use existing values for unspecified fields
     const updatedId = await updateBooking(
       bookingId,
@@ -141,7 +169,7 @@ export const modifyBooking = async (req: Request, res: Response) => {
       data.bookingDate ?? existingBooking.booking_date.toISOString(),
       data.visitorCount ?? existingBooking.visitor_count,
       data.status ?? existingBooking.status,
-      data.price ?? existingBooking.price,
+      finalPrice,
       data.operatorId ?? existingBooking.operator_id
     );
     res.json({ bookingId: updatedId, message: "Booking updated successfully" });
