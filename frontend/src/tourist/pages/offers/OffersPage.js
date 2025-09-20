@@ -20,6 +20,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
 import OfferCard from "../../components/offers/OfferCard";
+import BookingForm from "../../components/bookings/BookingForm"; // New import for modal form
 import classes from "./OffersPage.module.css";
 
 function OffersPage() {
@@ -36,6 +37,8 @@ function OffersPage() {
     destinationId ? "Price (Low to High)" : "Destination"
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState(null);
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
 
@@ -57,7 +60,7 @@ function OffersPage() {
     try {
       setLoading(true);
       setError(null);
-      let url = "http://localhost:3000/dest/api/v1/offers";
+      let url = "http://localhost:3002/dest-service/api/v1/offers";
       const params = new URLSearchParams();
       if (destinationId) {
         params.append("destination_id", destinationId);
@@ -147,10 +150,10 @@ function OffersPage() {
         sorted.sort((a, b) => b.name.localeCompare(a.name));
         break;
       case "Price (Low to High)":
-        sorted.sort((a, b) => Number(a.price) - Number(b.price));
+        sorted.sort((a, b) => a.price - b.price);
         break;
       case "Price (High to Low)":
-        sorted.sort((a, b) => Number(b.price) - Number(a.price));
+        sorted.sort((a, b) => b.price - a.price);
         break;
       case "Available From (Earliest)":
         sorted.sort(
@@ -158,9 +161,8 @@ function OffersPage() {
         );
         break;
       default:
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
     }
-
     setFilteredOffers(sorted);
   };
 
@@ -171,31 +173,51 @@ function OffersPage() {
     setSearchTerm("");
   };
 
-  const pageTitle = destinationId
-    ? `Offers for ${offers[0]?.destinations?.[0]?.name || "Destination"}`
-    : "All Offers";
+  const handleOpenBookingModal = (offer) => {
+    setSelectedOffer(offer);
+    setShowBookingModal(true);
+  };
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg" className={classes.loadingContainer}>
-        <CircularProgress />
-      </Container>
-    );
-  }
+  const handleBookingSubmit = async (bookingData) => {
+    // bookingData includes offerId, bookingDate, visitorCount
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        "http://localhost:3002/dest-service/api/v1/bookings",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...bookingData,
+            userId: parseInt(localStorage.getItem("userId")), // Assumed stored in localStorage from AuthContext
+            status: "pending",
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to create booking");
+      setShowBookingModal(false);
+      navigate("/tourist/bookings"); // Redirect after success
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-  if (error) {
+  if (loading) return <CircularProgress className={classes.loadingContainer} />;
+  if (error)
     return (
-      <Container maxWidth="lg">
-        <Alert severity="error">{error}</Alert>
-      </Container>
+      <Alert severity="error" className={classes.errorAlert}>
+        {error}
+      </Alert>
     );
-  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="lg" className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          {pageTitle}
+      <Container className={classes.container}>
+        <Typography variant="h4" className={classes.title}>
+          {destinationId ? "Offers for Destination" : "All Offers"}
         </Typography>
 
         <Grid container spacing={2} className={classes.filtersContainer}>
@@ -321,11 +343,23 @@ function OffersPage() {
               <Grid item xs={12} sm={6} md={4} key={offer.id}>
                 <OfferCard
                   offer={offer}
-                  onBookNow={() => navigate(`/tourist/book/${offer.id}`)}
+                  onBookNow={() => handleOpenBookingModal(offer)}
                 />
               </Grid>
             ))}
           </Grid>
+        )}
+
+        {showBookingModal && selectedOffer && (
+          <div className={classes.modal}>
+            <div className={classes.modalContent}>
+              <BookingForm
+                offer={selectedOffer}
+                onSubmit={handleBookingSubmit}
+                onCancel={() => setShowBookingModal(false)}
+              />
+            </div>
+          </div>
         )}
       </Container>
     </LocalizationProvider>

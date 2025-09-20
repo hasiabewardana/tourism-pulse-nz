@@ -1,4 +1,4 @@
-/* src/tourist/pages/offers/OffersPage.module.css */
+/* src/tourist/pages/bookings/BookingsPage.module.css */
 .container {
   padding: 2rem;
   min-height: calc(100vh - 4rem);
@@ -47,33 +47,8 @@
 .noResults {
   color: #666;
   margin-top: 2rem;
-}
-
-.grid {
-  margin-top: 1rem;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modalContent {
-  background-color: #f5f5f5;
-  padding: 2rem;
-  border-radius: 4px;
-  width: 90%;
-  max-width: 500px;
-  color: #333;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  font-size: 1.2rem;
 }
 
 @media (max-width: 768px) {
@@ -86,12 +61,5 @@
   }
   .resetButton {
     margin-top: 0.5rem;
-  }
-  .grid {
-    grid-template-columns: 1fr;
-  }
-  .modalContent {
-    width: 95%;
-    padding: 1rem;
   }
 }

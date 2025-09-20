@@ -12,6 +12,7 @@ import { checkAuthLoader } from "./util/auth";
 import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
 import OffersPage from "./tourist/pages/offers/OffersPage";
+import BookingsPage from "./tourist/pages/bookings/BookingsPage"; // Added import for BookingsPage
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
 import ManagerHome from "./manager/pages/common/ManagerHome";
 import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
@@ -64,6 +65,11 @@ const router = createBrowserRouter([
             path: "offers/:destinationId?",
             element: <OffersPage />,
             loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "bookings", // Added bookings route
+            element: <BookingsPage />,
+            loader: checkAuthLoader,
           },
         ],
       },
