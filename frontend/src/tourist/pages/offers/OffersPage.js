@@ -60,7 +60,7 @@ function OffersPage() {
     try {
       setLoading(true);
       setError(null);
-      let url = "http://localhost:3002/dest-service/api/v1/offers";
+      let url = "http://localhost:3000/dest/api/v1/offers";
       const params = new URLSearchParams();
       if (destinationId) {
         params.append("destination_id", destinationId);
@@ -182,21 +182,18 @@ function OffersPage() {
     // bookingData includes offerId, bookingDate, visitorCount
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch(
-        "http://localhost:3002/dest-service/api/v1/bookings",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...bookingData,
-            userId: parseInt(localStorage.getItem("userId")), // Assumed stored in localStorage from AuthContext
-            status: "pending",
-          }),
-        }
-      );
+      const res = await fetch("http://localhost:3000/dest/api/v1/bookings", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...bookingData,
+          userId: parseInt(localStorage.getItem("userId")), // Assumed stored in localStorage from AuthContext
+          status: "pending",
+        }),
+      });
       if (!res.ok) throw new Error("Failed to create booking");
       setShowBookingModal(false);
       navigate("/tourist/bookings"); // Redirect after success

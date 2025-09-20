@@ -50,9 +50,9 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
     }
     // Map to snake_case for backend
     onSubmit({
-      offer_id: offer.id,
-      booking_date: formData.bookingDate,
-      visitor_count: formData.visitorCount,
+      offerId: offer.id,
+      bookingDate: formData.bookingDate,
+      visitorCount: formData.visitorCount,
       status: formData.status,
     });
   };
