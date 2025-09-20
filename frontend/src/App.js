@@ -12,17 +12,18 @@ import { checkAuthLoader } from "./util/auth";
 import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
 import OffersPage from "./tourist/pages/offers/OffersPage";
-import BookingsPage from "./tourist/pages/bookings/BookingsPage"; // Added import for BookingsPage
+import BookingsPage from "./tourist/pages/bookings/BookingsPage";
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
 import ManagerHome from "./manager/pages/common/ManagerHome";
 import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
 import OfferManagement from "./manager/pages/offers/OfferManagement";
+import ManagerBookingsPage from "./manager/pages/bookings/ManagerBookingsPage";
 import AdminLayout from "./admin/pages/common/AdminLayout";
 import AdminHome from "./admin/pages/common/AdminHome";
 import UserManagement from "./admin/pages/users/UserManagement";
 import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
-import BookingManagement from "./admin/pages/bookings/BookingManagement"; // Added import for BookingManagement
-import Reports from "./admin/pages/reports/Reports"; // Added import for Reports
+import BookingManagement from "./admin/pages/bookings/BookingManagement";
+import Reports from "./admin/pages/reports/Reports";
 
 const router = createBrowserRouter([
   {
@@ -92,6 +93,11 @@ const router = createBrowserRouter([
             path: "offers",
             element: <OfferManagement />,
             loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "bookings", // Added bookings route
+            element: <ManagerBookingsPage />,
+            loader: checkAuthLoader,
           },
         ],
       },

@@ -27,10 +27,9 @@ function Navigation() {
     operator: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
-      { to: "/operator/destinations", label: "Operator Destinations" },
-      { to: "/operator/offers", label: "Offer Management" },
-      { to: "/admin/booking-management", label: "Booking Management" },
-      { to: "/admin/reports", label: "Reports" },
+      { to: "/operator/destinations", label: "My Destinations" },
+      { to: "/operator/offers", label: "Offers" },
+      { to: "/operator/bookings", label: "Bookings" },
       { to: "/logout", label: "Logout" },
     ],
     admin: [
