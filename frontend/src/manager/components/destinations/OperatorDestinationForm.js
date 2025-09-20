@@ -1,5 +1,4 @@
-// src/manager-dashboard/components/operator-destination-management/OperatorDestinationForm.js
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // Add React import
 import {
   Button,
   Select,
@@ -38,7 +37,7 @@ function OperatorDestinationForm({ assignment, onSubmit, onCancel }) {
     }
     try {
       const res = await fetch(
-        "http://localhost:3002/dest-service/api/v1/destinations?status=Open",
+        "http://localhost:3000/dest/api/v1/destinations?status=Open",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +83,6 @@ function OperatorDestinationForm({ assignment, onSubmit, onCancel }) {
     }
   };
 
-  // Filter out assigned destinations
   const availableDestinations = destinations.filter(
     (dest) =>
       !assignedDestinations.some(
@@ -94,8 +92,7 @@ function OperatorDestinationForm({ assignment, onSubmit, onCancel }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: parseInt(value) }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const validate = () => {
@@ -123,7 +120,10 @@ function OperatorDestinationForm({ assignment, onSubmit, onCancel }) {
   };
 
   return (
-    <form className={classes.destinationForm} onSubmit={handleFormSubmit}>
+    <form
+      className={classes.operatorDestinationForm}
+      onSubmit={handleFormSubmit}
+    >
       <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
         Assigning to User ID: {userId || "Unknown"}
       </Typography>

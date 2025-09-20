@@ -1,4 +1,3 @@
-// src/manager-dashboard/components/operator-destination-management/OperatorDestinationList.js
 import { useState, useEffect } from "react";
 import {
   Container,
@@ -17,8 +16,8 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import OperatorDestinationForm from "./OperatorDestinationForm";
-import classes from "./OperatorDestination.module.css";
 import OperatorDestination from "./OperatorDestination";
+import classes from "./OperatorDestination.module.css";
 
 function OperatorDestinationList() {
   const [assignments, setAssignments] = useState([]);
@@ -29,28 +28,62 @@ function OperatorDestinationList() {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [userName, setUserName] = useState("");
   const [destinations, setDestinations] = useState([]);
+  const [alerts, setAlerts] = useState([]);
 
-  // Filter states
   const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
   );
-
-  // Sort and search states
   const [sortBy, setSortBy] = useState("User Name (A-Z)");
   const [searchTerm, setSearchTerm] = useState("");
 
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
+  // WebSocket connection
+  useEffect(() => {
+    if (!userId || !token) {
+      setError("Missing userId or token. Please log in.");
+      setLoading(false);
+      return;
+    }
+
+    const ws = new WebSocket(`ws://localhost:3003?operatorId=${userId}`);
+
+    ws.onopen = () => console.log("WebSocket connected");
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === "alert") {
+        setAlerts((prev) => [...prev, message.message].slice(-5));
+      } else if (message.type === "capacity") {
+        setAssignments((prev) =>
+          prev.map((assignment) => {
+            const updated = message.data.find(
+              (d) => d.destination_id === assignment.destinationId
+            );
+            return updated
+              ? {
+                  ...assignment,
+                  current_visitors: updated.current_visitors,
+                  occupancy_percentage: updated.occupancy_percentage,
+                }
+              : assignment;
+          })
+        );
+      }
+    };
+    ws.onclose = () => console.log("WebSocket disconnected");
+    ws.onerror = (err) => console.error("WebSocket error:", err);
+
+    return () => ws.close();
+  }, [userId, token]);
 
   const fetchUserName = async () => {
-    if (!userId) return;
-    const token = localStorage.getItem("token");
+    if (!userId || !token) return;
     try {
       const res = await fetch(
         `http://localhost:3000/dest/api/v1/users/${userId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error("Failed to fetch user");
       const data = await res.json();
@@ -62,14 +95,11 @@ function OperatorDestinationList() {
   };
 
   const fetchDestinations = async () => {
-    const token = localStorage.getItem("token");
     if (!token) return;
     try {
       const res = await fetch(
         "http://localhost:3000/dest/api/v1/destinations",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error("Failed to fetch destinations");
       const data = await res.json();
@@ -79,19 +109,15 @@ function OperatorDestinationList() {
     }
   };
 
-  // Fetch assignments with filters
   const fetchAssignments = async () => {
-    const token = localStorage.getItem("token");
     if (!token || !userId) {
       setError("No authentication token or user ID found. Please log in.");
       setLoading(false);
       return;
     }
-
     try {
       setLoading(true);
       setError(null);
-
       const res = await fetch(
         `http://localhost:3000/dest/api/v1/operator-destinations/operator/${userId}`,
         {
@@ -102,18 +128,25 @@ function OperatorDestinationList() {
           },
         }
       );
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-      // Map the response to include userName and destinationName for consistency
-      const mappedData = data.map((assignment) => ({
-        ...assignment,
-        userName,
-        destinationName: assignment.name,
-        userId: parseInt(assignment.user_id),
-        destinationId: parseInt(assignment.destination_id),
-      }));
+      const mappedData = await Promise.all(
+        data.map(async (assignment) => {
+          const subCheck = await fetch(
+            `http://localhost:3000/analytics/api/v1/subscriptions/check?operatorId=${userId}&destinationId=${assignment.destination_id}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          const subData = await subCheck.json();
+          return {
+            ...assignment,
+            userName,
+            destinationName: assignment.name,
+            userId: parseInt(assignment.user_id),
+            destinationId: parseInt(assignment.destination_id),
+            subscribed: subData.subscribed || false,
+          };
+        })
+      );
       setAssignments(mappedData);
       applySearchAndSort(mappedData);
     } catch (err) {
@@ -130,10 +163,8 @@ function OperatorDestinationList() {
   }, []);
 
   useEffect(() => {
-    if (userName) {
-      fetchAssignments();
-    }
-  }, [selectedDate, userName]); // Removed selectedViewMode since not used in API
+    if (userName) fetchAssignments();
+  }, [selectedDate, userName]);
 
   const applySearchAndSort = (data) => {
     let filtered = data.filter(
@@ -167,12 +198,10 @@ function OperatorDestinationList() {
   }, [searchTerm, sortBy, assignments]);
 
   const handleSubmit = async (formData) => {
-    const token = localStorage.getItem("token");
     if (!token) {
       setError("No authentication token found.");
       return;
     }
-
     try {
       setError(null);
       const response = await fetch(
@@ -189,11 +218,10 @@ function OperatorDestinationList() {
           }),
         }
       );
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to assign destination: ${response.statusText}`);
-      }
       setShowModal(false);
-      fetchAssignments(); // Refresh the list
+      fetchAssignments();
     } catch (err) {
       console.error("Error assigning destination:", err);
       setError("Failed to assign destination.");
@@ -203,7 +231,6 @@ function OperatorDestinationList() {
   const handleDelete = async (userIdToDelete, destinationId) => {
     if (!window.confirm("Are you sure you want to delete this assignment?"))
       return;
-
     const token = localStorage.getItem("token");
     try {
       const response = await fetch(
@@ -217,13 +244,34 @@ function OperatorDestinationList() {
           body: JSON.stringify({ userId: userIdToDelete, destinationId }),
         }
       );
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`Failed to delete assignment: ${response.statusText}`);
-      }
-      fetchAssignments(); // Refresh the list
+      fetchAssignments();
     } catch (err) {
       console.error("Error deleting assignment:", err);
       setError("Failed to delete assignment.");
+    }
+  };
+
+  const handleSubscribe = async (operatorId, destinationId, subscribed) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        "http://localhost:3000/analytics/api/v1/subscriptions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ operatorId, destinationId, subscribed }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to update subscription");
+      fetchAssignments();
+    } catch (err) {
+      console.error("Error subscribing:", err);
+      setError("Failed to update subscription.");
     }
   };
 
@@ -262,6 +310,19 @@ function OperatorDestinationList() {
       <Container className={classes.container}>
         <Typography variant="h3" className={classes.title}>
           My Operator Destinations
+        </Typography>
+
+        <Typography variant="h6" color="error" sx={{ mb: 2 }}>
+          Alerts:
+          {alerts.length > 0 ? (
+            <ul>
+              {alerts.map((alert, index) => (
+                <li key={index}>{alert}</li>
+              ))}
+            </ul>
+          ) : (
+            " No alerts"
+          )}
         </Typography>
 
         <Grid container spacing={2} className={classes.filtersContainer}>
@@ -367,6 +428,7 @@ function OperatorDestinationList() {
                   assignment={assignment}
                   userName={userName}
                   onDelete={handleDelete}
+                  onSubscribe={handleSubscribe}
                 />
               </Grid>
             ))}
