@@ -1,0 +1,65 @@
+/* src/tourist/pages/bookings/BookingsPage.module.css */
+.container {
+  padding: 2rem;
+  min-height: calc(100vh - 4rem);
+  background-color: #f5f5f5;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.filtersContainer {
+  margin-bottom: 1rem;
+}
+
+.filtersContainer .MuiFormControl-root {
+  background-color: #fff;
+}
+
+.searchContainer {
+  margin-bottom: 2rem;
+}
+
+.searchInput {
+  background-color: #fff;
+}
+
+.resetButton {
+  height: 56px;
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+.resetButton:hover {
+  background-color: #e3f2fd;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.noResults {
+  color: #666;
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .filtersContainer,
+  .searchContainer {
+    flex-direction: column;
+  }
+  .resetButton {
+    margin-top: 0.5rem;
+  }
+}

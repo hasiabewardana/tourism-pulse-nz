@@ -72,7 +72,7 @@ export const login = async (req: Request, res: Response) => {
     );
     // Store session in DB
     await createSession(user.user_id, token);
-    res.json({ token, role: user.role });
+    res.json({ userId: user.user_id, token, role: user.role });
   } catch (error) {
     if (error instanceof z.ZodError)
       return res.status(400).json({ error: error.message });

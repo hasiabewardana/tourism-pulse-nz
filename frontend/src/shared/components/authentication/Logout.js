@@ -2,6 +2,7 @@ import { redirect } from "react-router-dom";
 
 // Logout action to clear auth token and update context
 export function action() {
+  localStorage.removeItem("userId");
   localStorage.removeItem("token");
   localStorage.removeItem("role");
   // FIX: Also clear expiration for consistency, even if not currently validated.

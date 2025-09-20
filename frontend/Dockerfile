@@ -4,14 +4,24 @@ FROM node:22-alpine
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the whole contents of the current directory into the container's working directory
-COPY . .
-
-# Install dependencies from the package.json file
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Expose port 3005 for the frontend to receive incoming requests
+# Install additional dependencies for server and file handling
+RUN npm install express multer
+
+# Copy source code
+COPY . .
+
+# Build the React app for production
+RUN npm run build
+
+# Copy server.js
+COPY server.js .
+
+# Expose port 3005
 EXPOSE 3005
 
-# Run the application using the start script defined in package.json
-CMD ["npm", "start"]
+# Run the Express server
+CMD ["node", "server.js"]

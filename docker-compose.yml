@@ -57,6 +57,8 @@ services: # Service definitions for Tourism Pulse NZ
     container_name: frontend # Set a custom container name for the frontend
     networks: # Use a custom network for the frontend
       - tourism-pulse-nz-network
+    volumes:
+      - ./frontend/public/images:/app/public/images # Mount a volume for images
 
 networks: # Define custom networks for the services
   tourism-pulse-nz-network: # Custom network for the Tourism Pulse NZ services

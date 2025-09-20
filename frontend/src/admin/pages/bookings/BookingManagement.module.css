@@ -1,0 +1,14 @@
+.container {
+  padding: 2rem;
+  background-color: #0fa4af;
+  border-radius: 4px;
+  color: #ffffff;
+  min-height: calc(100vh - 4rem);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+}

@@ -1,20 +1,29 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
-import RootLayout from "./shared/pages/common/Root"; // Importing the RootLayout component for shared layout structure
-import Home from "./shared/pages/common/Home"; // Importing the Home component for the main content
+import RootLayout from "./shared/pages/common/root/Root"; // Importing the RootLayout component for shared layout structure
+import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
 import Destinations from "./shared/pages/destinations/Destinations";
+import About from "./shared/pages/common/about/About";
+import Contact from "./shared/pages/common/contact/Contact";
 import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
 import { authAction } from "./shared/components/authentication/AuthAction";
-import Manager from "./manager-dashboard/pages/Manager"; // Importing the Manager page for management functionality
-import Tourist from "./tourist-interface/pages/Tourist"; // Importing the Tourist page for destination browsing
 import { action as logoutAction } from "./shared/components/authentication/Logout";
 import "./styles.css"; // Importing global styles
 import { checkAuthLoader } from "./util/auth";
-import AdminLayout from "./admin-panel/pages/common/AdminLayout";
-import AdminHome from "./admin-panel/pages/common/AdminHome";
-import UserManagement from "./admin-panel/pages/user-management/UserManagement";
-import DestinationManagement from "./admin-panel/pages/destination-management/DestinationManagement";
-import BookingManagement from "./admin-panel/pages/booking-management/BookingManagement"; // Added import for BookingManagement
-import Reports from "./admin-panel/pages/reports/Reports"; // Added import for Reports
+import TouristLayout from "./tourist/pages/common/TouristLayout";
+import TouristHome from "./tourist/pages/common/TouristHome";
+import OffersPage from "./tourist/pages/offers/OffersPage";
+import BookingsPage from "./tourist/pages/bookings/BookingsPage";
+import ManagerLayout from "./manager/pages/common/ManagerLayout";
+import ManagerHome from "./manager/pages/common/ManagerHome";
+import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
+import OfferManagement from "./manager/pages/offers/OfferManagement";
+import ManagerBookingsPage from "./manager/pages/bookings/ManagerBookingsPage";
+import AdminLayout from "./admin/pages/common/AdminLayout";
+import AdminHome from "./admin/pages/common/AdminHome";
+import UserManagement from "./admin/pages/users/UserManagement";
+import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
+import BookingManagement from "./admin/pages/bookings/BookingManagement";
+import Reports from "./admin/pages/reports/Reports";
 
 const router = createBrowserRouter([
   {
@@ -30,19 +39,67 @@ const router = createBrowserRouter([
         element: <Destinations />,
       },
       {
+        path: "about",
+        element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
+      {
         path: "auth",
         element: <Authentication />, // route for authentication page
         action: authAction,
       },
+      { path: "logout", element: <Home />, action: logoutAction },
       {
         path: "tourist",
-        element: <Tourist />, // route for tourist page
+        element: <TouristLayout />, // route for tourist page
         loader: checkAuthLoader, // Protect the route
+        children: [
+          {
+            index: true,
+            element: <TouristHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "offers/:destinationId?",
+            element: <OffersPage />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "bookings", // Added bookings route
+            element: <BookingsPage />,
+            loader: checkAuthLoader,
+          },
+        ],
       },
       {
-        path: "manager",
-        element: <Manager />, // route for manager page
+        path: "operator",
+        element: <ManagerLayout />, // route for manager page
         loader: checkAuthLoader, // Protect the route
+        children: [
+          {
+            index: true,
+            element: <ManagerHome />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "destinations",
+            element: <OperatorDestinations />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "offers",
+            element: <OfferManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "bookings", // Added bookings route
+            element: <ManagerBookingsPage />,
+            loader: checkAuthLoader,
+          },
+        ],
       },
       {
         path: "admin",
@@ -76,7 +133,6 @@ const router = createBrowserRouter([
           },
         ],
       },
-      { path: "logout", element: <Home />, action: logoutAction },
     ],
   },
 ]);

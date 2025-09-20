@@ -11,22 +11,67 @@ import {
 // Zod schema for destination validation
 const destinationSchema = z.object({
   name: z.string().min(1),
+  description: z.string().min(1),
   location: z.string().optional(), // GeoJSON or WKT string
   capacity: z.number().min(0),
-  photos: z.array(z.string().url()).min(1).optional(),
+  photos: z.array(z.string()).min(1).optional(),
 });
 
 // Get all destinations
 export const getDestinations = async (req: Request, res: Response) => {
   try {
-    const destinations = await getAllDestinations();
-    // Return list with thumbnail (first photo)
-    const response = destinations.map((d) => ({
+    const { status, availability, date } = req.query;
+
+    // Basic validation
+    let validatedFilters: {
+      status?: string;
+      availability?: "Full" | "Available";
+      date?: string;
+    } = {};
+    if (status && !["Open", "Closed"].includes(status as string)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid status. Use 'Open' or 'Closed'." });
+    }
+    if (
+      availability &&
+      !["Full", "Available"].includes(availability as string)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid availability. Use 'Full' or 'Available'." });
+    }
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date as string)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid date format. Use YYYY-MM-DD." });
+    }
+
+    // Populate only if valid
+    if (status) validatedFilters.status = status as string;
+    if (availability)
+      validatedFilters.availability = availability as "Full" | "Available";
+    if (date) validatedFilters.date = date as string;
+
+    const destinations = await getAllDestinations(validatedFilters);
+
+    // Map for thumbnail (as before)
+    const response = destinations.map((d: any) => ({
       ...d,
-      thumbnail: d.photos?.[0] || "https://default-destination-thumbnail.jpg",
+      thumbnail:
+        (d.photos as string[])?.[0] ||
+        "https://default-destination-thumbnail.jpg",
     }));
+
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message.includes("Invalid date")) {
+      return res.status(400).json({ error: error.message });
+    }
+    console.error("Destinations fetch error:", {
+      message: error.message,
+      stack: error.stack,
+    }); // Enhanced logging
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -50,6 +95,7 @@ export const addDestination = async (req: Request, res: Response) => {
     const data = destinationSchema.parse(req.body);
     const destinationId = await createDestination(
       data.name,
+      data.description,
       data.location ?? null,
       data.capacity,
       data.photos || ["https://default-destination-thumbnail.jpg"]
@@ -70,6 +116,7 @@ export const modifyDestination = async (req: Request, res: Response) => {
     const updatedId = await updateDestination(
       destinationId,
       data.name,
+      data.description,
       data.location ?? null,
       data.capacity,
       data.photos || ["https://default-destination-thumbnail.jpg"]

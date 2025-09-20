@@ -8,18 +8,28 @@ function Navigation() {
 
   // Define role-based link sets
   const roleBasedLinks = {
-    public: [
+    user: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
       { to: "/about", label: "About" },
       { to: "/contact", label: "Contact" },
       { to: "/auth", label: "Login / Sign Up" },
     ],
+    public: [
+      { to: "/", label: "Home" },
+      { to: "/destinations", label: "Destinations" },
+      { to: "/tourist/offers", label: "Offers" },
+      { to: "/tourist/bookings", label: "My Bookings" },
+      { to: "/about", label: "About" },
+      { to: "/contact", label: "Contact" },
+      { to: "/logout", label: "Logout" },
+    ],
     operator: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
-      { to: "/admin/booking-management", label: "Booking Management" },
-      { to: "/admin/reports", label: "Reports" },
+      { to: "/operator/destinations", label: "My Destinations" },
+      { to: "/operator/offers", label: "My Offers" },
+      { to: "/operator/bookings", label: " My Bookings" },
       { to: "/logout", label: "Logout" },
     ],
     admin: [
@@ -27,18 +37,17 @@ function Navigation() {
       { to: "/destinations", label: "Destinations" },
       { to: "/admin/destination-management", label: "Destination Management" },
       { to: "/admin/user-management", label: "User Management" },
-      { to: "/admin/booking-management", label: "Booking Management" },
       { to: "/admin/reports", label: "Reports" },
       { to: "/logout", label: "Logout" },
     ],
   };
 
   // Determine the relevant links based on authentication status and role
-  let links = roleBasedLinks.public; // Default to public links for all users
+  let links = roleBasedLinks.user; // Default to public links for all users
 
   if (isAuthenticated) {
     // For authenticated users, use role-specific links
-    links = roleBasedLinks[role] || roleBasedLinks.public; // Fallback to operator if role is invalid
+    links = roleBasedLinks[role] || roleBasedLinks.user; // Fallback to operator if role is invalid
   }
 
   return (

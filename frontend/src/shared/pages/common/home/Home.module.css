@@ -1,0 +1,115 @@
+/* src/shared/pages/common/Home.module.css */
+.homeContainer {
+  padding: 2rem;
+  background-color: #0fa4af;
+  border-radius: 4px;
+  color: #bdd1d4;
+  min-height: calc(100vh - (4rem + 3rem)); /* Subtract header + footer */
+}
+
+.title {
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+
+.tabs {
+  margin: 0;
+  overflow: hidden;
+}
+
+.tabMenu {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.tabButton {
+  font: inherit;
+  font-size: 0.85rem;
+  background-color: #282f33;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #e0eff1;
+  border-radius: 4px 4px 0 0;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+}
+
+.tabButton:hover,
+.tabButton.active {
+  background-color: #48d9f3;
+  color: #273133;
+  border-bottom-color: #48d9f3;
+}
+
+.tabContent {
+  background-color: #282f33;
+  border-radius: 0 4px 4px 4px;
+  padding: 1.5rem;
+}
+
+.contentTitle {
+  color: #ffffff;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.contentList {
+  list-style: none;
+  padding: 0;
+}
+
+.contentItem {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.contentItem::before {
+  content: "•";
+  color: #ffffffe7;
+  position: absolute;
+  left: 0;
+}
+
+.loginButton {
+  background-color: #48d9f3;
+  color: #273133;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  transition: all 0.2s ease-out;
+}
+
+.loginButton:hover {
+  background-color: #e0eff1;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .homeContainer {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .tabMenu {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .tabButton {
+    width: 100%;
+    border-radius: 4px;
+  }
+
+  .tabContent {
+    padding: 1rem;
+  }
+}

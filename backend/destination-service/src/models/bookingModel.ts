@@ -1,8 +1,28 @@
-import { query } from "../services/db";
+import { query } from "../services/db"; // Assuming your DB service exports a query function
 
-// Get all bookings
+// Get all bookings (admin only)
 export const getAllBookings = async () => {
-  const result = await query("SELECT * FROM dest.bookings");
+  const result = await query(
+    "SELECT * FROM dest.bookings ORDER BY created_at DESC"
+  );
+  return result;
+};
+
+// Get bookings by user ID (user only, their own)
+export const getBookingsByUserId = async (userId: number) => {
+  const result = await query(
+    "SELECT * FROM dest.bookings WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId]
+  );
+  return result;
+};
+
+// Get bookings by operator ID (operator only, their own)
+export const getBookingsByOperatorId = async (operatorId: number) => {
+  const result = await query(
+    "SELECT * FROM dest.bookings WHERE operator_id = $1 ORDER BY created_at DESC",
+    [operatorId]
+  );
   return result;
 };
 
@@ -15,37 +35,68 @@ export const findBookingById = async (bookingId: number) => {
   return result[0] || null;
 };
 
+// Get offer details by ID (for price calculation)
+export const getOfferById = async (offerId: number) => {
+  const result = await query(
+    "SELECT price, operator_id FROM dest.offers WHERE offer_id = $1",
+    [offerId]
+  );
+  return result[0] || null;
+};
+
 // Create a new booking
 export const createBooking = async (
-  destinationId: number,
+  offerId: number,
   userId: number,
   bookingDate: string,
   visitorCount: number,
-  status: string
+  status: string,
+  price: number,
+  operatorId?: number // Optional if auto-set, but included for flexibility
 ) => {
-  const result = await query(
-    "INSERT INTO dest.bookings (destination_id, user_id, booking_date, visitor_count, status) VALUES ($1, $2, $3, $4, $5) RETURNING booking_id",
-    [destinationId, userId, bookingDate, visitorCount, status]
-  );
+  const values = [offerId, userId, bookingDate, visitorCount, status, price];
+  let queryStr =
+    "INSERT INTO dest.bookings (offer_id, user_id, booking_date, visitor_count, status, price";
+  const params = [];
+  let index = 1;
+
+  params.push(offerId);
+  params.push(userId);
+  params.push(bookingDate);
+  params.push(visitorCount);
+  params.push(status);
+  params.push(price);
+  if (operatorId !== undefined) {
+    queryStr += ", operator_id";
+    params.push(operatorId);
+  }
+
+  queryStr +=
+    ") VALUES ($1, $2, $3, $4, $5, $6" +
+    (operatorId !== undefined ? ", $7" : "") +
+    ") RETURNING booking_id";
+  const result = await query(queryStr, params);
   return result[0].booking_id;
 };
 
-// Update an existing booking
+// Update an existing booking (partial updates)
 export const updateBooking = async (
   bookingId: number,
-  destinationId: number | undefined,
-  userId: number | undefined,
-  bookingDate: string | undefined,
-  visitorCount: number | undefined,
-  status: string
+  offerId?: number,
+  userId?: number,
+  bookingDate?: string,
+  visitorCount?: number,
+  status?: string,
+  price?: number,
+  operatorId?: number
 ) => {
   const fields = [];
   const values = [];
   let index = 1;
 
-  if (destinationId !== undefined) {
-    fields.push(`destination_id = $${index++}`);
-    values.push(destinationId);
+  if (offerId !== undefined) {
+    fields.push(`offer_id = $${index++}`);
+    values.push(offerId);
   }
   if (userId !== undefined) {
     fields.push(`user_id = $${index++}`);
@@ -59,8 +110,18 @@ export const updateBooking = async (
     fields.push(`visitor_count = $${index++}`);
     values.push(visitorCount);
   }
-  fields.push(`status = $${index++}`);
-  values.push(status);
+  if (status !== undefined) {
+    fields.push(`status = $${index++}`);
+    values.push(status);
+  }
+  if (price !== undefined) {
+    fields.push(`price = $${index++}`);
+    values.push(price);
+  }
+  if (operatorId !== undefined) {
+    fields.push(`operator_id = $${index++}`);
+    values.push(operatorId);
+  }
 
   if (fields.length === 0) throw new Error("No fields to update");
 

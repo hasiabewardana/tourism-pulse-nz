@@ -1,0 +1,54 @@
+/* src/tourist/components/offers/OfferCard.module.css */
+.card {
+  height: 100%;
+  transition: transform 0.2s ease-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+.cardContent {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.cardTitle {
+  color: #1976d2;
+  margin-bottom: 0.5rem;
+}
+
+.cardDescription {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.cardInfo {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.destinations {
+  margin: 1rem 0;
+}
+
+.destLabel {
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+}
+
+.chip {
+  margin: 0.25rem;
+}
+
+.bookButton {
+  background-color: #1976d2;
+}
+
+.bookButton:hover {
+  background-color: #1565c0;
+}

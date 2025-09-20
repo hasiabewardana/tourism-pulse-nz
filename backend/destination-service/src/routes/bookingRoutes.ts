@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   getBookings,
+  getUserBookings,
+  getOperatorBookings,
   getBookingById,
   addBooking,
   modifyBooking,
@@ -10,17 +12,36 @@ import { authenticate, authorize } from "../middleware/authMiddleware";
 
 const router = Router();
 
-// Protected routes
+// Apply authentication to all routes
 router.use(authenticate);
 
-// Admin-only
+// GET all bookings - admin only
 router.get("/v1/bookings", authorize(["admin"]), getBookings);
-router.get("/v1/bookings/:id", authorize(["admin"]), getBookingById);
-router.post("/v1/bookings", authorize(["admin"]), addBooking);
-router.put("/v1/bookings/:id", authorize(["admin"]), modifyBooking);
-router.delete("/v1/bookings/:id", authorize(["admin"]), removeBooking);
 
-// Public/self-management
-router.post("/v1/bookings/self", addBooking); // Requires userId from token
+// GET bookings by user ID - user only (their own)
+router.get(
+  "/v1/users/:userId/bookings",
+  authorize(["public"]),
+  getUserBookings
+);
 
-export default router; // Export router for use in index.ts
+// GET bookings by operator ID - operator only (their own)
+router.get(
+  "/v1/operators/:operatorId/bookings",
+  authorize(["operator"]),
+  getOperatorBookings
+);
+
+// GET booking by ID - user/operator/admin with ownership check (in controller)
+router.get("/v1/bookings/:id", getBookingById);
+
+// POST new booking - user/operator
+router.post("/v1/bookings", authorize(["public", "operator"]), addBooking);
+
+// PUT update booking by ID - user/operator with ownership
+router.put("/v1/bookings/:id", modifyBooking);
+
+// DELETE booking by ID - user/operator with ownership
+router.delete("/v1/bookings/:id", removeBooking);
+
+export default router;
