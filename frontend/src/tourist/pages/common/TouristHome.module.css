@@ -107,6 +107,16 @@
   margin-bottom: 3rem;
 }
 
+/* Grid centering for sections */
+.section :global(.MuiGrid-container) {
+  justify-content: center !important;
+}
+
+.section :global(.MuiGrid-item) {
+  display: flex !important;
+  justify-content: center !important;
+}
+
 /* Quick Actions */
 .actionCard {
   background: rgba(255, 255, 255, 0.08) !important;
@@ -117,6 +127,10 @@
   cursor: pointer;
   height: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .actionCard:hover {
@@ -153,6 +167,15 @@
   border-radius: 15px !important;
   transition: all 0.3s ease;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.destinationCard .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
 }
 
 .destinationCard:hover {
@@ -172,6 +195,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  text-align: left;
 }
 
 .destinationIcon {
@@ -261,6 +285,8 @@
 .destinationActions {
   display: flex;
   gap: 1rem;
+  justify-content: center;
+  margin-top: auto;
 }
 
 .primaryButton {
@@ -446,11 +472,17 @@
 
   .destinationActions {
     flex-direction: column;
+    align-items: center;
   }
 
   .ctaButtons {
     flex-direction: column;
     align-items: center;
+  }
+
+  /* Center align cards on smaller screens */
+  .section :global(.MuiGrid-item) {
+    justify-content: center !important;
   }
 }
 

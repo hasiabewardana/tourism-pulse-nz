@@ -251,7 +251,7 @@ function TouristHome() {
         <Typography variant="h3" className={classes.sectionTitle}>
           Quick Actions
         </Typography>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           {quickActions.map((action, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Card
@@ -278,7 +278,7 @@ function TouristHome() {
         <Typography variant="h3" className={classes.sectionTitle}>
           Popular Destinations - Live Status
         </Typography>
-        <Grid container spacing={3}>
+        <Grid container spacing={3} justifyContent="center">
           {filteredDestinations.map((destination) => (
             <Grid item xs={12} md={6} lg={6} key={destination.id}>
               <Card className={classes.destinationCard}>
