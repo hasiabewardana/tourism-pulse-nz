@@ -22,7 +22,7 @@ class WeatherService {
 
       const baseUrl =
         process.env.OWM_BASE_URL ||
-        "https://api.openweathermap.org/data/2.5/weather"; // Updated to 3.0
+        "https://api.openweathermap.org/data/2.5/weather";
       const fullUrl = `${baseUrl}?lat=${lat}&lon=${lon}&exclude=minutely,hourly,alerts&units=metric&appid=${process.env.OWM_API_KEY}`;
       console.log("Calling weather URL:", fullUrl); // Remove in prod
 
@@ -52,34 +52,12 @@ class WeatherService {
         Object.keys(response.data as object)
       ); // Debug structure
 
-      const data = response.data as any;
+      const data = response.data as any; // Keep as 'any' to preserve full structure
 
-      if (!data.current || !Array.isArray(data.daily)) {
-        console.warn(
-          "Unexpected response structure; mapping from /weather fallback"
-        );
-        return {
-          current: {
-            temp: data.main?.temp,
-            feels_like: data.main?.feels_like,
-            humidity: data.main?.humidity,
-            weather: data.weather || [],
-            wind_speed: data.wind?.speed,
-            clouds: data.clouds?.all,
-          },
-          forecast: [], // No forecast in /weather
-        };
-      }
-
-      const weatherData = {
-        current: data.current,
-        forecast: data.daily.slice(0, 5),
-      };
-
-      await redisClient.set(cacheKey, JSON.stringify(weatherData), {
+      await redisClient.set(cacheKey, JSON.stringify(data), {
         EX: this.CACHE_TTL,
       });
-      return weatherData;
+      return data; // Return exact API response
     } catch (error: any) {
       console.error(
         "Weather fetch error:",
