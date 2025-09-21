@@ -106,7 +106,16 @@ export const getAllDestinations = async (
 // Find destination by ID
 export const findDestinationById = async (destinationId: number) => {
   const result = await query(
-    "SELECT * FROM dest.destinations WHERE destination_id = $1",
+    `SELECT destination_id, 
+      name, 
+      ST_AsText(location) AS location,
+      capacity, 
+      current_visitors,
+      created_at, 
+      updated_at, 
+      photos, 
+      description, 
+      status FROM dest.destinations WHERE destination_id = $1`,
     [destinationId]
   );
   return result[0] || null;

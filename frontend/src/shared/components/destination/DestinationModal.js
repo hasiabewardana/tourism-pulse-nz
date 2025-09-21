@@ -18,6 +18,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import classes from "./DestinationModal.module.css";
 
 function DestinationModal({
@@ -57,32 +58,41 @@ function DestinationModal({
         : `http://localhost:3000/dest/api/v1/destinations/${destinationId}/public`;
 
       console.log("Fetching destination from:", apiUrl);
-      const response = await fetch(apiUrl, { headers });
-      if (!response.ok) {
-        throw new Error(`Failed to fetch destination: ${response.statusText}`);
+      const response = await axios.get(apiUrl, { headers });
+      if (!response.data) {
+        throw new Error(`Failed to fetch destination: No data returned`);
       }
-      const data = await response.json();
-      console.log("Fetched data:", data);
+      const data = response.data;
+      console.log("Fetched destination data:", data);
 
-      // Fetch weather data
-      const weatherResponse = await fetch(
-        `http://localhost:3004/integration-service/api/v1/weather?lat=${data.lat}&lon=${data.lon}&appid=13b12bc50a555c7b45931a520a06c013`
+      // Parse location to extract lon and lat
+      const locationMatch = data.location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
+      if (!locationMatch) {
+        throw new Error("Invalid location format in destination data");
+      }
+      const [_, lon, lat] = locationMatch;
+      const parsedLon = parseFloat(lon);
+      const parsedLat = parseFloat(lat);
+
+      // Fetch weather data using Axios
+      const weatherResponse = await axios.get(
+        `http://localhost:3000/integration/api/v1/weather?lat=${parsedLat}&lon=${parsedLon}&appid=13b12bc50a555c7b45931a520a06c013`
       );
-      if (!weatherResponse.ok) {
-        console.warn("Weather data unavailable:", weatherResponse.statusText);
-        setWeather({
-          main: { temp: "N/A" },
-          weather: [{ description: "Not available" }],
-        });
+      if (!weatherResponse.data) {
+        console.warn("Weather data unavailable: No data returned");
+        setWeather({ temp: "N/A", description: "Not available" });
       } else {
-        const weatherData = await weatherResponse.json();
-        setWeather(weatherData);
+        const weatherData = weatherResponse.data;
+        setWeather({
+          temp: weatherData.main?.temp || "N/A",
+          description: weatherData.weather?.[0]?.description || "Not available",
+        });
       }
 
       setDestination(data);
       setLoading(false);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "An error occurred while fetching data");
       setLoading(false);
     }
   };
@@ -96,13 +106,11 @@ function DestinationModal({
   }, [open, destinationId, isAuthenticated]);
 
   const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + photos.length) % photos.length);
-    setIsZoomed(false);
+    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
   };
 
   const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % photos.length);
-    setIsZoomed(false);
+    setCurrentImageIndex((prev) => (prev < photos.length - 1 ? prev + 1 : 0));
   };
 
   const handleZoomToggle = () => {
@@ -110,7 +118,11 @@ function DestinationModal({
   };
 
   const handleBookNow = () => {
-    navigate(`/tourist/offers/${destinationId}`);
+    if (isAuthenticated) {
+      navigate(`/booking/${destinationId}`);
+    } else {
+      navigate("/login");
+    }
   };
 
   if (!open) return null;
@@ -119,11 +131,10 @@ function DestinationModal({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth={false}
       classes={{ paper: classes.dialogPaper }}
-      aria-labelledby="destination-modal-title"
+      maxWidth={false}
     >
-      <DialogTitle id="destination-modal-title" className={classes.dialogTitle}>
+      <DialogTitle className={classes.dialogTitle}>
         <Typography variant="h6" className={classes.title}>
           {destination?.name || "Destination Details"}
         </Typography>
@@ -141,7 +152,9 @@ function DestinationModal({
             <CircularProgress />
           </Box>
         ) : error ? (
-          <Alert severity="error">{error}</Alert>
+          <Alert severity="error" className={classes.errorAlert}>
+            {error}
+          </Alert>
         ) : destination ? (
           <>
             <Grid container className={classes.modalGrid}>
@@ -152,12 +165,6 @@ function DestinationModal({
                 <Typography variant="body1" className={classes.description}>
                   {destination.description}
                 </Typography>
-                {weather && (
-                  <Typography variant="body1" className={classes.weatherInfo}>
-                    Weather: {weather.main.temp}°C,{" "}
-                    {weather.weather[0].description}
-                  </Typography>
-                )}
                 <Typography variant="body1" className={classes.info}>
                   Capacity: {destination.capacity}
                 </Typography>
@@ -166,6 +173,9 @@ function DestinationModal({
                 </Typography>
                 <Typography variant="body1" className={classes.status}>
                   Status: {destination.status}
+                </Typography>
+                <Typography variant="body1" className={classes.weatherInfo}>
+                  Weather: {weather?.temp}°C, {weather?.description}
                 </Typography>
               </Grid>
               <Grid item xs={12} md={8} className={classes.slideshowPanel}>

@@ -1,4 +1,3 @@
-// src/admin-panel/components/destination-management/DestinationForm.js
 import { useState, useEffect } from "react";
 import {
   TextField,
@@ -20,7 +19,6 @@ const thumbnailConfig = {
   maxHeight: 200,
   autoRotate: true,
   compressFormat: "JPG",
-  // Removed outputType: "base64" - returns Blob by default
 };
 
 const photoConfig = {
@@ -29,7 +27,6 @@ const photoConfig = {
   maxHeight: 400,
   autoRotate: true,
   compressFormat: "JPG",
-  // Removed outputType: "base64" - returns Blob by default
 };
 
 function DestinationForm({ destination, onSubmit, onCancel }) {
@@ -37,6 +34,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     name: destination?.name || "",
     description: destination?.description || "",
     capacity: destination?.capacity || 0,
+    locationName: destination?.locationName || "",
     lat: 0,
     lon: 0,
     status: destination?.status?.toLowerCase() || "open",
@@ -45,14 +43,13 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // Parse location for edit
   useEffect(() => {
     if (destination?.location) {
       const match = destination.location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
       if (match) {
         setFormData((prev) => ({
           ...prev,
-          lon: parseFloat(match[1]),
+          lon: parseFloat(match[1]), // Swapped: lon first, then lat
           lat: parseFloat(match[2]),
         }));
       }
@@ -71,7 +68,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       formDataToSend.append("file", blob, filename);
       formDataToSend.append("slug", slug);
 
-      const saveUrl = `/save-image`; // Relative URL to same-origin server (port 3005)
+      const saveUrl = `/save-image`;
       const response = await fetch(saveUrl, {
         method: "POST",
         body: formDataToSend,
@@ -82,7 +79,6 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       console.log("File saved:", filename);
     } catch (error) {
       console.error("Failed to save file:", error);
-      // Fallback: Still generate path, but log warning
     }
   };
 
@@ -90,7 +86,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     const file = e.target.files[0];
     if (file) {
       try {
-        const resizedBlob = await readAndCompressImage(file, thumbnailConfig); // Returns Blob
+        const resizedBlob = await readAndCompressImage(file, thumbnailConfig);
         setThumbnail(resizedBlob);
 
         const slug = slugify(formData.name, { lower: true, strict: true });
@@ -110,7 +106,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
     try {
       const resizedFiles = await Promise.all(
-        files.map((file) => readAndCompressImage(file, photoConfig)) // Returns array of Blobs
+        files.map((file) => readAndCompressImage(file, photoConfig))
       );
       setPhotos(resizedFiles);
 
@@ -123,6 +119,47 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       );
     } catch (error) {
       console.error("Photos resize failed:", error);
+    }
+  };
+
+  const fetchLocationCoordinates = async (locationName) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          locationName
+        )}&format=json&addressdetails=1&limit=1`,
+        {
+          method: "GET",
+          headers: {
+            "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Location not found");
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setFormData((prev) => ({
+          ...prev,
+          lon: parseFloat(lon), // Swapped: lon first, then lat
+          lat: parseFloat(lat),
+          locationName,
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, locationName: "Location not found" }));
+      }
+    } catch (error) {
+      console.error("Error fetching location:", error);
+      setErrors((prev) => ({
+        ...prev,
+        locationName: "Failed to fetch location",
+      }));
+    }
+  };
+
+  const handleLocationSearch = (e) => {
+    if (e.key === "Enter" && formData.locationName) {
+      fetchLocationCoordinates(formData.locationName);
     }
   };
 
@@ -139,7 +176,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       formData.lon < 166 ||
       formData.lon > 179
     )
-      newErrors.location =
+      newErrors.locationName =
         "Location outside NZ bounds (-35 to -47 lat, 166 to 179 lon)";
     return newErrors;
   };
@@ -165,7 +202,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       description: formData.description,
       capacity: parseInt(formData.capacity),
       photos: photoPaths,
-      location: `POINT(${formData.lon} ${formData.lat})`,
+      location: `POINT(${formData.lon} ${formData.lat})`, // Swapped in POINT format
       status:
         formData.status.charAt(0).toUpperCase() + formData.status.slice(1),
     };
@@ -199,7 +236,19 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         multiline
         rows={4}
       />
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <TextField
+        label="Location Name (e.g., Auckland)"
+        name="locationName"
+        value={formData.locationName}
+        onChange={handleChange}
+        onKeyPress={handleLocationSearch}
+        required
+        error={!!errors.locationName}
+        helperText={errors.locationName || "Press Enter to search"}
+        fullWidth
+        margin="normal"
+      />
+      <Box sx={{ display: "flex", gap: 2, marginBottom: "1rem" }}>
         <TextField
           label="Latitude (-35 to -47)"
           name="lat"
@@ -207,11 +256,10 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           step="any"
           value={formData.lat}
           onChange={handleChange}
-          required
-          error={!!errors.location}
-          helperText={errors.location || "e.g., -41.2865"}
+          disabled
           sx={{ flex: 1 }}
           inputProps={{ min: -47, max: -35 }}
+          margin="normal"
         />
         <TextField
           label="Longitude (166 to 179)"
@@ -220,11 +268,10 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           step="any"
           value={formData.lon}
           onChange={handleChange}
-          required
-          error={!!errors.location}
-          helperText="e.g., 174.7762"
+          disabled
           sx={{ flex: 1 }}
           inputProps={{ min: 166, max: 179 }}
+          margin="normal"
         />
       </Box>
       <TextField
