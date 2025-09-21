@@ -76,6 +76,12 @@
   margin-bottom: 0.5rem;
 }
 
+.weatherInfo {
+  color: #82c2ce;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
 .slideshowPanel {
   background-color: #024950;
   padding: 2rem;
@@ -208,5 +214,9 @@
     width: 95vw;
     height: 95vh;
     margin: 2.5vh auto;
+  }
+
+  .weatherInfo {
+    font-size: 0.9rem;
   }
 }

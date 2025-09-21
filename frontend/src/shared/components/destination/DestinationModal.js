@@ -1,4 +1,3 @@
-// src/shared/pages/destinations/DestinationModal.js
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -32,6 +31,7 @@ function DestinationModal({
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [destination, setDestination] = useState(null);
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -63,6 +63,22 @@ function DestinationModal({
       }
       const data = await response.json();
       console.log("Fetched data:", data);
+
+      // Fetch weather data
+      const weatherResponse = await fetch(
+        `http://localhost:3004/integration-service/api/v1/weather?lat=${data.lat}&lon=${data.lon}&appid=13b12bc50a555c7b45931a520a06c013`
+      );
+      if (!weatherResponse.ok) {
+        console.warn("Weather data unavailable:", weatherResponse.statusText);
+        setWeather({
+          main: { temp: "N/A" },
+          weather: [{ description: "Not available" }],
+        });
+      } else {
+        const weatherData = await weatherResponse.json();
+        setWeather(weatherData);
+      }
+
       setDestination(data);
       setLoading(false);
     } catch (err) {
@@ -136,6 +152,12 @@ function DestinationModal({
                 <Typography variant="body1" className={classes.description}>
                   {destination.description}
                 </Typography>
+                {weather && (
+                  <Typography variant="body1" className={classes.weatherInfo}>
+                    Weather: {weather.main.temp}°C,{" "}
+                    {weather.weather[0].description}
+                  </Typography>
+                )}
                 <Typography variant="body1" className={classes.info}>
                   Capacity: {destination.capacity}
                 </Typography>
