@@ -1,0 +1,80 @@
+/* src/shared/pages/map/Map.module.css */
+/* Reuse from Destinations.module.css where possible */
+.container {
+  min-height: calc(100vh - 4rem);
+  padding: 2rem;
+  background-color: #0fa4af;
+  color: #bdd1d4;
+}
+.title {
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+}
+.filtersContainer {
+  margin-bottom: 1rem;
+}
+.filtersContainer .MuiFormControl-root {
+  background-color: #afddef;
+  border: 1px solid #282f33;
+}
+.filtersContainer .MuiInputLabel-root {
+  color: #bdd1d4;
+}
+.filtersContainer .MuiSelect-select {
+  color: #bdd1d4;
+}
+.searchResetContainer {
+  margin-bottom: 2rem;
+}
+.searchInput {
+  margin-bottom: 2rem;
+  background-color: #afddef;
+  border: 1px solid #282f33;
+}
+.searchInput input {
+  color: #bdd1d4;
+}
+.resetButton {
+  height: 56px;
+  border-color: #48d9f3;
+  color: #48d9f3;
+}
+.resetButton:hover {
+  border-color: #e0eff1;
+  background-color: #e0eff1;
+  color: #273133;
+}
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+/* New for map */
+.mapContainer {
+  height: 600px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  .title {
+    font-size: 2rem;
+  }
+  .filtersContainer,
+  .searchResetContainer {
+    flex-direction: column;
+  }
+  .resetButton {
+    margin-top: 0.5rem;
+  }
+  .mapContainer {
+    height: 400px;
+  }
+}

@@ -11,6 +11,7 @@ function Navigation() {
     user: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
+      { to: "/map", label: "Map" },
       { to: "/about", label: "About" },
       { to: "/contact", label: "Contact" },
       { to: "/auth", label: "Login / Sign Up" },
@@ -18,6 +19,7 @@ function Navigation() {
     public: [
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
+      { to: "/map", label: "Map" },
       { to: "/tourist/offers", label: "Offers" },
       { to: "/tourist/bookings", label: "My Bookings" },
       { to: "/about", label: "About" },
@@ -28,6 +30,7 @@ function Navigation() {
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
       { to: "/operator/destinations", label: "My Destinations" },
+      { to: "/map", label: "Map" },
       { to: "/operator/offers", label: "My Offers" },
       { to: "/operator/bookings", label: " My Bookings" },
       { to: "/logout", label: "Logout" },
@@ -36,6 +39,7 @@ function Navigation() {
       { to: "/", label: "Home" },
       { to: "/destinations", label: "Destinations" },
       { to: "/admin/destination-management", label: "Destination Management" },
+      { to: "/map", label: "Map" },
       { to: "/admin/user-management", label: "User Management" },
       { to: "/admin/reports", label: "Reports" },
       { to: "/logout", label: "Logout" },
