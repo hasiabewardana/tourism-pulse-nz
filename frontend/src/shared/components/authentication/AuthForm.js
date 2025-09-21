@@ -1,74 +1,140 @@
-import { useState } from "react"; // Importing useState for managing state in functional components
-import { Form, useActionData, useNavigation } from "react-router-dom"; // Importing Form from react-router-dom for form handling
-import classes from "./AuthForm.module.css"; // Importing styles for the authentication form
+import { useState } from "react";
+import { Form, useActionData, useNavigation } from "react-router-dom";
+import {
+  Button,
+  TextField,
+  Typography,
+  Container,
+  Box,
+  Grid,
+  CircularProgress,
+} from "@mui/material";
+import classes from "./AuthForm.module.css";
 
-// AuthForm component that handles user authentication (login/signup)
 function AuthForm() {
-  const data = useActionData(); // Get data from route action
-  const navigation = useNavigation(); // use navigation hook
+  const data = useActionData();
+  const navigation = useNavigation();
 
   const [isLogin, setIsLogin] = useState(true);
-  const isSubmitting = navigation.state === "submitting"; // Get submitting state
+  const isSubmitting = navigation.state === "submitting";
 
   function switchAuthHandler() {
     setIsLogin((isCurrentlyLogin) => !isCurrentlyLogin);
   }
 
   return (
-    <>
-      <Form method="post" className={classes.form}>
-        <h1>{isLogin ? "Log in" : "Create a new user"}</h1>
-        {
-          // Input validation errors
-          data && data.errors && (
-            <ul>
-              {Object.values(data.errors).map((err) => (
-                <li key={err}>{err}</li>
-              ))}
-            </ul>
-          )
-        }
-        {
-          // Input validation messages
-          data && data.message && <p>{data.message}</p>
-        }
-        <input type="hidden" name="mode" value={isLogin ? "login" : "signup"} />
-        <p>
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" required />
-        </p>
-        <p>
-          <label htmlFor="image">Password</label>
-          <input id="password" type="password" name="password" required />
-        </p>
-        {!isLogin && (
-          <p>
-            <label htmlFor="firstName">First Name</label>
-            <input id="firstName" type="text" name="firstName" required />
-          </p>
+    <Container maxWidth="sm" className={classes.formContainer}>
+      <Box className={classes.formBox}>
+        <Typography variant="h4" className={classes.formTitle}>
+          {isLogin ? "Log in to TourismPulseNZ" : "Create a New Account"}
+        </Typography>
+        {data && data.errors && (
+          <ul className={classes.errorList}>
+            {Object.values(data.errors).map((err) => (
+              <li key={err} className={classes.errorItem}>
+                {err}
+              </li>
+            ))}
+          </ul>
         )}
-        {!isLogin && (
-          <p>
-            <label htmlFor="lastName">Last Name</label>
-            <input id="lastName" type="text" name="lastName" required />
-          </p>
+        {data && data.message && (
+          <Typography color="textSecondary" className={classes.message}>
+            {data.message}
+          </Typography>
         )}
-        {!isLogin && (
-          <p>
-            <label htmlFor="role">Role</label>
-            <input id="role" type="text" name="role" required />
-          </p>
-        )}
-        <div className={classes.actions}>
-          <button onClick={switchAuthHandler} type="button">
-            {isLogin ? "Create new user" : "Login"}
-          </button>
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : !isLogin ? "Register" : "Login"}
-          </button>
-        </div>
-      </Form>
-    </>
+        <Form method="post" className={classes.form}>
+          <input
+            type="hidden"
+            name="mode"
+            value={isLogin ? "login" : "signup"}
+          />
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                id="email"
+                label="Email"
+                type="email"
+                name="email"
+                required
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                id="password"
+                label="Password"
+                type="password"
+                name="password"
+                required
+                variant="outlined"
+              />
+            </Grid>
+            {!isLogin && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    id="firstName"
+                    label="First Name"
+                    type="text"
+                    name="firstName"
+                    required
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    id="lastName"
+                    label="Last Name"
+                    type="text"
+                    name="lastName"
+                    required
+                    variant="outlined"
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    id="role"
+                    label="Role"
+                    type="text"
+                    name="role"
+                    required
+                    variant="outlined"
+                  />
+                </Grid>
+              </>
+            )}
+            <Grid item xs={12} className={classes.actions}>
+              <Button
+                variant="text"
+                onClick={switchAuthHandler}
+                className={classes.switchButton}
+              >
+                {isLogin ? "Create new account" : "Back to Login"}
+              </Button>
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={isSubmitting}
+                className={classes.submitButton}
+              >
+                {isSubmitting ? (
+                  <CircularProgress size={24} />
+                ) : isLogin ? (
+                  "Login"
+                ) : (
+                  "Register"
+                )}
+              </Button>
+            </Grid>
+          </Grid>
+        </Form>
+      </Box>
+    </Container>
   );
 }
 
