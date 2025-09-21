@@ -183,227 +183,248 @@ function Contact() {
         </Grid>
       </Box>
 
-      {/* Contact Form and Project Info */}
-      <Grid container spacing={4} className={classes.section}>
-        {/* Contact Form */}
-        <Grid item xs={12} lg={7}>
-          <Card className={classes.formCard}>
-            <CardContent>
-              <Typography variant="h4" className={classes.sectionTitle}>
-                Send Us a Message
-              </Typography>
-              <Typography className={classes.formDescription}>
-                Whether you're interested in collaboration, have technical
-                questions, or want to provide feedback, we'd love to hear from
-                you.
-              </Typography>
+      {/* Contact Form - Centered */}
+      <Box className={classes.section}>
+        <Card className={classes.formCard}>
+          <CardContent>
+            <Typography
+              variant="h4"
+              className={classes.sectionTitle}
+              align="center"
+            >
+              Send Us a Message
+            </Typography>
+            <Typography className={classes.formDescription}>
+              Whether you're interested in collaboration, have technical
+              questions, or want to provide feedback, we'd love to hear from
+              you.
+            </Typography>
 
-              {submitStatus && (
-                <Alert
-                  severity={submitStatus.type}
-                  className={classes.alert}
-                  onClose={() => setSubmitStatus(null)}
-                >
-                  {submitStatus.message}
-                </Alert>
-              )}
+            {submitStatus && (
+              <Alert
+                severity={submitStatus.type}
+                className={classes.alert}
+                onClose={() => setSubmitStatus(null)}
+              >
+                {submitStatus.message}
+              </Alert>
+            )}
 
-              <form onSubmit={handleSubmit} className={classes.form}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      name="name"
-                      label="Full Name *"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      className={classes.input}
-                      disabled={isSubmitting}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      name="email"
-                      label="Email Address *"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      className={classes.input}
-                      disabled={isSubmitting}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      name="organization"
-                      label="Organization (Optional)"
-                      value={formData.organization}
-                      onChange={handleChange}
-                      className={classes.input}
-                      disabled={isSubmitting}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      select
-                      name="contactType"
-                      label="Inquiry Type *"
-                      value={formData.contactType}
-                      onChange={handleChange}
-                      required
-                      className={classes.input}
-                      disabled={isSubmitting}
-                      SelectProps={{
-                        native: true,
-                      }}
-                    >
-                      <option value="">Select inquiry type</option>
-                      {contactTypes.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </TextField>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      name="subject"
-                      label="Subject *"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      required
-                      className={classes.input}
-                      disabled={isSubmitting}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      name="message"
-                      label="Message *"
-                      multiline
-                      rows={6}
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      className={classes.input}
-                      disabled={isSubmitting}
-                      placeholder="Please provide details about your inquiry..."
-                    />
-                  </Grid>
-                </Grid>
-
-                <Box className={classes.submitSection}>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    className={classes.submitButton}
+            <form onSubmit={handleSubmit} className={classes.form}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    name="name"
+                    label="Full Name *"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className={classes.input}
                     disabled={isSubmitting}
-                    startIcon={
-                      isSubmitting ? <CircularProgress size={20} /> : null
-                    }
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    name="email"
+                    label="Email Address *"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className={classes.input}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    name="organization"
+                    label="Organization (Optional)"
+                    value={formData.organization}
+                    onChange={handleChange}
+                    className={classes.input}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    select
+                    name="contactType"
+                    label="Inquiry Type *"
+                    value={formData.contactType}
+                    onChange={handleChange}
+                    required
+                    className={classes.input}
+                    disabled={isSubmitting}
+                    SelectProps={{
+                      native: true,
+                    }}
                   >
-                    {isSubmitting ? "Sending..." : "Send Message"}
-                  </Button>
-                  <Typography className={classes.submitNote}>
-                    * Required fields. We typically respond within 24-48 hours.
+                    <option value="">Select inquiry type</option>
+                    {contactTypes.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name="subject"
+                    label="Subject *"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    className={classes.input}
+                    disabled={isSubmitting}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    name="message"
+                    label="Message *"
+                    multiline
+                    rows={6}
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    className={classes.input}
+                    disabled={isSubmitting}
+                    placeholder="Please provide details about your inquiry..."
+                  />
+                </Grid>
+              </Grid>
+
+              <Box className={classes.submitSection}>
+                <Button
+                  variant="contained"
+                  type="submit"
+                  className={classes.submitButton}
+                  disabled={isSubmitting}
+                  startIcon={
+                    isSubmitting ? <CircularProgress size={20} /> : null
+                  }
+                >
+                  {isSubmitting ? "Sending..." : "Send Message"}
+                </Button>
+                <Typography className={classes.submitNote}>
+                  * Required fields. We typically respond within 24-48 hours.
+                </Typography>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
+      </Box>
+
+      {/* Project Information - Centered */}
+      <Box className={classes.section}>
+        <Typography
+          variant="h3"
+          align="center"
+          className={classes.sectionTitle}
+        >
+          Project Information
+        </Typography>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid item xs={12} lg={8}>
+            <Card className={classes.infoCard}>
+              <CardContent>
+                <Typography className={classes.content} align="center">
+                  TourismPulseNZ is an active academic research project focused
+                  on sustainable tourism management in New Zealand.
+                </Typography>
+
+                <Box className={classes.projectInfoGrid}>
+                  <Grid container spacing={3}>
+                    {projectInfo.map((info, index) => (
+                      <Grid item xs={12} sm={6} key={index}>
+                        <Box className={classes.projectInfoItem}>
+                          <Box className={classes.projectIcon}>{info.icon}</Box>
+                          <Box>
+                            <Typography className={classes.projectInfoTitle}>
+                              {info.title}
+                            </Typography>
+                            <Typography className={classes.projectInfoValue}>
+                              {info.value}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                <Divider className={classes.divider} />
+
+                <Typography
+                  variant="h6"
+                  className={classes.sectionTitle}
+                  align="center"
+                >
+                  Research Interests
+                </Typography>
+                <Box className={classes.interestsList}>
+                  <Typography className={classes.interestItem}>
+                    • Sustainable tourism technology solutions
+                  </Typography>
+                  <Typography className={classes.interestItem}>
+                    • Real-time data analytics for tourism management
+                  </Typography>
+                  <Typography className={classes.interestItem}>
+                    • Web-based platforms for capacity monitoring
+                  </Typography>
+                  <Typography className={classes.interestItem}>
+                    • Collaboration with tourism operators and researchers
+                  </Typography>
+                  <Typography className={classes.interestItem}>
+                    • Open source development and knowledge sharing
                   </Typography>
                 </Box>
-              </form>
-            </CardContent>
-          </Card>
+
+                <Divider className={classes.divider} />
+
+                <Typography
+                  variant="h6"
+                  className={classes.sectionTitle}
+                  align="center"
+                >
+                  Collaboration Opportunities
+                </Typography>
+                <Typography className={classes.content} align="center">
+                  We welcome partnerships with:
+                </Typography>
+                <Box className={classes.collaborationList}>
+                  <Chip
+                    label="Tourism Operators"
+                    className={classes.collaborationChip}
+                  />
+                  <Chip
+                    label="Research Institutions"
+                    className={classes.collaborationChip}
+                  />
+                  <Chip
+                    label="Government Agencies"
+                    className={classes.collaborationChip}
+                  />
+                  <Chip
+                    label="Technology Partners"
+                    className={classes.collaborationChip}
+                  />
+                  <Chip
+                    label="Conservation Groups"
+                    className={classes.collaborationChip}
+                  />
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-
-        {/* Project Information Sidebar */}
-        <Grid item xs={12} lg={5}>
-          <Card className={classes.infoCard}>
-            <CardContent>
-              <Typography variant="h5" className={classes.sectionTitle}>
-                Project Information
-              </Typography>
-              <Typography className={classes.content}>
-                TourismPulseNZ is an active academic research project focused on
-                sustainable tourism management in New Zealand.
-              </Typography>
-
-              <Box className={classes.projectInfoGrid}>
-                {projectInfo.map((info, index) => (
-                  <Box key={index} className={classes.projectInfoItem}>
-                    <Box className={classes.projectIcon}>{info.icon}</Box>
-                    <Box>
-                      <Typography className={classes.projectInfoTitle}>
-                        {info.title}
-                      </Typography>
-                      <Typography className={classes.projectInfoValue}>
-                        {info.value}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-
-              <Divider className={classes.divider} />
-
-              <Typography variant="h6" className={classes.sectionTitle}>
-                Research Interests
-              </Typography>
-              <Box className={classes.interestsList}>
-                <Typography className={classes.interestItem}>
-                  • Sustainable tourism technology solutions
-                </Typography>
-                <Typography className={classes.interestItem}>
-                  • Real-time data analytics for tourism management
-                </Typography>
-                <Typography className={classes.interestItem}>
-                  • Web-based platforms for capacity monitoring
-                </Typography>
-                <Typography className={classes.interestItem}>
-                  • Collaboration with tourism operators and researchers
-                </Typography>
-                <Typography className={classes.interestItem}>
-                  • Open source development and knowledge sharing
-                </Typography>
-              </Box>
-
-              <Divider className={classes.divider} />
-
-              <Typography variant="h6" className={classes.sectionTitle}>
-                Collaboration Opportunities
-              </Typography>
-              <Typography className={classes.content}>
-                We welcome partnerships with:
-              </Typography>
-              <Box className={classes.collaborationList}>
-                <Chip
-                  label="Tourism Operators"
-                  className={classes.collaborationChip}
-                />
-                <Chip
-                  label="Research Institutions"
-                  className={classes.collaborationChip}
-                />
-                <Chip
-                  label="Government Agencies"
-                  className={classes.collaborationChip}
-                />
-                <Chip
-                  label="Technology Partners"
-                  className={classes.collaborationChip}
-                />
-                <Chip
-                  label="Conservation Groups"
-                  className={classes.collaborationChip}
-                />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+      </Box>
 
       {/* FAQ Section */}
       <Box className={classes.section}>

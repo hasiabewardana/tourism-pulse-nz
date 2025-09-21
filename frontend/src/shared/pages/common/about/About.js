@@ -475,64 +475,6 @@ function About() {
           </Box>
         </Box>
       </Box>
-
-      {/* Deployment & Implementation */}
-      <Box className={classes.section}>
-        <Typography
-          variant="h3"
-          align="center"
-          className={classes.sectionTitle}
-        >
-          Deployment & Implementation Plan
-        </Typography>
-        <Box className={classes.impactGrid}>
-          <Box className={classes.impactItem}>
-            <Card className={classes.impactCard}>
-              <CardContent>
-                <Box className={classes.impactIcon}>🚀</Box>
-                <Typography variant="h6" className={classes.impactTitle}>
-                  Cloud Deployment
-                </Typography>
-                <Typography className={classes.content}>
-                  Deployed on Render platform with Docker containerization for
-                  frontend, backend, and PostgreSQL database. Free tier provides
-                  750 monthly hours with custom domain support.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-          <Box className={classes.impactItem}>
-            <Card className={classes.impactCard}>
-              <CardContent>
-                <Box className={classes.impactIcon}>🧪</Box>
-                <Typography variant="h6" className={classes.impactTitle}>
-                  Testing Strategy
-                </Typography>
-                <Typography className={classes.content}>
-                  Comprehensive testing approach including unit testing
-                  (Jest/Mocha), integration testing, load testing, and security
-                  audits ensuring NZ privacy standards compliance.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-          <Box className={classes.impactItem}>
-            <Card className={classes.impactCard}>
-              <CardContent>
-                <Box className={classes.impactIcon}>📅</Box>
-                <Typography variant="h6" className={classes.impactTitle}>
-                  Project Timeline
-                </Typography>
-                <Typography className={classes.content}>
-                  12-week development cycle with weekly progress reports (2%
-                  each), final presentation (10%), and comprehensive project
-                  summary (70%) demonstrating full-stack capabilities.
-                </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-        </Box>
-      </Box>
     </Container>
   );
 }
