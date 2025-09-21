@@ -1,0 +1,9 @@
+{
+  "host": "localhost",
+  "port": 6379,
+  "password": "Redis@2025",
+  "db": 0,
+  "ttl": 300,
+  "maxRetries": 5,
+  "retryDelay": 50
+}

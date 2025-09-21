@@ -4,9 +4,14 @@
   "workspaces": [
     "frontend",
     "api-gateway",
-    "backend/*"
+    "backend/*",
+    "backend/shared"
   ],
   "dependencies": {
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/axios": "^0.9.36"
   }
 }
