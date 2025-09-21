@@ -1,62 +1,81 @@
-/* src/shared/pages/common/Home.module.css */
 .homeContainer {
   padding: 2rem;
-  background-color: #0fa4af;
-  border-radius: 4px;
-  color: #bdd1d4;
-  min-height: calc(100vh - (4rem + 3rem)); /* Subtract header + footer */
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 6rem);
+  color: #333;
+  display: flex; /* Use flexbox to center content */
+  flex-direction: column;
+  align-items: center; /* Horizontally center */
 }
 
-.title {
+.heroSection {
   text-align: center;
-  color: #ffffff;
+  padding: 4rem 0;
+  background: linear-gradient(135deg, #0fa4af, #48d9f3);
+  color: #fff;
+  border-radius: 8px;
   margin-bottom: 2rem;
-  font-size: 2.5rem;
+  width: 100%; /* Ensure full width for hero */
+  max-width: 1200px; /* Limit max width for responsiveness */
+}
+
+.heroTitle {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.heroButton {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
 }
 
 .tabs {
-  margin: 0;
-  overflow: hidden;
+  margin: 0 auto 6rem; /* Increased bottom margin for more space before next section */
+  max-width: 600px; /* Constrain width for readability */
+  width: 100%; /* Ensure it takes full available space */
+  text-align: center; /* Center text within tabs */
 }
 
 .tabMenu {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.5rem;
   padding: 0;
-  justify-content: center;
+  justify-content: center; /* Center the buttons */
   margin-bottom: 1rem;
 }
 
 .tabButton {
-  font: inherit;
-  font-size: 0.85rem;
-  background-color: #282f33;
+  font-size: 1rem;
+  background-color: #e0eff1;
   border: none;
-  border-bottom: 2px solid transparent;
-  color: #e0eff1;
-  border-radius: 4px 4px 0 0;
   padding: 0.75rem 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
 }
 
 .tabButton:hover,
 .tabButton.active {
-  background-color: #48d9f3;
-  color: #273133;
-  border-bottom-color: #48d9f3;
+  background-color: #0fa4af;
+  color: #fff;
 }
 
 .tabContent {
-  background-color: #282f33;
-  border-radius: 0 4px 4px 4px;
   padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left; /* Reset text alignment for content */
 }
 
 .contentTitle {
-  color: #ffffff;
   margin-bottom: 1rem;
-  font-size: 1.5rem;
+  color: #0fa4af;
 }
 
 .contentList {
@@ -64,52 +83,87 @@
   padding: 0;
 }
 
-.contentItem {
-  margin: 0.75rem 0;
-  padding-left: 1.5rem;
+.contentList li {
+  margin: 0.5rem 0;
+  padding-left: 1rem;
   position: relative;
 }
 
-.contentItem::before {
-  content: "•";
-  color: #ffffffe7;
+.contentList li::before {
+  content: "›";
+  color: #0fa4af;
   position: absolute;
   left: 0;
 }
 
-.loginButton {
-  background-color: #48d9f3;
-  color: #273133;
-  padding: 0.75rem 2rem;
-  font-size: 1rem;
-  transition: all 0.2s ease-out;
+.sectionTitle {
+  text-align: center;
+  margin: 6rem 0 1rem; /* Increased top margin to match space from tabs */
+  color: #0fa4af;
 }
 
-.loginButton:hover {
-  background-color: #e0eff1;
+.destinationGrid {
+  margin-bottom: 2rem;
+}
+
+.destinationCard {
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+
+.destinationCard:hover {
+  transform: scale(1.05);
+}
+
+.testimonialGrid {
+  margin-bottom: 2rem;
+}
+
+.testimonialCard {
+  background-color: #f5f7fa;
+}
+
+.testimonialAuthor {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.loginButton {
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+.loading {
+  display: block;
+  margin: 2rem auto;
+}
+
+.error {
+  text-align: center;
+  margin: 2rem;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .homeContainer {
-    padding: 1rem;
-  }
-
-  .title {
+  .heroTitle {
     font-size: 2rem;
   }
-
+  .heroSubtitle {
+    font-size: 1rem;
+  }
   .tabMenu {
     flex-direction: column;
-    align-items: center;
   }
-
   .tabButton {
     width: 100%;
-    border-radius: 4px;
   }
-
-  .tabContent {
-    padding: 1rem;
+  .tabs {
+    max-width: 100%; /* Full width on mobile */
+  }
+  .sectionTitle {
+    margin: 3rem 0 1rem; /* Adjusted margin on mobile for better spacing */
+  }
+  .tabs {
+    margin-bottom: 3rem; /* Adjusted space on mobile */
   }
 }
