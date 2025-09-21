@@ -1,3 +1,5 @@
+/* src/shared/pages/common/Contact.module.css */
+
 .contactContainer {
   padding: 2rem;
   background-color: #0fa4af; /* Consistent dark background */
@@ -6,27 +8,132 @@
   min-height: calc(100vh - 4rem); /* Adjust for header margin */
 }
 
-.title {
+/* Header Section */
+.header {
   text-align: center;
-  color: #ffffff; /* White accent for neutrality */
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
+  margin-bottom: 4rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem 2rem;
 }
 
-.section {
-  margin-bottom: 2rem;
-}
-
-.sectionTitle {
-  color: #ffffff; /* Matching white accent */
+.title {
+  color: #ffffff;
   margin-bottom: 1rem;
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff 30%, #bdd1d4 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: #bdd1d4;
+  font-weight: 300;
+  margin-bottom: 2rem;
   font-size: 1.5rem;
 }
 
+.tags {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.tag {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+/* Sections */
+.section {
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  color: #ffffff;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
 .content {
-  line-height: 1.6;
+  line-height: 1.7;
   font-size: 1rem;
+  color: #bdd1d4;
   margin-bottom: 1rem;
+}
+
+/* Contact Cards */
+.contactCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
+  text-align: center;
+}
+
+.contactCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.contactIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contactTitle {
+  color: #ffffff !important;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.contactValue {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.contactDescription {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.contactAvailability {
+  color: #bdd1d4 !important;
+  font-size: 0.8rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Form Styling */
+.formCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+}
+
+.formDescription {
+  color: #bdd1d4 !important;
+  margin-bottom: 2rem;
+  line-height: 1.6;
 }
 
 .form {
@@ -36,51 +143,317 @@
 }
 
 .input {
-  background-color: #afddef; /* Slightly lighter input background */
-  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.input :global(.MuiInputBase-root) {
+  color: #ffffff !important;
+}
+
+.input :global(.MuiInputLabel-root) {
+  color: #bdd1d4 !important;
+}
+
+.input :global(.MuiOutlinedInput-notchedOutline) {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.input :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.input
+  :global(.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline) {
+  border-color: #ffffff !important;
+}
+
+.submitSection {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .submitButton {
-  margin-top: 1rem;
   align-self: flex-start;
-  background-color: #ffffff; /* White button for contrast */
-  color: #2d3942;
+  background-color: #ffffff !important;
+  color: #0fa4af !important;
+  padding: 12px 32px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .submitButton:hover {
-  background-color: #e0e0e0; /* Light gray on hover */
+  background-color: #f0f0f0 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-.footer {
-  text-align: center;
-  padding-top: 2rem;
-  border-top: 1px solid #4a5b66; /* Subtle divider */
+.submitButton:disabled {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(15, 164, 175, 0.7) !important;
 }
 
-.footerText {
-  color: #a3b8bf; /* Muted text for footer */
+.submitNote {
+  color: #bdd1d4 !important;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.alert {
+  margin-bottom: 2rem;
+}
+
+/* Info Card */
+.infoCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  height: fit-content;
+}
+
+.projectInfoGrid {
+  margin: 2rem 0;
+}
+
+.projectInfoItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.projectIcon {
+  font-size: 1.5rem;
+  width: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.projectInfoTitle {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.projectInfoValue {
+  color: #bdd1d4 !important;
+  font-size: 0.85rem;
+}
+
+.interestsList {
+  margin: 1rem 0;
+}
+
+.interestItem {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.collaborationList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.collaborationChip {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* FAQ Section */
+.faqCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.faqCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+}
+
+.faqQuestion {
+  color: #ffffff !important;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.faqAnswer {
+  color: #bdd1d4 !important;
+  line-height: 1.6;
   font-size: 0.9rem;
 }
 
+/* Divider */
+.divider {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 2rem 0 !important;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 3rem 0 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4rem;
+}
+
+.footerText {
+  color: #bdd1d4 !important;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.footerSubtext {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-top: 1rem;
+}
+
 /* Responsive design */
+@media (max-width: 1200px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .projectInfoItem {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .collaborationList {
+    justify-content: center;
+  }
+}
+
 @media (max-width: 768px) {
   .contactContainer {
     padding: 1rem;
+  }
+
+  .header {
+    padding: 2rem 1rem;
+    margin-bottom: 3rem;
   }
 
   .title {
     font-size: 2rem;
   }
 
+  .subtitle {
+    font-size: 1.1rem;
+  }
+
   .sectionTitle {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 
   .content {
     font-size: 0.9rem;
   }
 
+  .contactIcon {
+    font-size: 2.5rem;
+  }
+
   .submitButton {
     width: 100%;
+    align-self: stretch;
   }
+
+  .tags {
+    justify-content: center;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contactContainer {
+    padding: 0.5rem;
+  }
+
+  .header {
+    padding: 1.5rem 1rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+
+  .contactIcon {
+    font-size: 2rem;
+  }
+}
+
+/* Accessibility improvements */
+.contactCard:focus-within,
+.formCard:focus-within,
+.infoCard:focus-within,
+.faqCard:focus-within {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.submitButton:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.contactCard,
+.formCard,
+.infoCard,
+.faqCard {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Hover effects for better interactivity */
+.interestItem:hover,
+.faqAnswer:hover {
+  color: #ffffff !important;
+  transition: color 0.2s ease;
 }
