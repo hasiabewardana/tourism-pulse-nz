@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import openWeatherMapRoutes from "./routes/openWeatherMapRoutes";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 

@@ -12,6 +12,7 @@
     "@mui/x-date-pickers": "^8.11.1",
     "@types/leaflet": "^1.9.20",
     "@types/react-leaflet": "^2.8.3",
+    "axios": "^1.12.2",
     "browser-image-resizer": "^2.4.1",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",

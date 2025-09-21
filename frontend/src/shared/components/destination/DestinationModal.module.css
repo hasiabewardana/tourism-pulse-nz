@@ -35,8 +35,8 @@
 
 .dialogContent {
   padding: 0;
-  height: calc(100% - 64px);
-  overflow: auto;
+  height: calc(100% - 64px); /* Adjust if title height changes */
+  overflow: hidden; /* Change to hidden to prevent outer scroll issues */
   background-color: #0fa4af;
 }
 
@@ -68,6 +68,7 @@
   line-height: 1.6;
   flex-grow: 1;
   overflow-y: auto; /* Enable scrolling if content overflows */
+  max-width: 100%; /* Fixed width constraint relative to parent */
 }
 
 .info,
@@ -108,7 +109,8 @@
   overflow: auto;
   border-radius: 8px;
   margin-bottom: 1rem;
-  min-height: 0; /* Prevent collapse */
+  min-height: 200px; /* Prevent collapse on small content */
+  max-height: 100%; /* Cap to prevent pushing */
 }
 
 .slideshowImage {
@@ -188,18 +190,17 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
+  height: 100%; /* Full height for better visibility during load */
 }
 
 @media (max-width: 768px) {
-  .modalGrid {
-    flex-direction: column;
-  }
+  /* Removed flex-direction: column; to keep side-by-side */
 
   .detailsPanel,
   .slideshowPanel {
     border-radius: 8px !important;
-    height: auto;
+    height: 100%; /* Keep full height */
+    padding: 1rem; /* Reduce padding for small screens */
   }
 
   .slideshowImage {
@@ -218,5 +219,9 @@
 
   .weatherInfo {
     font-size: 0.9rem;
+  }
+
+  .imageWrapper {
+    min-height: 150px; /* Adjust for mobile */
   }
 }

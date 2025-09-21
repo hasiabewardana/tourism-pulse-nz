@@ -1,3 +1,4 @@
+// src/shared/pages/destinations/DestinationModal.js
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -75,23 +76,24 @@ function DestinationModal({
       const parsedLat = parseFloat(lat);
 
       // Fetch weather data using Axios
-      const weatherResponse = await axios.get(
-        `http://localhost:3000/integration/api/v1/weather?lat=${parsedLat}&lon=${parsedLon}&appid=13b12bc50a555c7b45931a520a06c013`
-      );
-      if (!weatherResponse.data) {
-        console.warn("Weather data unavailable: No data returned");
-        setWeather({ temp: "N/A", description: "Not available" });
-      } else {
+      try {
+        const weatherResponse = await axios.get(
+          `http://localhost:3000/integration/api/v1/weather?lat=${parsedLat}&lon=${parsedLon}&appid=13b12bc50a555c7b45931a520a06c013`
+        );
         const weatherData = weatherResponse.data;
         setWeather({
           temp: weatherData.main?.temp || "N/A",
           description: weatherData.weather?.[0]?.description || "Not available",
         });
+      } catch (weatherErr) {
+        console.warn("Weather fetch failed:", weatherErr.message);
+        setWeather({ temp: "N/A", description: "Not available" });
       }
 
       setDestination(data);
       setLoading(false);
     } catch (err) {
+      console.error("Destination fetch error:", err);
       setError(err.message || "An error occurred while fetching data");
       setLoading(false);
     }
@@ -157,8 +159,8 @@ function DestinationModal({
           </Alert>
         ) : destination ? (
           <>
-            <Grid container className={classes.modalGrid}>
-              <Grid item xs={12} md={4} className={classes.detailsPanel}>
+            <Grid container direction="row" className={classes.modalGrid}>
+              <Grid item xs={4} md={4} className={classes.detailsPanel}>
                 <Typography variant="h4" className={classes.destTitle}>
                   {destination.name}
                 </Typography>
@@ -178,7 +180,7 @@ function DestinationModal({
                   Weather: {weather?.temp}°C, {weather?.description}
                 </Typography>
               </Grid>
-              <Grid item xs={12} md={8} className={classes.slideshowPanel}>
+              <Grid item xs={8} md={8} className={classes.slideshowPanel}>
                 <Typography variant="h5" className={classes.slideshowTitle}>
                   Gallery
                 </Typography>
