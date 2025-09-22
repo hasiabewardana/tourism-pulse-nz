@@ -18,8 +18,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
+import axios from "axios"; // New import for API calls
 import BookingList from "../../components/bookings/BookingList";
-import classes from "./BookingsPage.module.css"; // New CSS
+import classes from "./BookingsPage.module.css";
 
 function BookingsPage() {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ function BookingsPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(
+      const res = await axios.get(
         `http://localhost:3000/dest/api/v1/users/${userId}/bookings`,
         {
           headers: {
@@ -60,8 +61,7 @@ function BookingsPage() {
           },
         }
       );
-      if (!res.ok) throw new Error("Failed to fetch bookings");
-      const data = await res.json();
+      const data = res.data;
       console.log("API Response:", data); // Debug log
       setBookings(
         data.map((b) => ({
@@ -77,7 +77,9 @@ function BookingsPage() {
         }))
       );
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message || err.message || "Failed to fetch bookings"
+      );
     } finally {
       setLoading(false);
     }
@@ -133,31 +135,38 @@ function BookingsPage() {
       filtered = filtered.filter(
         (b) =>
           b.offerName.toLowerCase().includes(lowerSearch) ||
-          b.offer?.description?.toLowerCase().includes(lowerSearch) ||
-          ""
+          (b.offer?.description || "").toLowerCase().includes(lowerSearch)
       );
     }
 
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "Booking Date (Asc)":
-          return new Date(a.bookingDate) - new Date(b.bookingDate);
-        case "Booking Date (Desc)":
-          return new Date(b.bookingDate) - new Date(a.bookingDate);
-        case "Offer Name (A-Z)":
-          return a.offerName.localeCompare(b.offerName);
-        case "Offer Name (Z-A)":
-          return b.offerName.localeCompare(a.offerName);
-        case "Visitor Count (Low-High)":
-          return a.visitorCount - b.visitorCount;
-        case "Visitor Count (High-Low)":
-          return b.visitorCount - a.visitorCount;
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredBookings(filtered);
+    let sorted = [...filtered];
+    switch (sortBy) {
+      case "Booking Date (Asc)":
+        sorted.sort(
+          (a, b) => new Date(a.bookingDate) - new Date(b.bookingDate)
+        );
+        break;
+      case "Booking Date (Desc)":
+        sorted.sort(
+          (a, b) => new Date(b.bookingDate) - new Date(a.bookingDate)
+        );
+        break;
+      case "Offer Name (A-Z)":
+        sorted.sort((a, b) => a.offerName.localeCompare(b.offerName));
+        break;
+      case "Offer Name (Z-A)":
+        sorted.sort((a, b) => b.offerName.localeCompare(a.offerName));
+        break;
+      case "Visitor Count (Low-High)":
+        sorted.sort((a, b) => a.visitorCount - b.visitorCount);
+        break;
+      case "Visitor Count (High-Low)":
+        sorted.sort((a, b) => b.visitorCount - a.visitorCount);
+        break;
+      default:
+        break;
+    }
+    setFilteredBookings(sorted);
   };
 
   const handleResetFilters = () => {
@@ -170,7 +179,12 @@ function BookingsPage() {
   };
 
   if (loading) return <CircularProgress className={classes.loadingContainer} />;
-  if (error) return <Alert severity="error">{error}</Alert>;
+  if (error)
+    return (
+      <Alert severity="error" className={classes.errorAlert}>
+        {error}
+      </Alert>
+    );
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>

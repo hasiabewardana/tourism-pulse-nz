@@ -1,12 +1,23 @@
 /* src/tourist/components/bookings/BookingCard.module.css */
 .card {
   height: 100%;
-  transition: transform 0.2s ease-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.18
+  ) !important; /* Lighter card background */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Softer border */
+  border-radius: 15px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .card:hover {
-  transform: scale(1.02);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+  background: rgba(255, 255, 255, 0.25) !important; /* Lighter hover state */
 }
 
 .cardContent {
@@ -15,26 +26,65 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  color: #e0e7ea; /* Lighter text for better contrast */
 }
 
 .cardTitle {
-  color: #1976d2;
+  color: #ffffff; /* White accent for titles */
   margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .cardDescription {
-  color: #666;
+  color: #e0e7ea; /* Lighter text */
   margin-bottom: 1rem;
 }
 
 .cardInfo {
-  color: #333;
+  color: #e0e7ea; /* Lighter text */
   margin-bottom: 0.5rem;
 }
 
 .actionButton {
   margin: 0.25rem;
   padding: 0.5rem 1rem;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.25
+  ) !important; /* Lighter button background */
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Softer border */
+}
+
+.actionButton:hover {
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.35
+  ) !important; /* Lighter hover state */
+}
+
+.statusChip.MuiChip-colorSuccess {
+  background-color: rgba(
+    0,
+    255,
+    0,
+    0.3
+  ) !important; /* Lighter green for confirmed */
+  color: #e0e7ea !important;
+}
+
+.statusChip.MuiChip-colorDefault {
+  background-color: rgba(
+    128,
+    128,
+    128,
+    0.3
+  ) !important; /* Lighter gray for others */
+  color: #e0e7ea !important;
 }
 
 .modal {
@@ -43,7 +93,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7); /* Darker overlay for contrast */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,12 +101,15 @@
 }
 
 .modalContent {
-  background-color: #fff;
+  background-color: #0fa4af; /* Matching theme */
   padding: 2rem;
-  border-radius: 4px;
+  border-radius: 15px;
   width: 90%;
   max-width: 500px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: #bdd1d4;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 @media (max-width: 768px) {
@@ -64,4 +117,20 @@
     width: 95%;
     padding: 1rem;
   }
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
 }

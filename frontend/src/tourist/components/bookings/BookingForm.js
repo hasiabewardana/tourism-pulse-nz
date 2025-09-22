@@ -13,7 +13,7 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-// Assume shared styles or import from OffersPage.module.css if needed
+import classes from "./BookingForm.module.css"; // New CSS module for theme
 
 function BookingForm({ offer, booking, onSubmit, onCancel }) {
   const [formData, setFormData] = useState({
@@ -59,8 +59,8 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <form onSubmit={handleFormSubmit}>
-        <Typography variant="h6">
+      <form onSubmit={handleFormSubmit} className={classes.form}>
+        <Typography variant="h6" className={classes.title}>
           {booking ? "Edit Booking" : "Book Offer"}: {offer.name}
         </Typography>
         <DateTimePicker
@@ -77,6 +77,7 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
               margin: "normal",
               error: !!errors.bookingDate,
               helperText: errors.bookingDate,
+              className: classes.datePicker,
             },
           }}
         />
@@ -94,9 +95,14 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
           fullWidth
           margin="normal"
           inputProps={{ min: 1, max: offer.max_slots }}
+          className={classes.textField}
         />
         {booking && (
-          <FormControl fullWidth margin="normal">
+          <FormControl
+            fullWidth
+            margin="normal"
+            className={classes.formControl}
+          >
             <InputLabel>Status</InputLabel>
             <Select
               name="status"
@@ -112,10 +118,18 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
         <Box
           sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}
         >
-          <Button type="submit" variant="contained" color="primary">
+          <Button
+            type="submit"
+            variant="contained"
+            className={classes.submitButton}
+          >
             Save
           </Button>
-          <Button variant="outlined" onClick={onCancel}>
+          <Button
+            variant="outlined"
+            onClick={onCancel}
+            className={classes.cancelButton}
+          >
             Cancel
           </Button>
         </Box>

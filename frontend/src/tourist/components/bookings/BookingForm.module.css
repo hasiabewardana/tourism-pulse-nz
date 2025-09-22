@@ -1,0 +1,51 @@
+/* src/tourist/components/bookings/BookingForm.module.css */
+.form {
+  color: #e0e7ea; /* Lighter text for contrast */
+}
+
+.title {
+  color: #ffffff; /* White accent */
+  margin-bottom: 1rem;
+}
+
+.datePicker .MuiInputBase-root,
+.datePicker .MuiInputLabel-root {
+  color: #e0e7ea !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.textField .MuiInputBase-root,
+.textField .MuiInputLabel-root {
+  color: #e0e7ea !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.formControl .MuiFormControl-root,
+.formControl .MuiInputLabel-root,
+.formControl .MuiSelect-root {
+  color: #e0e7ea !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.submitButton {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.submitButton:hover {
+  background-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.cancelButton {
+  border-color: #ffffff !important;
+  color: #ffffff !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.cancelButton:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
