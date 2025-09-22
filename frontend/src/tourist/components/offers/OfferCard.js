@@ -43,11 +43,11 @@ function OfferCard({ offer, onBookNow }) {
             label={offer.status.toUpperCase()}
             color={offer.status === "active" ? "success" : "default"}
             size="small"
+            className={classes.statusChip}
           />
         </Typography>
         <Button
           variant="contained"
-          color="primary"
           onClick={onBookNow}
           fullWidth
           className={classes.bookButton}

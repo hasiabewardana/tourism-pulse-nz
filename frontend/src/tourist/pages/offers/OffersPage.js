@@ -19,8 +19,9 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
+import axios from "axios"; // New import for API calls
 import OfferCard from "../../components/offers/OfferCard";
-import BookingForm from "../../components/bookings/BookingForm"; // New import for modal form
+import BookingForm from "../../components/bookings/BookingForm";
 import classes from "./OffersPage.module.css";
 
 function OffersPage() {
@@ -61,23 +62,16 @@ function OffersPage() {
       setLoading(true);
       setError(null);
       let url = "http://localhost:3000/dest/api/v1/offers";
-      const params = new URLSearchParams();
       if (destinationId) {
-        params.append("destination_id", destinationId);
+        url += `?destination_id=${destinationId}`;
       }
-      if (params.toString()) {
-        url += `?${params.toString()}`;
-      }
-      const res = await fetch(url, {
+      const res = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      if (!res.ok) {
-        throw new Error(`Failed to fetch offers: ${res.statusText}`);
-      }
-      const data = await res.json();
+      const data = res.data;
       // Map to include destinationNames for display
       const mappedData = data.map((offer) => ({
         ...offer,
@@ -87,7 +81,9 @@ function OffersPage() {
       }));
       setOffers(mappedData);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message || err.message || "Failed to fetch offers"
+      );
     } finally {
       setLoading(false);
     }
@@ -179,26 +175,28 @@ function OffersPage() {
   };
 
   const handleBookingSubmit = async (bookingData) => {
-    // bookingData includes offerId, bookingDate, visitorCount
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:3000/dest/api/v1/bookings", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const res = await axios.post(
+        "http://localhost:3000/dest/api/v1/bookings",
+        {
           ...bookingData,
-          userId: parseInt(localStorage.getItem("userId")), // Assumed stored in localStorage from AuthContext
+          userId: parseInt(localStorage.getItem("userId")),
           status: "pending",
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to create booking");
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       setShowBookingModal(false);
-      navigate("/tourist/bookings"); // Redirect after success
+      navigate("/tourist/bookings");
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.response?.data?.message || err.message || "Failed to create booking"
+      );
     }
   };
 
