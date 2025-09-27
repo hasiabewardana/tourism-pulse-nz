@@ -14,6 +14,7 @@ import { readAndCompressImage } from "browser-image-resizer";
 import classes from "./Destination.module.css";
 import slugify from "slugify";
 
+// Image compression configurations
 const thumbnailConfig = {
   quality: 0.8,
   maxWidth: 400,
@@ -30,7 +31,17 @@ const photoConfig = {
   compressFormat: "JPG",
 };
 
+/**
+ * DestinationForm Component
+ *
+ * Form for creating and editing tourism destinations with features:
+ * - Location autocomplete using OpenStreetMap/Nominatim API
+ * - Image upload and compression
+ * - GPS coordinate validation for New Zealand
+ * - Form validation and error handling
+ */
 function DestinationForm({ destination, onSubmit, onCancel }) {
+  // Form state management
   const [formData, setFormData] = useState({
     name: destination?.name || "",
     description: destination?.description || "",
@@ -40,31 +51,43 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     lon: 0,
     status: destination?.status?.toLowerCase() || "open",
   });
+
+  // Image and UI state
   const [thumbnail, setThumbnail] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState({});
+
+  // Location autocomplete state
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
+  // Parse existing destination coordinates from POINT format when editing
   useEffect(() => {
     if (destination?.location) {
       const match = destination.location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
       if (match) {
         setFormData((prev) => ({
           ...prev,
-          lon: parseFloat(match[1]), // Swapped: lon first, then lat
+          lon: parseFloat(match[1]), // PostGIS format: POINT(lon lat)
           lat: parseFloat(match[2]),
         }));
       }
     }
   }, [destination]);
 
+  // Generic form input handler
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
   };
 
+  /**
+   * Save compressed image file to backend
+   * @param {Blob} blob - Compressed image blob
+   * @param {string} filename - Target filename
+   * @param {string} slug - Destination slug for folder organization
+   */
   const saveFile = async (blob, filename, slug) => {
     try {
       const formDataToSend = new FormData();
@@ -85,13 +108,16 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
   };
 
+  // Image upload handlers with compression
   const handleThumbnailChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
+        // Compress thumbnail to 400x200
         const resizedBlob = await readAndCompressImage(file, thumbnailConfig);
         setThumbnail(resizedBlob);
 
+        // Generate filename based on destination name
         const slug = slugify(formData.name, { lower: true, strict: true });
         const filename = `${slug}-thumbnail.jpg`;
         await saveFile(resizedBlob, filename, slug);
@@ -108,11 +134,13 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       return;
     }
     try {
+      // Compress all photos to 800x400
       const resizedFiles = await Promise.all(
         files.map((file) => readAndCompressImage(file, photoConfig))
       );
       setPhotos(resizedFiles);
 
+      // Save all photos with sequential naming
       const slug = slugify(formData.name, { lower: true, strict: true });
       await Promise.all(
         resizedFiles.map(async (blob, i) => {
@@ -125,6 +153,11 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
   };
 
+  /**
+   * Fetch location suggestions from OpenStreetMap Nominatim API
+   * Provides real-time autocomplete for New Zealand locations
+   * @param {string} query - Search query (minimum 3 characters)
+   */
   const fetchLocationSuggestions = async (query) => {
     if (query.length < 3) {
       setLocationSuggestions([]);
@@ -148,6 +181,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       if (!response.ok) throw new Error("Failed to fetch suggestions");
       const data = await response.json();
 
+      // Transform API response to autocomplete format
       const suggestions = data.map((item) => ({
         label: item.display_name,
         lat: parseFloat(item.lat),
@@ -164,6 +198,10 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
   };
 
+  /**
+   * Fetch coordinates for a specific location name (fallback for manual entry)
+   * @param {string} locationName - Location name to geocode
+   */
   const fetchLocationCoordinates = async (locationName) => {
     try {
       const response = await fetch(
@@ -183,7 +221,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         const { lat, lon } = data[0];
         setFormData((prev) => ({
           ...prev,
-          lon: parseFloat(lon), // Swapped: lon first, then lat
+          lon: parseFloat(lon),
           lat: parseFloat(lat),
           locationName,
         }));
@@ -199,8 +237,10 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
   };
 
+  // Location autocomplete event handlers
   const handleLocationSelect = (event, selectedOption) => {
     if (selectedOption) {
+      // Auto-populate coordinates when selecting from dropdown
       setFormData((prev) => ({
         ...prev,
         locationName: selectedOption.name,
@@ -213,42 +253,64 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
 
   const handleLocationInputChange = (event, value) => {
     setFormData((prev) => ({ ...prev, locationName: value }));
+    // Trigger autocomplete suggestions as user types
     fetchLocationSuggestions(value);
   };
 
+  // Fallback for manual location entry (Enter key)
   const handleLocationSearch = (e) => {
     if (e.key === "Enter" && formData.locationName) {
       fetchLocationCoordinates(formData.locationName);
     }
   };
 
+  /**
+   * Form validation with New Zealand geographic bounds checking
+   * @returns {Object} Object containing validation errors
+   */
   const validate = () => {
     const newErrors = {};
+
+    // Required field validation
     if (!formData.name.trim()) newErrors.name = "Name is required";
     if (!formData.description.trim())
       newErrors.description = "Description is required";
     if (formData.capacity <= 0)
       newErrors.capacity = "Capacity must be greater than 0";
+
+    // New Zealand geographic bounds validation
+    // Latitude: -35 (North Island) to -47 (South Island)
+    // Longitude: 166 (Chatham Islands) to 179 (East Coast)
     if (
       formData.lat < -47 ||
       formData.lat > -35 ||
       formData.lon < 166 ||
       formData.lon > 179
-    )
+    ) {
       newErrors.locationName =
         "Location outside NZ bounds (-35 to -47 lat, 166 to 179 lon)";
+    }
+
     return newErrors;
   };
 
+  /**
+   * Handle form submission with validation and data formatting
+   */
   const handleFormSubmit = (e) => {
     e.preventDefault();
+
+    // Validate form data
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
+    // Generate URL-friendly slug for file organization
     const slug = slugify(formData.name, { lower: true, strict: true });
+
+    // Build photo paths array (thumbnail + additional photos)
     const photoPaths = [
       thumbnail ? `${slug}/${slug}-thumbnail.jpg` : "default-thumbnail.jpg",
     ];
@@ -256,12 +318,13 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       photoPaths.push(`${slug}/${slug}-${i + 1}.jpg`);
     }
 
+    // Format data for backend (PostGIS POINT format: POINT(lon lat))
     const submitData = {
       name: formData.name,
       description: formData.description,
       capacity: parseInt(formData.capacity),
       photos: photoPaths,
-      location: `POINT(${formData.lon} ${formData.lat})`, // Swapped in POINT format
+      location: `POINT(${formData.lon} ${formData.lat})`,
       status:
         formData.status.charAt(0).toUpperCase() + formData.status.slice(1),
     };
@@ -271,6 +334,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
 
   return (
     <form className={classes.destinationForm} onSubmit={handleFormSubmit}>
+      {/* Basic destination information */}
       <TextField
         label="Name"
         name="name"
@@ -282,6 +346,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         fullWidth
         margin="normal"
       />
+
       <TextField
         label="Description"
         name="description"
@@ -295,6 +360,8 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         multiline
         rows={4}
       />
+
+      {/* Location autocomplete with OpenStreetMap integration */}
       <Autocomplete
         options={locationSuggestions}
         getOptionLabel={(option) => option.label || option}
@@ -324,6 +391,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           </li>
         )}
       />
+      {/* GPS Coordinates (auto-populated from location selection) */}
       <Box sx={{ display: "flex", gap: 2, marginBottom: "1rem" }}>
         <TextField
           label="Latitude (-35 to -47)"
@@ -350,6 +418,8 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           margin="normal"
         />
       </Box>
+
+      {/* Destination capacity */}
       <TextField
         label="Capacity"
         name="capacity"
@@ -363,6 +433,8 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         margin="normal"
         inputProps={{ min: 1 }}
       />
+
+      {/* Image uploads with automatic compression */}
       <input
         type="file"
         accept="image/*"
@@ -370,6 +442,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         style={{ margin: "1rem 0" }}
       />
       <Typography variant="body2">Thumbnail (resized to 400x200)</Typography>
+
       <input
         type="file"
         multiple
@@ -378,8 +451,10 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         style={{ margin: "1rem 0" }}
       />
       <Typography variant="body2">
-        Additional Photos (up to 5, resized to 400x200)
+        Additional Photos (up to 5, resized to 800x400)
       </Typography>
+
+      {/* Destination status */}
       <FormControl fullWidth margin="normal" error={!!errors.status}>
         <InputLabel>Status</InputLabel>
         <Select name="status" value={formData.status} onChange={handleChange}>
@@ -388,6 +463,8 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           <MenuItem value="maintenance">Maintenance</MenuItem>
         </Select>
       </FormControl>
+
+      {/* Form action buttons */}
       <div className={classes.formActions}>
         <Button type="submit" variant="contained" color="primary">
           Save
