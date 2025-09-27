@@ -358,7 +358,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         fullWidth
         margin="normal"
         multiline
-        rows={4}
+        rows={2}
       />
 
       {/* Location autocomplete with OpenStreetMap integration */}
