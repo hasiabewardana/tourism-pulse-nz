@@ -8,6 +8,7 @@ import {
   InputLabel,
   Box,
   Typography,
+  Autocomplete,
 } from "@mui/material";
 import { readAndCompressImage } from "browser-image-resizer";
 import classes from "./Destination.module.css";
@@ -42,6 +43,8 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
   const [thumbnail, setThumbnail] = useState(null);
   const [photos, setPhotos] = useState([]);
   const [errors, setErrors] = useState({});
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     if (destination?.location) {
@@ -122,12 +125,51 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     }
   };
 
+  const fetchLocationSuggestions = async (query) => {
+    if (query.length < 3) {
+      setLocationSuggestions([]);
+      return;
+    }
+
+    setLoadingSuggestions(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          query
+        )}&format=json&addressdetails=1&limit=8&countrycodes=NZ`,
+        {
+          method: "GET",
+          headers: {
+            "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch suggestions");
+      const data = await response.json();
+
+      const suggestions = data.map((item) => ({
+        label: item.display_name,
+        lat: parseFloat(item.lat),
+        lon: parseFloat(item.lon),
+        name: item.name || query,
+      }));
+
+      setLocationSuggestions(suggestions);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setLocationSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
   const fetchLocationCoordinates = async (locationName) => {
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
           locationName
-        )}&format=json&addressdetails=1&limit=1`,
+        )}&format=json&addressdetails=1&limit=1&countrycodes=NZ`,
         {
           method: "GET",
           headers: {
@@ -155,6 +197,23 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         locationName: "Failed to fetch location",
       }));
     }
+  };
+
+  const handleLocationSelect = (event, selectedOption) => {
+    if (selectedOption) {
+      setFormData((prev) => ({
+        ...prev,
+        locationName: selectedOption.name,
+        lat: selectedOption.lat,
+        lon: selectedOption.lon,
+      }));
+      setErrors((prev) => ({ ...prev, locationName: null }));
+    }
+  };
+
+  const handleLocationInputChange = (event, value) => {
+    setFormData((prev) => ({ ...prev, locationName: value }));
+    fetchLocationSuggestions(value);
   };
 
   const handleLocationSearch = (e) => {
@@ -236,17 +295,34 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         multiline
         rows={4}
       />
-      <TextField
-        label="Location Name (e.g., Auckland)"
-        name="locationName"
+      <Autocomplete
+        options={locationSuggestions}
+        getOptionLabel={(option) => option.label || option}
         value={formData.locationName}
-        onChange={handleChange}
-        onKeyPress={handleLocationSearch}
-        required
-        error={!!errors.locationName}
-        helperText={errors.locationName || "Press Enter to search"}
-        fullWidth
-        margin="normal"
+        onChange={handleLocationSelect}
+        onInputChange={handleLocationInputChange}
+        loading={loadingSuggestions}
+        freeSolo
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Location Name (e.g., Auckland)"
+            required
+            error={!!errors.locationName}
+            helperText={errors.locationName || "Type to search locations in NZ"}
+            fullWidth
+            margin="normal"
+          />
+        )}
+        renderOption={(props, option) => (
+          <li {...props}>
+            <Box>
+              <Typography variant="body2" component="div">
+                {option.label}
+              </Typography>
+            </Box>
+          </li>
+        )}
       />
       <Box sx={{ display: "flex", gap: 2, marginBottom: "1rem" }}>
         <TextField
