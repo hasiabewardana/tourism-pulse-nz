@@ -10,6 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Snackbar,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -28,6 +29,11 @@ function OperatorDestinationList() {
   const [userName, setUserName] = useState("");
   const [destinations, setDestinations] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
@@ -54,6 +60,12 @@ function OperatorDestinationList() {
       const message = JSON.parse(event.data);
       if (message.type === "alert") {
         setAlerts((prev) => [...prev, message.message].slice(-5));
+        // Show toast notification for real-time alerts
+        setNotification({
+          open: true,
+          message: `🚨 ${message.message}`,
+          severity: "warning",
+        });
       } else if (message.type === "capacity") {
         setAssignments((prev) =>
           prev.map((assignment) => {
@@ -221,6 +233,17 @@ function OperatorDestinationList() {
         throw new Error(`Failed to assign destination: ${response.statusText}`);
       setShowModal(false);
       fetchAssignments();
+
+      // Show success notification
+      const destinationName =
+        destinations.find(
+          (d) => d.destination_id === parseInt(formData.destinationId)
+        )?.name || "Destination";
+      setNotification({
+        open: true,
+        message: `✅ Successfully assigned ${destinationName} to your destinations`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error assigning destination:", err);
       setError("Failed to assign destination.");
@@ -246,6 +269,16 @@ function OperatorDestinationList() {
       if (!response.ok)
         throw new Error(`Failed to delete assignment: ${response.statusText}`);
       fetchAssignments();
+
+      // Show success notification
+      const destinationName =
+        assignments.find((a) => a.destinationId === destinationId)
+          ?.destinationName || "Destination";
+      setNotification({
+        open: true,
+        message: `✅ Successfully removed ${destinationName} from your destinations`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error deleting assignment:", err);
       setError("Failed to delete assignment.");
@@ -286,6 +319,13 @@ function OperatorDestinationList() {
     );
     setSearchTerm("");
     setSortBy("User Name (A-Z)");
+  };
+
+  const handleCloseNotification = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setNotification({ ...notification, open: false });
   };
 
   if (loading) {
@@ -441,6 +481,23 @@ function OperatorDestinationList() {
             </div>
           </div>
         )}
+
+        {/* Global Notifications for WebSocket Alerts */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseNotification}
+            severity={notification.severity}
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
       </div>
     </LocalizationProvider>
   );

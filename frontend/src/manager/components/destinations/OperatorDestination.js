@@ -8,6 +8,8 @@ import {
   Chip,
   Switch,
   FormControlLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PeopleIcon from "@mui/icons-material/People";
@@ -20,15 +22,48 @@ function OperatorDestination({ assignment, userName, onDelete, onSubscribe }) {
   const [subscribed, setSubscribed] = React.useState(
     assignment.subscribed || false
   );
+  const [notification, setNotification] = React.useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const handleSubscribe = async () => {
     const newSubscribed = !subscribed;
-    setSubscribed(newSubscribed);
-    await onSubscribe(
-      assignment.userId,
-      assignment.destinationId,
-      newSubscribed
-    );
+    const destinationName = assignment.destinationName || assignment.name;
+
+    try {
+      setSubscribed(newSubscribed);
+      await onSubscribe(
+        assignment.userId,
+        assignment.destinationId,
+        newSubscribed
+      );
+
+      // Show success notification
+      setNotification({
+        open: true,
+        message: newSubscribed
+          ? `✅ Alert notifications enabled for ${destinationName}`
+          : `🔔 Alert notifications disabled for ${destinationName}`,
+        severity: "success",
+      });
+    } catch (error) {
+      // Revert the state on error
+      setSubscribed(!newSubscribed);
+      setNotification({
+        open: true,
+        message: `Failed to update alert settings for ${destinationName}`,
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseNotification = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setNotification({ ...notification, open: false });
   };
 
   const getStatusColor = (status) => {
@@ -138,6 +173,23 @@ function OperatorDestination({ assignment, userName, onDelete, onSubscribe }) {
           </Button>
         </div>
       </CardContent>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={4000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 }
