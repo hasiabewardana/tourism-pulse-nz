@@ -20,7 +20,32 @@ import {
   List,
   ListItem,
   ListItemText,
+  Chip,
+  Card,
+  CardContent,
+  CardMedia,
+  Rating,
+  IconButton,
+  Tooltip,
+  Switch,
+  FormControlLabel,
+  Drawer,
+  Divider,
+  Slider,
 } from "@mui/material";
+import {
+  MyLocation as MyLocationIcon,
+  Layers as LayersIcon,
+  FilterList as FilterIcon,
+  Favorite as FavoriteIcon,
+  Share as ShareIcon,
+  Directions as DirectionsIcon,
+  PhotoCamera as PhotoIcon,
+  Star as StarIcon,
+  People as PeopleIcon,
+  Schedule as ScheduleIcon,
+  LocationOn as LocationIcon,
+} from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -31,6 +56,8 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  Circle,
+  Polyline,
 } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
@@ -46,6 +73,40 @@ const GEOCODING_CACHE_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 30 days
 const GEOCODING_BATCH_SIZE = 5;
 const GEOCODING_BATCH_DELAY = 100; // ms
 const SEARCH_DEBOUNCE_DELAY = 300; // ms
+
+// Map layer configurations
+const MAP_LAYERS = {
+  street: {
+    name: "Street View",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+      "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+  },
+  satellite: {
+    name: "Satellite",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+  },
+  terrain: {
+    name: "Terrain",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution:
+      "Map data: &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors, <a href='http://viewfinderpanoramas.org'>SRTM</a> | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a> (<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>)",
+  },
+};
+
+// Destination categories for enhanced filtering
+const DESTINATION_CATEGORIES = [
+  "Adventure & Sports",
+  "Cultural & Heritage",
+  "Nature & Wildlife",
+  "Food & Wine",
+  "Urban Attractions",
+  "Beaches & Coastal",
+  "Mountains & Hiking",
+  "Family-Friendly",
+];
 
 // Utility functions
 const isValidCoordinate = (lat, lon) => {
@@ -94,14 +155,19 @@ const fixLeafletIcons = () => {
 };
 
 /**
- * Create custom marker icons based on capacity percentage
+ * Create custom marker icons based on capacity percentage and category
  * Green: < 50%, Orange: 50-80%, Red: > 80%
  */
-const createCustomIcon = (capacityPercentage) => {
+const createCustomIcon = (
+  capacityPercentage,
+  category = null,
+  rating = null
+) => {
   let color = "green";
   if (capacityPercentage > 80) color = "red";
   else if (capacityPercentage > 50) color = "orange";
 
+  // Enhanced icons with category and rating indicators
   return new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
     shadowUrl:
@@ -111,6 +177,39 @@ const createCustomIcon = (capacityPercentage) => {
     popupAnchor: [1, -34],
     shadowSize: [41, 41],
   });
+};
+
+/**
+ * Create special markers for user location
+ */
+const createUserLocationIcon = () => {
+  return new L.Icon({
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [30, 48],
+    iconAnchor: [15, 48],
+    popupAnchor: [1, -42],
+    shadowSize: [48, 48],
+  });
+};
+
+/**
+ * Calculate distance between two coordinates (Haversine formula)
+ */
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
 };
 
 /**
@@ -169,6 +268,25 @@ function Map() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sortBy, setSortBy] = useState("Name (A-Z)");
 
+  // Enhanced filtering state
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [ratingFilter, setRatingFilter] = useState(0);
+  const [radiusFilter, setRadiusFilter] = useState(50);
+
+  // Map display state
+  const [currentLayer, setCurrentLayer] = useState("street");
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+
+  // User location state
+  const [userLocation, setUserLocation] = useState(null);
+  const [trackingLocation, setTrackingLocation] = useState(false);
+
+  // Favorites and sharing
+  const [favorites, setFavorites] = useState([]);
+
   // Autocompletion state
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -179,6 +297,95 @@ function Map() {
 
   // Debounced search term to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
+
+  /**
+   * Get user's current location
+   */
+  const getUserLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    setTrackingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lon: longitude });
+        setTrackingLocation(false);
+
+        // Center map on user location
+        if (mapInstance) {
+          mapInstance.flyTo([latitude, longitude], 12);
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setTrackingLocation(false);
+        setError(`Location error: ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    );
+  }, [mapInstance]);
+
+  /**
+   * Toggle favorite destination
+   */
+  const toggleFavorite = useCallback((destinationId) => {
+    setFavorites((prev) => {
+      const newFavorites = prev.includes(destinationId)
+        ? prev.filter((id) => id !== destinationId)
+        : [...prev, destinationId];
+
+      // Save to localStorage
+      localStorage.setItem("favorites", JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  }, []);
+
+  /**
+   * Share destination functionality
+   */
+  const shareDestination = useCallback(async (destination) => {
+    const shareData = {
+      title: `${destination.name} - TourismPulseNZ`,
+      text: `Check out ${destination.name}: ${destination.description}`,
+      url: `${window.location.origin}/destinations?highlight=${destination.destination_id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        // You could show a toast notification here
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  }, []);
+
+  /**
+   * Get directions to destination
+   */
+  const getDirections = useCallback(
+    (destination) => {
+      if (!userLocation) {
+        getUserLocation();
+        return;
+      }
+
+      const directionsUrl = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lon}/${destination.lat},${destination.lon}`;
+      window.open(directionsUrl, "_blank");
+    },
+    [userLocation, getUserLocation]
+  );
 
   /**
    * Fetch destinations from API based on current filters
@@ -328,6 +535,36 @@ function Map() {
           );
         }
 
+        // Apply category filter
+        if (selectedCategory !== "All") {
+          filtered = filtered.filter(
+            (dest) => dest.category === selectedCategory
+          );
+        }
+
+        // Apply rating filter
+        if (ratingFilter > 0) {
+          filtered = filtered.filter(
+            (dest) => (dest.rating || 0) >= ratingFilter
+          );
+        }
+
+        // Apply radius filter if user location is available
+        if (userLocation && radiusFilter < 50) {
+          filtered = filtered.filter((dest) => {
+            if (dest.latitude && dest.longitude) {
+              const distance = calculateDistance(
+                userLocation.lat,
+                userLocation.lon,
+                parseFloat(dest.latitude),
+                parseFloat(dest.longitude)
+              );
+              return distance <= radiusFilter;
+            }
+            return true;
+          });
+        }
+
         // Apply sorting
         switch (sortBy) {
           case "Name (A-Z)":
@@ -427,7 +664,35 @@ function Map() {
     setSortBy("Name (A-Z)");
     setSearchTerm("");
     setSearchInputValue("");
+    setSelectedCategory("All");
+    setPriceRange([0, 500]);
+    setRatingFilter(0);
+    setRadiusFilter(50);
   }, []);
+
+  const handleCategoryChange = useCallback((e) => {
+    setSelectedCategory(e.target.value);
+  }, []);
+
+  const handlePriceRangeChange = useCallback((event, newValue) => {
+    setPriceRange(newValue);
+  }, []);
+
+  const handleRatingFilterChange = useCallback((event, newValue) => {
+    setRatingFilter(newValue);
+  }, []);
+
+  const handleRadiusFilterChange = useCallback((event, newValue) => {
+    setRadiusFilter(newValue);
+  }, []);
+
+  const handleLayerChange = useCallback((layerType) => {
+    setCurrentLayer(layerType);
+  }, []);
+
+  const handleDrawerToggle = useCallback(() => {
+    setDrawerOpen(!drawerOpen);
+  }, [drawerOpen]);
 
   // Map ready handler
   const handleMapReady = useCallback((map) => {
@@ -447,6 +712,16 @@ function Map() {
   useEffect(() => {
     fixLeafletIcons();
     cleanCacheExpiredEntries(); // Clean up expired geocoding cache
+
+    // Load favorites from localStorage
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (error) {
+        console.error("Error loading favorites:", error);
+      }
+    }
   }, []);
 
   // Fetch destinations when filters change
@@ -460,6 +735,18 @@ function Map() {
       applySearchAndSort(destinations);
     }
   }, [destinations, applySearchAndSort]);
+
+  // Update the applySearchAndSort dependency array
+  const applySearchAndSortMemo = useCallback(applySearchAndSort, [
+    debouncedSearchTerm,
+    sortBy,
+    geocodeDestination,
+    mapInstance,
+    selectedCategory,
+    ratingFilter,
+    userLocation,
+    radiusFilter,
+  ]);
 
   // Clean up expired geocoding cache entries on mount
   useEffect(() => {
@@ -482,10 +769,143 @@ function Map() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          Destination Map
-        </Typography>
-        {/* Filters/Search mirror Destinations.js */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
+          <Typography variant="h3" className={classes.title}>
+            Destination Map
+          </Typography>
+          <Box display="flex" gap={1}>
+            <Tooltip title="My Location">
+              <IconButton
+                onClick={getUserLocation}
+                disabled={trackingLocation}
+                className={classes.actionButton}
+                sx={{
+                  bgcolor: "#374549",
+                  color: "#48d9f3",
+                  border: "1px solid #48d9f3",
+                  "&:hover": {
+                    bgcolor: "#48d9f3",
+                    color: "#282f33",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#282f33",
+                    color: "#82c2ce",
+                  },
+                }}
+              >
+                {trackingLocation ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <MyLocationIcon />
+                )}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Map Layers">
+              <IconButton
+                onClick={() => setDrawerOpen(true)}
+                className={classes.actionButton}
+                sx={{
+                  bgcolor: "#374549",
+                  color: "#48d9f3",
+                  border: "1px solid #48d9f3",
+                  "&:hover": {
+                    bgcolor: "#48d9f3",
+                    color: "#282f33",
+                  },
+                }}
+              >
+                <LayersIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Advanced Filters">
+              <IconButton
+                onClick={handleDrawerToggle}
+                className={classes.actionButton}
+                sx={{
+                  bgcolor: drawerOpen ? "#48d9f3" : "#374549",
+                  color: drawerOpen ? "#282f33" : "#48d9f3",
+                  border: "1px solid #48d9f3",
+                  "&:hover": {
+                    bgcolor: "#48d9f3",
+                    color: "#282f33",
+                  },
+                }}
+              >
+                <FilterIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+        {/* Enhanced Filters Section */}
+        <Grid container spacing={2} className={classes.filtersContainer}>
+          <Grid item xs={12}>
+            <Typography variant="h6" color="white" gutterBottom>
+              Enhanced Search & Filters
+            </Typography>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <FormControl fullWidth>
+              <InputLabel>Category</InputLabel>
+              <Select value={selectedCategory} onChange={handleCategoryChange}>
+                <MenuItem value="All">All Categories</MenuItem>
+                {DESTINATION_CATEGORIES.map((category) => (
+                  <MenuItem key={category} value={category}>
+                    {category}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <Box>
+              <Typography variant="body2" color="white" gutterBottom>
+                Minimum Rating: {ratingFilter} stars
+              </Typography>
+              <Slider
+                value={ratingFilter}
+                onChange={handleRatingFilterChange}
+                min={0}
+                max={5}
+                step={0.5}
+                marks={[
+                  { value: 0, label: "Any" },
+                  { value: 2.5, label: "2.5+" },
+                  { value: 5, label: "5" },
+                ]}
+                sx={{ color: "white" }}
+              />
+            </Box>
+          </Grid>
+          {userLocation && (
+            <Grid item xs={12} md={6}>
+              <Box>
+                <Typography variant="body2" color="white" gutterBottom>
+                  Radius: {radiusFilter === 50 ? "All" : `${radiusFilter} km`}
+                </Typography>
+                <Slider
+                  value={radiusFilter}
+                  onChange={handleRadiusFilterChange}
+                  min={1}
+                  max={50}
+                  step={1}
+                  marks={[
+                    { value: 1, label: "1km" },
+                    { value: 25, label: "25km" },
+                    { value: 50, label: "All" },
+                  ]}
+                  sx={{ color: "white" }}
+                />
+              </Box>
+            </Grid>
+          )}
+        </Grid>
+
+        {/* Basic Filters/Search mirror Destinations.js */}
         <Grid container spacing={2} className={classes.filtersContainer}>
           <Grid item xs={12} md={9} lg={10}>
             <Autocomplete
@@ -625,12 +1045,47 @@ function Map() {
             >
               <MapEventsHandler onMapReady={handleMapReady} />
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                key={currentLayer}
+                url={MAP_LAYERS[currentLayer].url}
+                attribution={MAP_LAYERS[currentLayer].attribution}
                 maxZoom={19}
                 tileSize={256}
                 detectRetina={true}
               />
+
+              {/* User Location Marker */}
+              {userLocation && (
+                <Marker
+                  position={[userLocation.lat, userLocation.lon]}
+                  icon={createUserLocationIcon()}
+                >
+                  <Popup>
+                    <Box p={1}>
+                      <Typography variant="h6" gutterBottom>
+                        <LocationIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+                        Your Location
+                      </Typography>
+                      <Typography variant="body2">
+                        Lat: {userLocation.lat.toFixed(6)}
+                        <br />
+                        Lng: {userLocation.lon.toFixed(6)}
+                      </Typography>
+                    </Box>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* User Location Accuracy Circle */}
+              {userLocation && (
+                <Circle
+                  center={[userLocation.lat, userLocation.lon]}
+                  radius={100}
+                  fillColor="blue"
+                  fillOpacity={0.1}
+                  color="blue"
+                  weight={1}
+                />
+              )}
               <MarkerClusterGroup
                 chunkedLoading
                 spiderfyOnMaxZoom={true}
@@ -648,46 +1103,165 @@ function Map() {
                         )
                       : 0;
 
+                  const isFavorite = favorites.includes(dest.destination_id);
+                  const distance = userLocation
+                    ? calculateDistance(
+                        userLocation.lat,
+                        userLocation.lon,
+                        dest.lat,
+                        dest.lon
+                      )
+                    : null;
+
                   return (
                     <Marker
                       key={dest.destination_id}
                       position={[dest.lat, dest.lon]}
-                      icon={createCustomIcon(capacityPercentage)}
+                      icon={createCustomIcon(
+                        capacityPercentage,
+                        dest.category,
+                        dest.rating
+                      )}
                     >
-                      <Popup maxWidth={300} closeButton={true}>
-                        <Box p={1}>
-                          <Typography variant="h6" gutterBottom>
-                            {dest.name}
-                          </Typography>
+                      <Popup maxWidth={350} closeButton={true}>
+                        <Box>
+                          {/* Destination Image */}
+                          {dest.photos && dest.photos[0] && (
+                            <CardMedia
+                              component="img"
+                              height="150"
+                              image={"/images/destinations/" + dest.photos[0]}
+                              alt={dest.name}
+                              sx={{ borderRadius: 1, mb: 2 }}
+                            />
+                          )}
+
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="flex-start"
+                            mb={1}
+                          >
+                            <Typography variant="h6" sx={{ flex: 1, mr: 1 }}>
+                              {dest.name}
+                            </Typography>
+                            <Box display="flex" gap={0.5}>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  toggleFavorite(dest.destination_id)
+                                }
+                                sx={{ color: isFavorite ? "red" : "gray" }}
+                              >
+                                <FavoriteIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => shareDestination(dest)}
+                              >
+                                <ShareIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+
+                          {/* Rating */}
+                          {dest.rating && (
+                            <Box display="flex" alignItems="center" mb={1}>
+                              <Rating
+                                value={dest.rating}
+                                readOnly
+                                size="small"
+                              />
+                              <Typography variant="body2" sx={{ ml: 1 }}>
+                                ({dest.rating})
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Category */}
+                          {dest.category && (
+                            <Chip
+                              label={dest.category}
+                              size="small"
+                              sx={{ mb: 1 }}
+                            />
+                          )}
+
+                          {/* Distance */}
+                          {distance !== null && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              gutterBottom
+                            >
+                              <LocationIcon
+                                sx={{
+                                  fontSize: 14,
+                                  mr: 0.5,
+                                  verticalAlign: "middle",
+                                }}
+                              />
+                              {distance.toFixed(1)} km away
+                            </Typography>
+                          )}
+
+                          {/* Description */}
                           {dest.description && (
                             <Typography variant="body2" paragraph>
-                              {dest.description.length > 100
-                                ? `${dest.description.substring(0, 100)}...`
+                              {dest.description.length > 120
+                                ? `${dest.description.substring(0, 120)}...`
                                 : dest.description}
                             </Typography>
                           )}
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Visitors:</strong>{" "}
-                            {dest.current_visitors || 0} /{" "}
-                            {dest.capacity || "N/A"}
-                          </Typography>
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Status:</strong> {dest.status || "Unknown"}
-                          </Typography>
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Capacity:</strong> {capacityPercentage}%
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() =>
-                              handleViewDetails(dest.destination_id)
-                            }
-                            sx={{ mt: 1 }}
-                            fullWidth
-                          >
-                            View Details
-                          </Button>
+
+                          {/* Stats */}
+                          <Grid container spacing={1} sx={{ mb: 2 }}>
+                            <Grid item xs={6}>
+                              <Box display="flex" alignItems="center">
+                                <PeopleIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                <Typography variant="body2">
+                                  {dest.current_visitors || 0}/
+                                  {dest.capacity || "N/A"}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Box display="flex" alignItems="center">
+                                <ScheduleIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                <Typography variant="body2">
+                                  {capacityPercentage}%
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+
+                          {/* Action Buttons */}
+                          <Grid container spacing={1}>
+                            <Grid item xs={6}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() =>
+                                  handleViewDetails(dest.destination_id)
+                                }
+                                fullWidth
+                              >
+                                View Details
+                              </Button>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => getDirections(dest)}
+                                disabled={!userLocation}
+                                startIcon={<DirectionsIcon />}
+                                fullWidth
+                              >
+                                Directions
+                              </Button>
+                            </Grid>
+                          </Grid>
                         </Box>
                       </Popup>
                     </Marker>
@@ -697,6 +1271,167 @@ function Map() {
             </MapContainer>
           )}
         </Box>
+
+        {/* Layer Control Drawer */}
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: 300,
+              bgcolor: "#282f33",
+              "& .MuiDrawer-paper": {
+                bgcolor: "#282f33",
+                color: "#ffffff",
+                backgroundImage: "linear-gradient(135deg, #282f33, #374549)",
+              },
+            },
+          }}
+        >
+          <Box sx={{ p: 2, bgcolor: "#282f33", minHeight: "100vh" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 600 }}
+            >
+              Map Controls
+            </Typography>
+            <Divider sx={{ mb: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+
+            {/* Layer Selection */}
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Map Layers
+            </Typography>
+            <List>
+              {Object.entries(MAP_LAYERS).map(([key, layer]) => (
+                <ListItem
+                  key={key}
+                  button
+                  onClick={() => handleLayerChange(key)}
+                  selected={currentLayer === key}
+                  sx={{
+                    borderRadius: 1,
+                    mb: 0.5,
+                    bgcolor:
+                      currentLayer === key
+                        ? "rgba(72, 217, 243, 0.3)"
+                        : "rgba(255, 255, 255, 0.05)",
+                    "&:hover": {
+                      bgcolor: "rgba(72, 217, 243, 0.1)",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "rgba(72, 217, 243, 0.3)",
+                    },
+                    border:
+                      currentLayer === key
+                        ? "1px solid #48d9f3"
+                        : "1px solid transparent",
+                  }}
+                >
+                  <ListItemText
+                    primary={layer.name}
+                    primaryTypographyProps={{
+                      color: "#ffffff",
+                      fontWeight: currentLayer === key ? 600 : 400,
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+
+            <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+
+            {/* Display Options */}
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Display Options
+            </Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showHeatmap}
+                  onChange={(e) => setShowHeatmap(e.target.checked)}
+                  sx={{
+                    "& .MuiSwitch-switchBase.Mui-checked": {
+                      color: "#48d9f3",
+                    },
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      bgcolor: "#48d9f3",
+                    },
+                    "& .MuiSwitch-track": {
+                      bgcolor: "rgba(255, 255, 255, 0.2)",
+                    },
+                  }}
+                />
+              }
+              label="Show Visitor Density"
+              sx={{
+                color: "#ffffff",
+                mb: 1,
+                "& .MuiFormControlLabel-label": {
+                  color: "#ffffff",
+                  fontSize: "0.95rem",
+                },
+              }}
+            />
+
+            {/* Statistics */}
+            <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Statistics
+            </Typography>
+            <Box
+              sx={{
+                bgcolor: "rgba(255,255,255,0.05)",
+                p: 1.5,
+                borderRadius: 1,
+                mb: 1,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "#bdd1d4", mb: 0.5 }}>
+                Total Destinations:{" "}
+                <span style={{ color: "#48d9f3", fontWeight: 600 }}>
+                  {geocodedDestinations.length}
+                </span>
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#bdd1d4", mb: 0.5 }}>
+                Favorites:{" "}
+                <span style={{ color: "#48d9f3", fontWeight: 600 }}>
+                  {favorites.length}
+                </span>
+              </Typography>
+              {userLocation && (
+                <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
+                  Location:{" "}
+                  <span style={{ color: "#4caf50", fontWeight: 600 }}>
+                    Enabled
+                  </span>
+                </Typography>
+              )}
+              {!userLocation && (
+                <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
+                  Location:{" "}
+                  <span style={{ color: "#ff9800", fontWeight: 600 }}>
+                    Disabled
+                  </span>
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Drawer>
       </Container>
     </LocalizationProvider>
   );
