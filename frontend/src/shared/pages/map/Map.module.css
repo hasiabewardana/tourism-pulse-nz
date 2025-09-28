@@ -508,6 +508,121 @@
   }
 }
 
+/* Route Instructions Styling */
+.routeInstructions {
+  background: linear-gradient(
+    135deg,
+    rgba(72, 217, 243, 0.05),
+    rgba(72, 217, 243, 0.1)
+  );
+  border: 1px solid rgba(72, 217, 243, 0.2);
+  border-radius: var(--tp-radius-md);
+  padding: var(--tp-space-sm);
+  margin-bottom: var(--tp-space-sm);
+}
+
+.routeSummary {
+  background: linear-gradient(
+    135deg,
+    rgba(72, 217, 243, 0.1),
+    rgba(72, 217, 243, 0.15)
+  );
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  padding: var(--tp-space-sm);
+  margin-bottom: var(--tp-space-md);
+}
+
+/* Enhanced Route line animations */
+@keyframes routeFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -15;
+  }
+}
+
+@keyframes routePulse {
+  0%,
+  100% {
+    stroke-width: 5;
+    opacity: 1;
+  }
+  50% {
+    stroke-width: 6;
+    opacity: 0.8;
+  }
+}
+
+/* Apply animations to route lines */
+.mapContainer :global(.leaflet-interactive[stroke="#48d9f3"]) {
+  animation: routeFlow 3s linear infinite, routePulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(72, 217, 243, 0.5));
+}
+
+/* Route markers styling */
+.mapContainer :global(.route-waypoint-marker) {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-waypoint-marker:hover) {
+  transform: scale(1.2);
+  transition: transform 0.2s ease;
+}
+
+.mapContainer :global(.route-start-marker) {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-end-marker) {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-start-marker:hover),
+.mapContainer :global(.route-end-marker:hover) {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Route tooltip styling */
+.mapContainer :global(.leaflet-tooltip) {
+  background: linear-gradient(135deg, #0fa4af, #48d9f3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mapContainer :global(.leaflet-tooltip::before) {
+  border-top-color: #0fa4af !important;
+}
+
+/* Instructions scroll styling */
+.instructionsScroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(72, 217, 243, 0.5) rgba(255, 255, 255, 0.1);
+}
+
+.instructionsScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.instructionsScroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.instructionsScroll::-webkit-scrollbar-thumb {
+  background: rgba(72, 217, 243, 0.5);
+  border-radius: 2px;
+}
+
+.instructionsScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(72, 217, 243, 0.7);
+}
+
 .statItem {
   text-align: center;
 }

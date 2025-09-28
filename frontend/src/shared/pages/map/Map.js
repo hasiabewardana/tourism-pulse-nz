@@ -45,6 +45,10 @@ import {
   People as PeopleIcon,
   Schedule as ScheduleIcon,
   LocationOn as LocationIcon,
+  Clear as ClearIcon,
+  Navigation as NavigationIcon,
+  AccessTime as AccessTimeIcon,
+  Straighten as StraightenIcon,
 } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -58,6 +62,7 @@ import {
   useMapEvents,
   Circle,
   Polyline,
+  Tooltip as LeafletTooltip,
 } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
@@ -196,6 +201,79 @@ const createUserLocationIcon = () => {
 };
 
 /**
+ * Create route waypoint markers for distance indicators
+ */
+const createRouteWaypointIcon = (distanceKm) => {
+  // Create a custom div icon for distance markers
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #0fa4af, #48d9f3);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    ">${distanceKm}km</div>`,
+    className: "route-waypoint-marker",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
+
+/**
+ * Create start/end route markers
+ */
+const createRouteStartIcon = () => {
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: white;
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    ">START</div>`,
+    className: "route-start-marker",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
+
+const createRouteEndIcon = () => {
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #f44336, #ef5350);
+      color: white;
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    ">END</div>`,
+    className: "route-end-marker",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
+
+/**
  * Calculate distance between two coordinates (Haversine formula)
  */
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -287,6 +365,15 @@ function Map() {
   // Favorites and sharing
   const [favorites, setFavorites] = useState([]);
 
+  // Routing state
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const [routeInstructions, setRouteInstructions] = useState([]);
+  const [showRouteInstructions, setShowRouteInstructions] = useState(false);
+  const [routeDistance, setRouteDistance] = useState(null);
+  const [routeDuration, setRouteDuration] = useState(null);
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [routeWaypoints, setRouteWaypoints] = useState([]);
+
   // Autocompletion state
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -372,19 +459,145 @@ function Map() {
   }, []);
 
   /**
-   * Get directions to destination
+   * Calculate route using OpenStreetMap routing service
    */
-  const getDirections = useCallback(
-    (destination) => {
+  const calculateRoute = useCallback(
+    async (destination) => {
       if (!userLocation) {
         getUserLocation();
         return;
       }
 
-      const directionsUrl = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lon}/${destination.lat},${destination.lon}`;
-      window.open(directionsUrl, "_blank");
+      setIsCalculatingRoute(true);
+      setRouteCoordinates([]);
+      setRouteInstructions([]);
+      setRouteWaypoints([]);
+
+      try {
+        // Using OSRM (Open Source Routing Machine) - free routing service
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${userLocation.lon},${userLocation.lat};${destination.lon},${destination.lat}?overview=full&geometries=geojson&steps=true`
+        );
+
+        if (!response.ok) {
+          throw new Error("Routing service unavailable");
+        }
+
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+
+          // Extract route coordinates
+          const coordinates = route.geometry.coordinates.map((coord) => [
+            coord[1],
+            coord[0],
+          ]); // Reverse lon,lat to lat,lon
+          setRouteCoordinates(coordinates);
+
+          // Create waypoint markers every 5km for distance reference
+          const waypoints = [];
+          const totalDistance = route.distance; // in meters
+          let accumulatedDistance = 0;
+          let waypointDistance = 5000; // 5km intervals
+
+          for (let i = 1; i < coordinates.length; i++) {
+            const segmentDistance =
+              calculateDistance(
+                coordinates[i - 1][0],
+                coordinates[i - 1][1],
+                coordinates[i][0],
+                coordinates[i][1]
+              ) * 1000; // Convert to meters
+
+            accumulatedDistance += segmentDistance;
+
+            // Add waypoint every 5km
+            if (accumulatedDistance >= waypointDistance) {
+              waypoints.push({
+                position: coordinates[i],
+                distance: Math.round(waypointDistance / 1000),
+                totalDistance: Math.round(accumulatedDistance / 1000),
+              });
+              waypointDistance += 5000; // Next 5km mark
+            }
+          }
+          setRouteWaypoints(waypoints);
+
+          // Extract route instructions
+          const instructions = [];
+          route.legs.forEach((leg) => {
+            leg.steps.forEach((step, index) => {
+              instructions.push({
+                instruction:
+                  step.maneuver.instruction ||
+                  `Continue for ${(step.distance / 1000).toFixed(1)} km`,
+                distance: step.distance,
+                duration: step.duration,
+                type: step.maneuver.type,
+              });
+            });
+          });
+          setRouteInstructions(instructions);
+
+          // Set route summary
+          setRouteDistance((route.distance / 1000).toFixed(1)); // Convert to km
+          setRouteDuration(Math.round(route.duration / 60)); // Convert to minutes
+
+          // Show route instructions panel
+          setShowRouteInstructions(true);
+
+          // Fit map to show the entire route
+          if (mapInstance && coordinates.length > 0) {
+            const bounds = L.latLngBounds(coordinates);
+            mapInstance.fitBounds(bounds, { padding: [20, 20] });
+          }
+        }
+      } catch (error) {
+        console.error("Error calculating route:", error);
+
+        // Fallback to Google Maps if routing service fails
+        const userConfirm = window.confirm(
+          "Our internal routing service is temporarily unavailable. Would you like to open directions in Google Maps instead?"
+        );
+
+        if (userConfirm) {
+          const directionsUrl = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lon}/${destination.lat},${destination.lon}`;
+          window.open(directionsUrl, "_blank");
+        }
+      } finally {
+        setIsCalculatingRoute(false);
+      }
     },
-    [userLocation, getUserLocation]
+    [userLocation, getUserLocation, mapInstance]
+  );
+
+  /**
+   * Clear current route
+   */
+  const clearRoute = useCallback(() => {
+    setRouteCoordinates([]);
+    setRouteInstructions([]);
+    setShowRouteInstructions(false);
+    setRouteDistance(null);
+    setRouteDuration(null);
+    setRouteWaypoints([]);
+  }, []);
+
+  /**
+   * Get directions to destination (updated to use internal routing)
+   */
+  const getDirections = useCallback(
+    (destination) => {
+      if (!userLocation) {
+        alert("Please enable location access first");
+        getUserLocation();
+        return;
+      }
+
+      calculateRoute(destination);
+    },
+    [userLocation, getUserLocation, calculateRoute]
   );
 
   /**
@@ -839,6 +1052,25 @@ function Map() {
                 <FilterIcon />
               </IconButton>
             </Tooltip>
+            {routeCoordinates.length > 0 && (
+              <Tooltip title="Clear Route">
+                <IconButton
+                  onClick={clearRoute}
+                  className={classes.actionButton}
+                  sx={{
+                    bgcolor: "#ff9800",
+                    color: "#ffffff",
+                    border: "1px solid #ff9800",
+                    "&:hover": {
+                      bgcolor: "#e68900",
+                      color: "#ffffff",
+                    },
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+            )}
           </Box>
         </Box>
         {/* Enhanced Filters Section */}
@@ -1086,6 +1318,99 @@ function Map() {
                   weight={1}
                 />
               )}
+
+              {/* Route Visualization */}
+              {routeCoordinates.length > 0 && (
+                <>
+                  {/* Background route line (darker/thicker for outline effect) */}
+                  <Polyline
+                    positions={routeCoordinates}
+                    color="#0fa4af"
+                    weight={8}
+                    opacity={0.7}
+                  />
+                  {/* Main route line (bright and animated) */}
+                  <Polyline
+                    positions={routeCoordinates}
+                    color="#48d9f3"
+                    weight={5}
+                    opacity={1}
+                    dashArray="10, 5"
+                    className="route-line-animated"
+                  >
+                    <LeafletTooltip permanent={false} direction="center">
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Route to Destination</strong>
+                        <br />
+                        <span>
+                          {routeDistance} km • {routeDuration} min
+                        </span>
+                      </div>
+                    </LeafletTooltip>
+                  </Polyline>
+
+                  {/* Route start marker */}
+                  <Marker
+                    position={routeCoordinates[0]}
+                    icon={createRouteStartIcon()}
+                    zIndexOffset={1000}
+                  >
+                    <LeafletTooltip
+                      direction="top"
+                      permanent={false}
+                      opacity={1}
+                    >
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Start Point</strong>
+                        <br />
+                        <span>Your Location</span>
+                      </div>
+                    </LeafletTooltip>
+                  </Marker>
+
+                  {/* Route end marker */}
+                  <Marker
+                    position={routeCoordinates[routeCoordinates.length - 1]}
+                    icon={createRouteEndIcon()}
+                    zIndexOffset={1000}
+                  >
+                    <LeafletTooltip
+                      direction="top"
+                      permanent={false}
+                      opacity={1}
+                    >
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Destination</strong>
+                        <br />
+                        <span>
+                          {routeDistance} km • {routeDuration} min
+                        </span>
+                      </div>
+                    </LeafletTooltip>
+                  </Marker>
+
+                  {/* Route waypoint markers for distance indicators */}
+                  {routeWaypoints.map((waypoint, index) => (
+                    <Marker
+                      key={`waypoint-${index}`}
+                      position={waypoint.position}
+                      icon={createRouteWaypointIcon(waypoint.totalDistance)}
+                    >
+                      <LeafletTooltip
+                        direction="top"
+                        offset={[0, -10]}
+                        opacity={1}
+                      >
+                        <div style={{ textAlign: "center", fontSize: "11px" }}>
+                          <strong>{waypoint.totalDistance} km</strong>
+                          <br />
+                          <span>from start</span>
+                        </div>
+                      </LeafletTooltip>
+                    </Marker>
+                  ))}
+                </>
+              )}
               <MarkerClusterGroup
                 chunkedLoading
                 spiderfyOnMaxZoom={true}
@@ -1254,11 +1579,22 @@ function Map() {
                                 variant="outlined"
                                 size="small"
                                 onClick={() => getDirections(dest)}
-                                disabled={!userLocation}
-                                startIcon={<DirectionsIcon />}
+                                disabled={!userLocation || isCalculatingRoute}
+                                startIcon={
+                                  isCalculatingRoute ? (
+                                    <CircularProgress
+                                      size={16}
+                                      color="inherit"
+                                    />
+                                  ) : (
+                                    <DirectionsIcon />
+                                  )
+                                }
                                 fullWidth
                               >
-                                Directions
+                                {isCalculatingRoute
+                                  ? "Calculating..."
+                                  : "Directions"}
                               </Button>
                             </Grid>
                           </Grid>
@@ -1383,6 +1719,154 @@ function Map() {
                 },
               }}
             />
+
+            {/* Route Instructions */}
+            {showRouteInstructions && (
+              <>
+                <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={1}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ color: "#ffffff", fontWeight: 500 }}
+                  >
+                    Route Instructions
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={clearRoute}
+                    sx={{ color: "#ff9800" }}
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+
+                {/* Enhanced Route Summary */}
+                <Box
+                  sx={{
+                    bgcolor:
+                      "linear-gradient(135deg, rgba(15, 164, 175, 0.2), rgba(72, 217, 243, 0.2))",
+                    p: 2,
+                    borderRadius: 2,
+                    mb: 2,
+                    border: "2px solid rgba(72, 217, 243, 0.4)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "#48d9f3",
+                      fontWeight: 600,
+                      mb: 1.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    🗺️ Route Overview
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <StraightenIcon
+                          sx={{ fontSize: 18, mr: 0.5, color: "#48d9f3" }}
+                        />
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#ffffff", fontWeight: 500 }}
+                        >
+                          {routeDistance} km
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Total Distance
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <AccessTimeIcon
+                          sx={{ fontSize: 18, mr: 0.5, color: "#48d9f3" }}
+                        />
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#ffffff", fontWeight: 500 }}
+                        >
+                          {routeDuration} min
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Estimated Time
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  {routeWaypoints.length > 0 && (
+                    <Box
+                      mt={1.5}
+                      pt={1.5}
+                      borderTop="1px solid rgba(255,255,255,0.2)"
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#ffffff", mb: 0.5 }}
+                      >
+                        📍 {routeWaypoints.length} waypoint
+                        {routeWaypoints.length !== 1 ? "s" : ""} marked
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Distance markers every 5km along the route
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Instructions List */}
+                <Box sx={{ maxHeight: 200, overflowY: "auto" }}>
+                  {routeInstructions.map((instruction, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.05)",
+                        p: 1,
+                        borderRadius: 1,
+                        mb: 1,
+                        border: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      <Box display="flex" alignItems="flex-start">
+                        <NavigationIcon
+                          sx={{
+                            fontSize: 14,
+                            mr: 1,
+                            mt: 0.2,
+                            color: "#48d9f3",
+                          }}
+                        />
+                        <Box flex={1}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#ffffff", fontSize: "0.85rem" }}
+                          >
+                            {instruction.instruction}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#bdd1d4" }}
+                          >
+                            {(instruction.distance / 1000).toFixed(1)} km
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </>
+            )}
 
             {/* Statistics */}
             <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
