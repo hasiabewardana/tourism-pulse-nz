@@ -17,7 +17,7 @@ import slugify from "slugify";
 
 // Image compression configurations
 const thumbnailConfig = {
-  quality: 0.8,
+  quality: 1,
   maxWidth: 400,
   maxHeight: 200,
   autoRotate: true,
@@ -25,9 +25,9 @@ const thumbnailConfig = {
 };
 
 const photoConfig = {
-  quality: 0.8,
-  maxWidth: 800,
-  maxHeight: 400,
+  quality: 1,
+  maxWidth: 1200,
+  maxHeight: 600,
   autoRotate: true,
   compressFormat: "JPG",
 };
@@ -49,6 +49,28 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
   const [errors, setErrors] = useState({});
   const [locationSuggestions, setLocationSuggestions] = useState([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [modifiedFields, setModifiedFields] = useState(new Set());
+
+  // Helper function to get field style based on modification status
+  const getFieldStyle = (fieldName) => {
+    if (!destination) return {}; // No styling for new destinations
+    return modifiedFields.has(fieldName)
+      ? {
+          "& .MuiOutlinedInput-root": {
+            borderColor: "#48d9f3",
+            "&:hover": { borderColor: "#48d9f3" },
+            "&.Mui-focused": { borderColor: "#48d9f3" },
+          },
+          "& .MuiSelect-root": {
+            borderColor: "#48d9f3",
+          },
+          "& .MuiFormLabel-root": {
+            color: "#48d9f3",
+          },
+        }
+      : {};
+  };
+
   useEffect(() => {
     if (destination?.location) {
       const match = destination.location.match(/POINT\(([^ ]+) ([^ ]+)\)/);
@@ -66,6 +88,37 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: null }));
+
+    // Track modified fields for editing mode
+    if (destination) {
+      let originalValue = destination[name];
+
+      // Handle status comparison - form stores lowercase, destination might be capitalized
+      if (name === "status") {
+        originalValue = destination.status?.toLowerCase();
+        console.log("Status comparison:", {
+          newValue: value,
+          originalValue: originalValue,
+          destinationStatus: destination.status,
+        });
+      }
+
+      if (value !== originalValue) {
+        setModifiedFields((prev) => new Set([...prev, name]));
+        console.log(
+          `Field ${name} marked as modified: ${value} !== ${originalValue}`
+        );
+      } else {
+        setModifiedFields((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(name);
+          return newSet;
+        });
+        console.log(
+          `Field ${name} unmarked as modified: ${value} === ${originalValue}`
+        );
+      }
+    }
   };
 
   // Save uploaded image to server
@@ -101,6 +154,11 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         const slug = slugify(formData.name, { lower: true, strict: true });
         const filename = `${slug}-thumbnail.jpg`;
         await saveFile(resizedBlob, filename, slug);
+
+        // Mark thumbnail as modified
+        if (destination) {
+          setModifiedFields((prev) => new Set([...prev, "thumbnail"]));
+        }
       } catch (error) {
         console.error("Thumbnail resize failed:", error);
       }
@@ -125,6 +183,11 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           await saveFile(blob, filename, slug);
         })
       );
+
+      // Mark photos as modified
+      if (destination) {
+        setModifiedFields((prev) => new Set([...prev, "photos"]));
+      }
     } catch (error) {
       console.error("Photos resize failed:", error);
     }
@@ -234,6 +297,17 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         lon: selectedOption.lon,
       }));
       setErrors((prev) => ({ ...prev, locationName: null }));
+
+      // Mark location as modified if coordinates changed
+      if (destination) {
+        const originalLocation = `POINT(${
+          destination.location?.match(/POINT\(([^ ]+) ([^ ]+)\)/)?.[1]
+        } ${destination.location?.match(/POINT\(([^ ]+) ([^ ]+)\)/)?.[2]})`;
+        const newLocation = `POINT(${selectedOption.lon} ${selectedOption.lat})`;
+        if (originalLocation !== newLocation) {
+          setModifiedFields((prev) => new Set([...prev, "location"]));
+        }
+      }
     }
   };
 
@@ -258,15 +332,22 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     if (formData.capacity <= 0)
       newErrors.capacity = "Capacity must be greater than 0";
 
-    // Check NZ geographic bounds
-    if (
-      formData.lat < -47 ||
-      formData.lat > -35 ||
-      formData.lon < 166 ||
-      formData.lon > 179
-    ) {
-      newErrors.locationName =
-        "Location outside NZ bounds (-35 to -47 lat, 166 to 179 lon)";
+    // For new destinations, location is required
+    if (!destination && !formData.locationName.trim()) {
+      newErrors.locationName = "Location is required for new destinations";
+    }
+
+    // Check NZ geographic bounds only if coordinates are provided
+    if (formData.lat !== 0 && formData.lon !== 0) {
+      if (
+        formData.lat < -47 ||
+        formData.lat > -35 ||
+        formData.lon < 166 ||
+        formData.lon > 179
+      ) {
+        newErrors.locationName =
+          "Location outside NZ bounds (-35 to -47 lat, 166 to 179 lon)";
+      }
     }
 
     return newErrors;
@@ -280,52 +361,91 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       setErrors(validationErrors);
       return;
     }
+
     const slug = slugify(formData.name, { lower: true, strict: true });
-    const photoPaths = [
-      thumbnail ? `${slug}/${slug}-thumbnail.jpg` : "default-thumbnail.jpg",
-    ];
-    for (let i = 0; i < photos.length; i++) {
-      photoPaths.push(`${slug}/${slug}-${i + 1}.jpg`);
-    }
+    const currentLocation = `POINT(${formData.lon} ${formData.lat})`;
+    const currentStatus =
+      formData.status.charAt(0).toUpperCase() + formData.status.slice(1);
+
+    // Always include required fields for both new and existing destinations
     const submitData = {
       name: formData.name,
       description: formData.description,
       capacity: parseInt(formData.capacity),
-      photos: photoPaths,
-      location: `POINT(${formData.lon} ${formData.lat})`,
-      status:
-        formData.status.charAt(0).toUpperCase() + formData.status.slice(1),
+      status: currentStatus,
     };
 
+    // Include location if coordinates are available
+    if (formData.lat !== 0 && formData.lon !== 0) {
+      submitData.location = currentLocation;
+    } else if (destination?.location) {
+      // Keep existing location if no new coordinates
+      submitData.location = destination.location;
+    }
+
+    // Handle photos - always include photos array
+    const photoPaths = [];
+
+    // Add thumbnail path
+    if (thumbnail) {
+      photoPaths.push(`${slug}/${slug}-thumbnail.jpg`);
+    } else if (destination?.thumbnail) {
+      // Keep existing thumbnail if no new one uploaded
+      photoPaths.push(destination.thumbnail);
+    } else {
+      photoPaths.push("default-thumbnail.jpg");
+    }
+
+    // Add additional photos
+    if (photos.length > 0) {
+      // Add new photos
+      for (let i = 0; i < photos.length; i++) {
+        photoPaths.push(`${slug}/${slug}-${i + 1}.jpg`);
+      }
+    } else if (destination?.photos && destination.photos.length > 1) {
+      // Keep existing additional photos if no new ones uploaded
+      photoPaths.push(...destination.photos.slice(1));
+    }
+
+    submitData.photos = photoPaths;
+
+    console.log("Submitting data:", submitData);
     onSubmit(submitData);
   };
 
   return (
     <form className={classes.destinationForm} onSubmit={handleFormSubmit}>
       <TextField
-        label="Name"
+        label={`Name ${modifiedFields.has("name") ? "✎" : ""}`}
         name="name"
         value={formData.name}
         onChange={handleChange}
         required
         error={!!errors.name}
-        helperText={errors.name}
+        helperText={
+          errors.name || (modifiedFields.has("name") ? "Modified" : "")
+        }
         fullWidth
         margin="normal"
+        sx={getFieldStyle("name")}
       />
 
       <TextField
-        label="Description"
+        label={`Description ${modifiedFields.has("description") ? "✎" : ""}`}
         name="description"
         value={formData.description}
         onChange={handleChange}
         required
         error={!!errors.description}
-        helperText={errors.description}
+        helperText={
+          errors.description ||
+          (modifiedFields.has("description") ? "Modified" : "")
+        }
         fullWidth
         margin="normal"
         multiline
         rows={2}
+        sx={getFieldStyle("description")}
       />
 
       <Autocomplete
@@ -339,12 +459,20 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Location Name (e.g., Auckland)"
-            required
+            label={`Location Name (e.g., Auckland) ${
+              modifiedFields.has("location") ? "✎" : ""
+            }`}
+            required={!destination}
             error={!!errors.locationName}
-            helperText={errors.locationName || "Type to search locations in NZ"}
+            helperText={
+              errors.locationName ||
+              (modifiedFields.has("location")
+                ? "Location Modified"
+                : "Type to search locations in NZ")
+            }
             fullWidth
             margin="normal"
+            sx={getFieldStyle("location")}
           />
         )}
         renderOption={(props, option) => (
@@ -385,48 +513,170 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       </Box>
 
       <TextField
-        label="Capacity"
+        label={`Capacity ${modifiedFields.has("capacity") ? "✎" : ""}`}
         name="capacity"
         type="number"
         value={formData.capacity}
         onChange={handleChange}
         required
         error={!!errors.capacity}
-        helperText={errors.capacity}
+        helperText={
+          errors.capacity || (modifiedFields.has("capacity") ? "Modified" : "")
+        }
         fullWidth
         margin="normal"
         inputProps={{ min: 1 }}
+        sx={getFieldStyle("capacity")}
       />
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleThumbnailChange}
-        style={{ margin: "1rem 0" }}
-      />
-      <Typography variant="body2">Thumbnail</Typography>
+      <Box sx={{ marginBottom: "1rem" }}>
+        <Typography variant="body2" sx={{ marginBottom: "0.5rem" }}>
+          Thumbnail {destination && "- Upload new to replace existing"}
+        </Typography>
+        {destination?.thumbnail && !thumbnail && (
+          <Box sx={{ marginBottom: "0.5rem" }}>
+            <img
+              src={`/images/destinations/${destination.thumbnail}`}
+              alt="Current thumbnail"
+              style={{
+                width: "100px",
+                height: "50px",
+                objectFit: "cover",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ display: "block", color: "gray" }}
+            >
+              Current thumbnail
+            </Typography>
+          </Box>
+        )}
+        <input type="file" accept="image/*" onChange={handleThumbnailChange} />
+      </Box>
 
-      <input
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={handlePhotosChange}
-        style={{ margin: "1rem 0" }}
-      />
-      <Typography variant="body2">Additional Photos (up to 5)</Typography>
+      <Box sx={{ marginBottom: "1rem" }}>
+        <Typography variant="body2" sx={{ marginBottom: "0.5rem" }}>
+          Additional Photos (up to 5){" "}
+          {destination && "- Upload new to replace existing"}
+        </Typography>
+        {destination?.photos &&
+          destination.photos.length > 1 &&
+          photos.length === 0 && (
+            <Box
+              sx={{
+                marginBottom: "0.5rem",
+                display: "flex",
+                gap: "0.5rem",
+                flexWrap: "wrap",
+              }}
+            >
+              {destination.photos.slice(1).map((photo, index) => (
+                <Box key={index}>
+                  <img
+                    src={`/images/destinations/${photo}`}
+                    alt={`Current photo ${index + 1}`}
+                    style={{
+                      width: "80px",
+                      height: "40px",
+                      objectFit: "cover",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", color: "gray", fontSize: "0.7rem" }}
+                  >
+                    Photo {index + 1}
+                  </Typography>
+                </Box>
+              ))}
+            </Box>
+          )}
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handlePhotosChange}
+        />
+      </Box>
 
-      <FormControl fullWidth margin="normal" error={!!errors.status}>
-        <InputLabel>Status</InputLabel>
+      <FormControl
+        fullWidth
+        margin="normal"
+        error={!!errors.status}
+        sx={getFieldStyle("status")}
+      >
+        <InputLabel>
+          Status {modifiedFields.has("status") ? "✎" : ""}
+        </InputLabel>
         <Select name="status" value={formData.status} onChange={handleChange}>
           <MenuItem value="open">Open</MenuItem>
           <MenuItem value="closed">Closed</MenuItem>
           <MenuItem value="maintenance">Maintenance</MenuItem>
         </Select>
+        {modifiedFields.has("status") && (
+          <Typography
+            variant="caption"
+            sx={{ color: "#1976d2", marginTop: "4px" }}
+          >
+            Modified
+          </Typography>
+        )}
       </FormControl>
 
+      {destination && modifiedFields.size > 0 && (
+        <Box
+          sx={{
+            marginBottom: "1rem",
+            padding: "1rem",
+            backgroundColor: "#e3f2fd",
+            borderRadius: "4px",
+            border: "1px solid #48d9f3",
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, marginBottom: "0.5rem" }}
+          >
+            Fields to be updated:
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#1976d2" }}>
+            {Array.from(modifiedFields)
+              .map((field) => {
+                const fieldNames = {
+                  name: "Name",
+                  description: "Description",
+                  capacity: "Capacity",
+                  status: "Status",
+                  location: "Location",
+                  thumbnail: "Thumbnail",
+                  photos: "Photos",
+                };
+                return fieldNames[field] || field;
+              })
+              .join(", ")}
+          </Typography>
+        </Box>
+      )}
+
       <div className={classes.formActions}>
-        <Button type="submit" variant="contained" color="primary">
-          Save
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={destination && modifiedFields.size === 0}
+        >
+          {destination
+            ? `Update ${
+                modifiedFields.size > 0
+                  ? `(${modifiedFields.size} changes)`
+                  : "Destination"
+              }`
+            : "Create Destination"}
         </Button>
         <Button variant="outlined" onClick={onCancel}>
           Cancel

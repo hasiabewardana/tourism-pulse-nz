@@ -39,7 +39,7 @@ function DestinationCard({
     <Card className={classes.card}>
       <CardMedia
         component="img"
-        height="180"
+        height="240"
         image={`/images/destinations/${
           destination.thumbnail || "default-thumbnail.jpg"
         }`}
