@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Container,
   Grid,
@@ -56,37 +57,34 @@ function DestinationList() {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      if (selectedStatus !== "All") params.append("status", selectedStatus);
+      const params = {};
+      if (selectedStatus !== "All") params.status = selectedStatus;
       if (selectedAvailability !== "All")
-        params.append("availability", selectedAvailability);
-      if (selectedDate) params.append("date", selectedDate);
+        params.availability = selectedAvailability;
+      if (selectedDate) params.date = selectedDate;
 
-      const res = await fetch(
-        `http://localhost:3000/dest/api/v1/destinations?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const config = {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.get(
+        "http://localhost:3000/dest/api/v1/destinations",
+        config
       );
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        console.error("API Error:", errorData);
-        throw new Error(
-          `HTTP error! status: ${res.status} - ${
-            errorData.error || "Unknown error"
-          }`
-        );
-      }
-      const data = await res.json();
-      setDestinations(data);
-      applySearchAndSort(data);
-    } catch (err) {
-      console.error("Error fetching destinations:", err);
-      setError(`Failed to fetch destinations: ${err.message}`);
+      setDestinations(response.data);
+      applySearchAndSort(response.data);
+    } catch (error) {
+      console.error("Error fetching destinations:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch destinations";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -129,30 +127,36 @@ function DestinationList() {
 
   const handleSubmit = async (destData) => {
     const token = localStorage.getItem("token");
-    const method = selectedDestination ? "PUT" : "POST";
     const url = selectedDestination
       ? `http://localhost:3000/dest/api/v1/destinations/${selectedDestination.destination_id}`
       : "http://localhost:3000/dest/api/v1/destinations";
 
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(destData),
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+      let response;
+      if (selectedDestination) {
+        response = await axios.put(url, destData, config);
+      } else {
+        response = await axios.post(url, destData, config);
       }
-      const updatedDest = await res.json();
+
       fetchDestinations();
       setShowModal(false);
       setSelectedDestination(null);
-    } catch (err) {
-      console.error("Error saving destination:", err);
-      setError("Failed to save destination.");
+    } catch (error) {
+      console.error("Error saving destination:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save destination";
+      setError(errorMessage);
     }
   };
 
@@ -160,18 +164,27 @@ function DestinationList() {
     if (!window.confirm("Are you sure you want to delete this destination?"))
       return;
     const token = localStorage.getItem("token");
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
     try {
-      const res = await fetch(
+      await axios.delete(
         `http://localhost:3000/dest/api/v1/destinations/${id}`,
-        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+        config
       );
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
       fetchDestinations();
-    } catch (err) {
-      console.error("Error deleting destination:", err);
-      setError("Failed to delete destination.");
+    } catch (error) {
+      console.error("Error deleting destination:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to delete destination";
+      setError(errorMessage);
     }
   };
 
@@ -217,7 +230,7 @@ function DestinationList() {
 
         {/* Filter Options Row */}
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid container spacing={2} className={classes.primaryActions}>
+          <Grid container spacing={2}>
             <Grid item xs={12} md={5}>
               <TextField
                 fullWidth

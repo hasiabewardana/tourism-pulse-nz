@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   TextField,
   Button,
@@ -74,17 +75,20 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       formDataToSend.append("file", blob, filename);
       formDataToSend.append("slug", slug);
 
-      const saveUrl = `/save-image`;
-      const response = await fetch(saveUrl, {
-        method: "POST",
-        body: formDataToSend,
+      const response = await axios.post("/save-image", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      if (!response.ok) {
-        throw new Error(`Save failed: ${response.statusText}`);
-      }
       console.log("File saved:", filename);
     } catch (error) {
       console.error("Failed to save file:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save file";
+      console.error("Save error:", errorMessage);
     }
   };
 
@@ -135,22 +139,25 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
 
     setLoadingSuggestions(true);
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          query
-        )}&format=json&addressdetails=1&limit=8&countrycodes=NZ`,
-        {
-          method: "GET",
-          headers: {
-            "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
-          },
-        }
+      const config = {
+        params: {
+          q: query,
+          format: "json",
+          addressdetails: 1,
+          limit: 8,
+          countrycodes: "NZ",
+        },
+        headers: {
+          "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
+        },
+      };
+
+      const response = await axios.get(
+        "https://nominatim.openstreetmap.org/search",
+        config
       );
 
-      if (!response.ok) throw new Error("Failed to fetch suggestions");
-      const data = await response.json();
-
-      const suggestions = data.map((item) => ({
+      const suggestions = response.data.map((item) => ({
         label: item.display_name,
         lat: parseFloat(item.lat),
         lon: parseFloat(item.lon),
@@ -160,6 +167,12 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       setLocationSuggestions(suggestions);
     } catch (error) {
       console.error("Error fetching suggestions:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch location suggestions";
+      console.error("Location suggestions error:", errorMessage);
       setLocationSuggestions([]);
     } finally {
       setLoadingSuggestions(false);
@@ -169,21 +182,26 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
   // Get coordinates for manual location entry
   const fetchLocationCoordinates = async (locationName) => {
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          locationName
-        )}&format=json&addressdetails=1&limit=1&countrycodes=NZ`,
-        {
-          method: "GET",
-          headers: {
-            "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
-          },
-        }
+      const config = {
+        params: {
+          q: locationName,
+          format: "json",
+          addressdetails: 1,
+          limit: 1,
+          countrycodes: "NZ",
+        },
+        headers: {
+          "User-Agent": "TourismPulseNZ/1.0 (hasitha@example.com)",
+        },
+      };
+
+      const response = await axios.get(
+        "https://nominatim.openstreetmap.org/search",
+        config
       );
-      if (!response.ok) throw new Error("Location not found");
-      const data = await response.json();
-      if (data && data.length > 0) {
-        const { lat, lon } = data[0];
+
+      if (response.data && response.data.length > 0) {
+        const { lat, lon } = response.data[0];
         setFormData((prev) => ({
           ...prev,
           lon: parseFloat(lon),
@@ -195,9 +213,14 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       }
     } catch (error) {
       console.error("Error fetching location:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch location";
       setErrors((prev) => ({
         ...prev,
-        locationName: "Failed to fetch location",
+        locationName: errorMessage,
       }));
     }
   };

@@ -1,0 +1,166 @@
+/* CSS Variables */
+:root {
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-accent: #48d9f3;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-muted-text: #82c2ce;
+  --tp-surface-dark: #282f33;
+  --tp-surface-medium: #374549;
+  --tp-surface-light: #afddef;
+  --tp-surface-hover: #e0eff1;
+  --tp-space-xs: 0.5rem;
+  --tp-space-sm: 1rem;
+  --tp-space-md: 1.5rem;
+  --tp-space-lg: 2rem;
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 8px;
+  --tp-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --tp-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --tp-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25);
+  --tp-transition-fast: all 0.2s ease;
+  --tp-transition-smooth: all 0.3s ease;
+}
+
+.card {
+  background-color: var(--tp-surface-dark);
+  box-shadow: var(--tp-shadow-md);
+  transition: var(--tp-transition-smooth);
+  height: 100%;
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--tp-shadow-lg);
+  border-color: rgba(72, 217, 243, 0.3);
+}
+
+.cardContent {
+  padding: var(--tp-space-sm) var(--tp-space-md);
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 180px);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--tp-space-xs);
+  gap: var(--tp-space-xs);
+}
+
+.cardTitle {
+  color: var(--tp-primary-accent);
+  font-weight: 600;
+  flex: 1;
+  line-height: 1.3;
+  font-size: 1.125rem;
+}
+
+.cardDescription {
+  color: var(--tp-secondary-text);
+  margin-bottom: var(--tp-space-sm);
+  line-height: 1.5;
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.statsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-xs);
+  margin-bottom: var(--tp-space-sm);
+  padding: var(--tp-space-sm);
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--tp-radius-sm);
+  border: 1px solid rgba(72, 217, 243, 0.2);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: var(--tp-space-xs);
+}
+
+.statIcon {
+  color: var(--tp-primary-accent);
+  font-size: 1.25rem;
+  min-width: 20px;
+}
+
+.statLabel {
+  color: var(--tp-primary-accent);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.statValue {
+  color: var(--tp-primary-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  gap: var(--tp-space-xs);
+  margin-top: auto;
+  padding-top: var(--tp-space-xs);
+}
+
+.viewButton,
+.bookButton {
+  flex: 1;
+  border-color: var(--tp-primary-accent);
+  color: var(--tp-primary-accent);
+  transition: var(--tp-transition-fast);
+  border-radius: var(--tp-radius-sm);
+  font-weight: 500;
+  text-transform: none;
+}
+
+.viewButton:hover {
+  background-color: var(--tp-primary-accent);
+  color: var(--tp-surface-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
+}
+
+.bookButton {
+  background-color: var(--tp-primary-accent);
+  color: var(--tp-surface-dark);
+}
+
+.bookButton:hover {
+  background-color: var(--tp-surface-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-md);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .cardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--tp-space-xs);
+  }
+
+  .statsContainer {
+    gap: var(--tp-space-xs);
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .cardContent {
+    padding: var(--tp-space-xs) var(--tp-space-sm);
+  }
+}
