@@ -1,14 +1,47 @@
-.container {
-  padding: 2rem;
-  background-color: #0fa4af;
-  border-radius: 4px;
-  color: #ffffff;
-  min-height: calc(100vh - 4rem);
+/* CSS Variables */
+:root {
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-space-lg: 2rem;
+  --tp-space-sm: 1rem;
+  --tp-space-xs: 0.5rem;
 }
 
-/* Responsive design */
+.container {
+  min-height: calc(100vh - 4rem);
+  padding: var(--tp-space-lg);
+  background-color: var(--tp-primary-bg);
+  color: var(--tp-secondary-text);
+}
+
+.title {
+  text-align: center;
+  color: var(--tp-primary-text);
+  margin-bottom: var(--tp-space-lg);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Responsive breakpoints */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: var(--tp-space-sm);
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: var(--tp-space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--tp-space-xs);
+  }
+
+  .title {
+    font-size: 1.75rem;
   }
 }

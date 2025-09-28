@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Container,
   Grid,
   TextField,
   Button,
@@ -291,9 +290,9 @@ function OperatorDestinationList() {
 
   if (loading) {
     return (
-      <Container className={classes.loadingContainer}>
+      <div className={classes.loadingContainer}>
         <CircularProgress color="primary" />
-      </Container>
+      </div>
     );
   }
 
@@ -307,26 +306,69 @@ function OperatorDestinationList() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          My Operator Destinations
-        </Typography>
-
-        <Typography variant="h6" color="error" sx={{ mb: 2 }}>
-          Alerts:
-          {alerts.length > 0 ? (
-            <ul>
+      <div>
+        {/* Alerts Section */}
+        {alerts.length > 0 && (
+          <div className={classes.alertsContainer}>
+            <Typography variant="h6" className={classes.alertsTitle}>
+              Recent Alerts
+            </Typography>
+            <div className={classes.alertsList}>
               {alerts.map((alert, index) => (
-                <li key={index}>{alert}</li>
+                <div key={index} className={classes.alertItem}>
+                  {alert}
+                </div>
               ))}
-            </ul>
-          ) : (
-            " No alerts"
-          )}
-        </Typography>
+            </div>
+          </div>
+        )}
 
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
+          {/* Primary Row */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Destination or User Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search assignments"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  label="Sort By"
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <MenuItem value="User Name (A-Z)">User Name (A-Z)</MenuItem>
+                  <MenuItem value="User Name (Z-A)">User Name (Z-A)</MenuItem>
+                  <MenuItem value="Destination Name (A-Z)">
+                    Destination Name (A-Z)
+                  </MenuItem>
+                  <MenuItem value="Destination Name (Z-A)">
+                    Destination Name (Z-A)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Button
+                variant="contained"
+                onClick={handleCreate}
+                className={classes.createButton}
+                fullWidth
+              >
+                Add Destination
+              </Button>
+            </Grid>
+          </Grid>
+          {/* Secondary Row */}
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>View Mode</InputLabel>
               <Select
@@ -340,99 +382,51 @@ function OperatorDestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <DatePicker
-              label="Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
+              label="Select Date"
+              value={selectedDate ? new Date(selectedDate) : null}
+              onChange={(newValue) => {
+                if (newValue) {
+                  const formattedDate = newValue.toLocaleDateString("en-CA", {
+                    timeZone: "Pacific/Auckland",
+                  });
+                  setSelectedDate(formattedDate);
+                }
+              }}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="User Name (A-Z)">User Name (A-Z)</MenuItem>
-                <MenuItem value="User Name (Z-A)">User Name (Z-A)</MenuItem>
-                <MenuItem value="Destination Name (A-Z)">
-                  Destination Name (A-Z)
-                </MenuItem>
-                <MenuItem value="Destination Name (Z-A)">
-                  Destination Name (Z-A)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
-            >
-              Reset Filters
-            </Button>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchResetContainer}>
-          <Grid item xs={12} md={8}>
-            <TextField
               fullWidth
-              variant="outlined"
-              label="Search by User or Destination Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-              aria-label="Search assignments"
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Button
-              variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
             >
-              Reset Filters
+              Reset
             </Button>
           </Grid>
         </Grid>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreate}
-          className={classes.createButton}
-        >
-          Assign New Destination
-        </Button>
 
         {filteredAssignments.length === 0 ? (
-          <Typography className={classes.noResults}>
-            No assignments found.
-          </Typography>
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No destinations found.
+            </Typography>
+          </div>
         ) : (
-          <Grid container spacing={3}>
+          <div className={classes.destinationsGrid}>
             {filteredAssignments.map((assignment) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
+              <OperatorDestination
                 key={`${assignment.userId}-${assignment.destinationId}`}
-              >
-                <OperatorDestination
-                  assignment={assignment}
-                  userName={userName}
-                  onDelete={handleDelete}
-                  onSubscribe={handleSubscribe}
-                />
-              </Grid>
+                assignment={assignment}
+                userName={userName}
+                onDelete={handleDelete}
+                onSubscribe={handleSubscribe}
+              />
             ))}
-          </Grid>
+          </div>
         )}
 
         {showModal && (
@@ -447,7 +441,7 @@ function OperatorDestinationList() {
             </div>
           </div>
         )}
-      </Container>
+      </div>
     </LocalizationProvider>
   );
 }
