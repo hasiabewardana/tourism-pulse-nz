@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_BASE_URL =
   process.env.REACT_APP_ANALYTICS_API_URL ||
-  "http://localhost:3002/api/analytics";
+  "http://localhost:3003/analytics-service/api";
 
 class AnalyticsService {
   constructor() {

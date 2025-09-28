@@ -5,6 +5,9 @@ import staffingController from "../controllers/staffingController";
 
 const router = Router();
 
+// TODO: Add proper authentication middleware for production
+// For now, making endpoints accessible for development/testing
+
 // Original analytics route
 router.post("/v1/analytics", createAnalytics);
 

@@ -175,10 +175,10 @@ async function seedDatabase() {
           },
         ],
         seasonalPatterns: {
-          summer: { months: [11, 0, 1], intensity: 85 },
-          autumn: { months: [2, 3, 4], intensity: 65 },
-          winter: { months: [5, 6, 7], intensity: 45 },
-          spring: { months: [8, 9, 10], intensity: 75 },
+          summer: { months: [12, 1, 2], intensity: 85 },
+          autumn: { months: [3, 4, 5], intensity: 65 },
+          winter: { months: [6, 7, 8], intensity: 45 },
+          spring: { months: [9, 10, 11], intensity: 75 },
         },
         specialEvents: [
           {
@@ -239,10 +239,10 @@ async function seedDatabase() {
           },
         ],
         seasonalPatterns: {
-          summer: { months: [11, 0, 1], intensity: 95 },
-          autumn: { months: [2, 3, 4], intensity: 70 },
-          winter: { months: [5, 6, 7], intensity: 88 },
-          spring: { months: [8, 9, 10], intensity: 75 },
+          summer: { months: [12, 1, 2], intensity: 95 },
+          autumn: { months: [3, 4, 5], intensity: 70 },
+          winter: { months: [6, 7, 8], intensity: 88 },
+          spring: { months: [9, 10, 11], intensity: 75 },
         },
         specialEvents: [
           {

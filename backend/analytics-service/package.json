@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
+    "dev": "npx ts-node src/index.ts",
     "seed": "ts-node scripts/seedDatabase.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
