@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Container,
   Grid,
   TextField,
   Button,
@@ -11,6 +10,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Snackbar,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -31,13 +31,21 @@ function OfferList() {
 
   // Filter states
   const [selectedViewMode, setSelectedViewMode] = useState("All");
-  const [selectedDate, setSelectedDate] = useState(null); // Initialize to null for no date filter
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
+  );
 
   // Sort and search states
   const [sortBy, setSortBy] = useState("Offer Name (A-Z)");
   const [searchTerm, setSearchTerm] = useState("");
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   // Helper to handle API response status for empty results
   const handleEmptyResponse = (res) => {
@@ -70,7 +78,6 @@ function OfferList() {
   };
 
   const fetchOperatorDestinations = async () => {
-    const token = localStorage.getItem("token");
     if (!token || !userId) {
       setError("No authentication token or user ID found. Please log in.");
       return;
@@ -93,7 +100,6 @@ function OfferList() {
 
   // Fetch offers with filters
   const fetchOffers = async () => {
-    const token = localStorage.getItem("token");
     if (!token || !userId) {
       setError("No authentication token or user ID found. Please log in.");
       setLoading(false);
@@ -189,7 +195,6 @@ function OfferList() {
   }, [searchTerm, sortBy, offers, selectedViewMode]);
 
   const handleSubmit = async (formData) => {
-    const token = localStorage.getItem("token");
     if (!token) {
       setError("No authentication token found.");
       return;
@@ -218,6 +223,15 @@ function OfferList() {
       setShowModal(false);
       setSelectedOffer(null);
       fetchOffers();
+
+      // Show success notification
+      setNotification({
+        open: true,
+        message: selectedOffer
+          ? `✅ Successfully updated ${formData.name || "offer"}`
+          : `✅ Successfully created ${formData.name || "new offer"}`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error submitting offer:", err);
       setError("Failed to submit offer.");
@@ -227,7 +241,6 @@ function OfferList() {
   const handleDelete = async (offerId) => {
     if (!window.confirm("Are you sure you want to delete this offer?")) return;
 
-    const token = localStorage.getItem("token");
     try {
       const response = await fetch(
         `http://localhost:3000/dest/api/v1/offers/${offerId}`,
@@ -243,6 +256,14 @@ function OfferList() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       fetchOffers();
+
+      // Show success notification
+      const offerName = offers.find((o) => o.id === offerId)?.name || "Offer";
+      setNotification({
+        open: true,
+        message: `✅ Successfully deleted ${offerName}`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error deleting offer:", err);
       setError("Failed to delete offer.");
@@ -261,16 +282,18 @@ function OfferList() {
 
   const handleResetFilters = () => {
     setSelectedViewMode("All");
-    setSelectedDate(null); // Clear date filter
+    setSelectedDate(
+      new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
+    );
     setSearchTerm("");
     setSortBy("Offer Name (A-Z)");
   };
 
   if (loading) {
     return (
-      <Container className={classes.loadingContainer}>
+      <div className={classes.loadingContainer}>
         <CircularProgress color="primary" />
-      </Container>
+      </div>
     );
   }
 
@@ -284,11 +307,8 @@ function OfferList() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          My Offers
-        </Typography>
-
+      <div className={classes.container}>
+        {/* Filters Container */}
         <Grid container spacing={2} className={classes.filtersContainer}>
           <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
@@ -307,10 +327,19 @@ function OfferList() {
           <Grid item xs={12} sm={3}>
             <DatePicker
               label="Filter by Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
+              value={selectedDate ? new Date(selectedDate) : null}
+              onChange={(newValue) =>
+                setSelectedDate(
+                  newValue
+                    ? newValue.toLocaleDateString("en-CA", {
+                        timeZone: "Pacific/Auckland",
+                      })
+                    : new Date().toLocaleDateString("en-CA", {
+                        timeZone: "Pacific/Auckland",
+                      })
+                )
+              }
               slotProps={{ textField: { fullWidth: true } }}
-              clearable
             />
           </Grid>
           <Grid item xs={12} sm={3}>
@@ -337,13 +366,15 @@ function OfferList() {
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
+              fullWidth
             >
               Reset Filters
             </Button>
           </Grid>
         </Grid>
 
-        <Grid container spacing={2} className={classes.searchResetContainer}>
+        {/* Search Input */}
+        <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
           <Grid item xs={12} md={8}>
             <TextField
               fullWidth
@@ -357,51 +388,39 @@ function OfferList() {
           </Grid>
           <Grid item xs={12} md={4}>
             <Button
-              variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
+              variant="contained"
+              onClick={handleCreate}
+              className={classes.createButton}
+              fullWidth
+              size="large"
             >
-              Reset Filters
+              Create New Offer
             </Button>
           </Grid>
         </Grid>
 
-        {/* Always show Create button for easy access */}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreate}
-          className={classes.createButton}
-          size="large"
-          sx={{ mb: 2 }} // Add margin for better spacing
-        >
-          Create New Offer
-        </Button>
-
+        {/* Offers Grid */}
         {filteredOffers.length === 0 ? (
-          <Typography
-            className={classes.noResults}
-            variant="h6"
-            align="center"
-            sx={{ mt: 4, color: "text.secondary" }}
-          >
-            No offers found yet. Start by creating your first one above!
-          </Typography>
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No offers found yet. Start by creating your first one above!
+            </Typography>
+          </div>
         ) : (
-          <Grid container spacing={3}>
+          <div className={classes.offersGrid}>
             {filteredOffers.map((offer) => (
-              <Grid item xs={12} sm={6} md={4} key={offer.id}>
-                <Offer
-                  offer={offer}
-                  operatorName={userName}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
-                />
-              </Grid>
+              <Offer
+                key={offer.id}
+                offer={offer}
+                operatorName={userName}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+              />
             ))}
-          </Grid>
+          </div>
         )}
 
+        {/* Modal */}
         {showModal && (
           <div className={classes.modal}>
             <div className={classes.modalContent}>
@@ -415,7 +434,24 @@ function OfferList() {
             </div>
           </div>
         )}
-      </Container>
+
+        {/* Notifications */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={4000}
+          onClose={() => setNotification({ ...notification, open: false })}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setNotification({ ...notification, open: false })}
+            severity={notification.severity}
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+      </div>
     </LocalizationProvider>
   );
 }
