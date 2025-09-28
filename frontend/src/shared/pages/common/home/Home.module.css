@@ -102,6 +102,92 @@
   color: #0fa4af;
 }
 
+/* Search and Filter Styles - Matching Destinations Design */
+.filtersContainer {
+  margin-bottom: 1rem;
+  background-color: #374549;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(72, 217, 243, 0.1);
+}
+
+.filtersContainer .MuiFormControl-root {
+  background-color: #282f33;
+  border-radius: 4px;
+}
+
+.filtersContainer .MuiOutlinedInput-root {
+  border-color: rgba(72, 217, 243, 0.3);
+}
+
+.filtersContainer .MuiOutlinedInput-root:hover {
+  border-color: #48d9f3;
+}
+
+.filtersContainer .MuiOutlinedInput-root.Mui-focused {
+  border-color: #48d9f3;
+}
+
+.filtersContainer .MuiInputLabel-root {
+  color: #bdd1d4;
+}
+
+.filtersContainer .MuiInputLabel-root.Mui-focused {
+  color: #48d9f3;
+}
+
+.filtersContainer .MuiSelect-select {
+  color: #ffffff;
+}
+
+.searchInput .MuiOutlinedInput-root {
+  background-color: #282f33;
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.searchInput .MuiOutlinedInput-root:hover {
+  border-color: #48d9f3;
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.1);
+}
+
+.searchInput .MuiOutlinedInput-root.Mui-focused {
+  border-color: #48d9f3;
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.2);
+}
+
+.searchInput input {
+  color: #ffffff;
+  font-weight: 400;
+}
+
+.searchInput .MuiInputLabel-root {
+  color: #bdd1d4;
+}
+
+.searchInput .MuiInputLabel-root.Mui-focused {
+  color: #48d9f3;
+}
+
+.resetButton {
+  height: 56px;
+  border-color: #ff9800;
+  color: #ff9800;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  text-transform: none;
+}
+
+.resetButton:hover {
+  border-color: #ff9800;
+  background-color: #ff9800;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .destinationGrid {
   margin-bottom: 2rem;
 }
@@ -165,5 +251,18 @@
   }
   .tabs {
     margin-bottom: 3rem; /* Adjusted space on mobile */
+  }
+  .filtersContainer {
+    padding: 0.75rem;
+  }
+  .resetButton {
+    height: 48px;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .filtersContainer {
+    padding: 0.5rem;
   }
 }

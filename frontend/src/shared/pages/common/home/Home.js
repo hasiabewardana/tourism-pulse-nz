@@ -11,6 +11,11 @@ import {
   CardContent,
   CardMedia,
   CircularProgress,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import classes from "./Home.module.css";
 
@@ -26,8 +31,13 @@ const testimonials = [
 function Home() {
   const [activeRole, setActiveRole] = useState("public"); // State to manage role-based content
   const [destinations, setDestinations] = useState([]); // State for fetched destinations
+  const [filteredDestinations, setFilteredDestinations] = useState([]); // State for filtered destinations
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [searchTerm, setSearchTerm] = useState(""); // Search state
+  const [selectedStatus, setSelectedStatus] = useState("All"); // Status filter
+  const [sortBy, setSortBy] = useState("Name (A-Z)"); // Sort state
+  const [selectedRegion, setSelectedRegion] = useState("All"); // Region filter
   const navigate = useNavigate();
 
   // Fetch destinations from API and limit to 5
@@ -47,8 +57,9 @@ function Home() {
             },
           }
         );
-        // Limit to maximum of 5 destinations
-        setDestinations(response.data.slice(0, 5)); // Assuming API returns array of destinations
+        // Set all destinations and apply initial filtering
+        setDestinations(response.data);
+        applySearchAndSort(response.data);
       } catch (err) {
         setError("Failed to load destinations. Please try again later.");
         console.error(err);
@@ -59,6 +70,88 @@ function Home() {
 
     fetchDestinations();
   }, []);
+
+  // Apply search and sort functionality
+  const applySearchAndSort = (data) => {
+    let filtered = [...data];
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (dest) =>
+          dest.name.toLowerCase().includes(lowerSearch) ||
+          dest.description.toLowerCase().includes(lowerSearch) ||
+          (dest.locationName &&
+            dest.locationName.toLowerCase().includes(lowerSearch)) ||
+          (dest.region && dest.region.toLowerCase().includes(lowerSearch))
+      );
+    }
+
+    // Apply status filter
+    if (selectedStatus !== "All") {
+      filtered = filtered.filter((dest) => dest.status === selectedStatus);
+    }
+
+    // Apply region filter
+    if (selectedRegion !== "All") {
+      filtered = filtered.filter((dest) => dest.region === selectedRegion);
+    }
+
+    // Apply sorting
+    switch (sortBy) {
+      case "Name (A-Z)":
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "Name (Z-A)":
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "Capacity (Low to High)":
+        filtered.sort((a, b) => a.capacity - b.capacity);
+        break;
+      case "Capacity (High to Low)":
+        filtered.sort((a, b) => b.capacity - a.capacity);
+        break;
+      case "Popularity (Most Popular)":
+        filtered.sort(
+          (a, b) => (b.current_visitors || 0) - (a.current_visitors || 0)
+        );
+        break;
+      default:
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    setFilteredDestinations(filtered);
+  };
+
+  // Filter and search handlers
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleStatusChange = (e) => {
+    setSelectedStatus(e.target.value);
+  };
+
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
+  };
+
+  const handleRegionChange = (e) => {
+    setSelectedRegion(e.target.value);
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm("");
+    setSelectedStatus("All");
+    setSortBy("Name (A-Z)");
+    setSelectedRegion("All");
+  };
+
+  // Apply filters when dependencies change
+  useEffect(() => {
+    applySearchAndSort(destinations);
+  }, [searchTerm, selectedStatus, sortBy, selectedRegion, destinations]);
 
   const handleLoginClick = () => {
     navigate("/auth");
@@ -142,10 +235,99 @@ function Home() {
 
       {/* Featured Destinations Section */}
       <Typography variant="h4" className={classes.sectionTitle}>
-        Featured Destinations
+        Explore Destinations
       </Typography>
+
+      {/* Search and Filter Section */}
+      <Grid container spacing={2} className={classes.filtersContainer}>
+        {/* Primary Row */}
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={5}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Search by Destination Name"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className={classes.searchInput}
+              aria-label="Search destinations"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                label="Sort By"
+                onChange={handleSortChange}
+              >
+                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                <MenuItem value="Capacity (Low to High)">
+                  Capacity (Low to High)
+                </MenuItem>
+                <MenuItem value="Capacity (High to Low)">
+                  Capacity (High to Low)
+                </MenuItem>
+                <MenuItem value="Popularity (Most Popular)">
+                  Popularity (Most Popular)
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilters}
+              className={classes.resetButton}
+              fullWidth
+            >
+              Reset Filters
+            </Button>
+          </Grid>
+        </Grid>
+        {/* Secondary Row */}
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControl fullWidth>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={selectedStatus}
+              label="Status"
+              onChange={handleStatusChange}
+            >
+              <MenuItem value="All">All</MenuItem>
+              <MenuItem value="Open">Open</MenuItem>
+              <MenuItem value="Closed">Closed</MenuItem>
+              <MenuItem value="Maintenance">Maintenance</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControl fullWidth>
+            <InputLabel>Region</InputLabel>
+            <Select
+              value={selectedRegion}
+              label="Region"
+              onChange={handleRegionChange}
+            >
+              <MenuItem value="All">All Regions</MenuItem>
+              <MenuItem value="Auckland">Auckland</MenuItem>
+              <MenuItem value="Wellington">Wellington</MenuItem>
+              <MenuItem value="Canterbury">Canterbury</MenuItem>
+              <MenuItem value="Otago">Otago</MenuItem>
+              <MenuItem value="Bay of Plenty">Bay of Plenty</MenuItem>
+              <MenuItem value="Waikato">Waikato</MenuItem>
+              <MenuItem value="Northland">Northland</MenuItem>
+              <MenuItem value="Hawke's Bay">Hawke's Bay</MenuItem>
+              <MenuItem value="West Coast">West Coast</MenuItem>
+              <MenuItem value="Southland">Southland</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+
       <Grid container spacing={3} className={classes.destinationGrid}>
-        {destinations.map((dest, index) => (
+        {filteredDestinations.map((dest, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card className={classes.destinationCard}>
               <CardMedia

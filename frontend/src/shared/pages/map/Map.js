@@ -487,54 +487,6 @@ function Map() {
         </Typography>
         {/* Filters/Search mirror Destinations.js */}
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select value={selectedStatus} onChange={handleStatusChange}>
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Availability</InputLabel>
-              <Select
-                value={selectedAvailability}
-                onChange={handleAvailabilityChange}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="available">Available</MenuItem>
-                <MenuItem value="full">Full</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <DatePicker
-              label="Select Date"
-              value={selectedDate}
-              onChange={handleDateChange}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select value={sortBy} onChange={handleSortChange}>
-                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
-                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
-                <MenuItem value="Capacity (Low to High)">
-                  Capacity (Low to High)
-                </MenuItem>
-                <MenuItem value="Capacity (High to Low)">
-                  Capacity (High to Low)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-        <Grid container spacing={2} className={classes.searchResetContainer}>
           <Grid item xs={12} md={9} lg={10}>
             <Autocomplete
               freeSolo
@@ -581,15 +533,63 @@ function Map() {
               loadingText="Loading destinations..."
             />
           </Grid>
-          <Grid item xs={12} md={3} lg={2}>
-            <Button
-              variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
-              fullWidth
-            >
-              Reset Filters
-            </Button>
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select value={sortBy} onChange={handleSortChange}>
+                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                <MenuItem value="Capacity (Low to High)">
+                  Capacity (Low to High)
+                </MenuItem>
+                <MenuItem value="Capacity (High to Low)">
+                  Capacity (High to Low)
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select value={selectedStatus} onChange={handleStatusChange}>
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Availability</InputLabel>
+                <Select
+                  value={selectedAvailability}
+                  onChange={handleAvailabilityChange}
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="available">Available</MenuItem>
+                  <MenuItem value="full">Full</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6} md={2}>
+              <DatePicker
+                label="Select Date"
+                value={selectedDate}
+                onChange={handleDateChange}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3} lg={2}>
+              <Button
+                variant="outlined"
+                onClick={handleResetFilters}
+                className={classes.resetButton}
+                fullWidth
+              >
+                Reset Filters
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
         {/* Map Display */}
