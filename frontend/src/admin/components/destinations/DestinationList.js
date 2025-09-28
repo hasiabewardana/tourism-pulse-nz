@@ -1,5 +1,5 @@
-// src/admin-panel/components/destination-management/DestinationList.js
 import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Container,
   Grid,
@@ -12,13 +12,18 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import Destination from "./Destination";
+import DestinationCard from "./DestinationCard";
 import DestinationForm from "./DestinationForm";
-import classes from "./Destination.module.css";
+import classes from "./DestinationList.module.css";
 
 function DestinationList() {
   const [destinations, setDestinations] = useState([]);
@@ -52,31 +57,34 @@ function DestinationList() {
       setLoading(true);
       setError(null);
 
-      const params = new URLSearchParams();
-      if (selectedStatus !== "All") params.append("status", selectedStatus);
+      const params = {};
+      if (selectedStatus !== "All") params.status = selectedStatus;
       if (selectedAvailability !== "All")
-        params.append("availability", selectedAvailability.toLowerCase());
-      params.append("date", selectedDate);
+        params.availability = selectedAvailability;
+      if (selectedDate) params.date = selectedDate;
 
-      const res = await fetch(
-        `http://localhost:3000/dest/api/v1/destinations?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const config = {
+        params,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      const response = await axios.get(
+        "http://localhost:3000/dest/api/v1/destinations",
+        config
       );
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
-      setDestinations(data);
-      applySearchAndSort(data);
-    } catch (err) {
-      console.error("Error fetching destinations:", err);
-      setError("Failed to fetch destinations.");
+      setDestinations(response.data);
+      applySearchAndSort(response.data);
+    } catch (error) {
+      console.error("Error fetching destinations:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to fetch destinations";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -119,30 +127,36 @@ function DestinationList() {
 
   const handleSubmit = async (destData) => {
     const token = localStorage.getItem("token");
-    const method = selectedDestination ? "PUT" : "POST";
     const url = selectedDestination
       ? `http://localhost:3000/dest/api/v1/destinations/${selectedDestination.destination_id}`
       : "http://localhost:3000/dest/api/v1/destinations";
 
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    };
+
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(destData),
-      });
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+      let response;
+      if (selectedDestination) {
+        response = await axios.put(url, destData, config);
+      } else {
+        response = await axios.post(url, destData, config);
       }
-      const updatedDest = await res.json();
+
       fetchDestinations();
       setShowModal(false);
       setSelectedDestination(null);
-    } catch (err) {
-      console.error("Error saving destination:", err);
-      setError("Failed to save destination.");
+    } catch (error) {
+      console.error("Error saving destination:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to save destination";
+      setError(errorMessage);
     }
   };
 
@@ -150,18 +164,27 @@ function DestinationList() {
     if (!window.confirm("Are you sure you want to delete this destination?"))
       return;
     const token = localStorage.getItem("token");
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
     try {
-      const res = await fetch(
+      await axios.delete(
         `http://localhost:3000/dest/api/v1/destinations/${id}`,
-        { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }
+        config
       );
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
       fetchDestinations();
-    } catch (err) {
-      console.error("Error deleting destination:", err);
-      setError("Failed to delete destination.");
+    } catch (error) {
+      console.error("Error deleting destination:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to delete destination";
+      setError(errorMessage);
     }
   };
 
@@ -205,8 +228,59 @@ function DestinationList() {
           Destination Management
         </Typography>
 
+        {/* Filter Options Row */}
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Destination Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search destinations"
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  label="Sort By"
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                  <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                  <MenuItem value="Visitors (Low to High)">
+                    Visitors (Low to High)
+                  </MenuItem>
+                  <MenuItem value="Visitors (High to Low)">
+                    Visitors (High to Low)
+                  </MenuItem>
+                  <MenuItem value="Capacity (Low to High)">
+                    Capacity (Low to High)
+                  </MenuItem>
+                  <MenuItem value="Capacity (High to Low)">
+                    Capacity (High to Low)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCreate}
+                className={classes.createButton}
+                fullWidth
+              >
+                Create New Destination
+              </Button>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>Status</InputLabel>
               <Select
@@ -220,7 +294,7 @@ function DestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>Availability</InputLabel>
               <Select
@@ -234,105 +308,82 @@ function DestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Date</InputLabel>
-              <DatePicker
-                value={selectedDate}
-                onChange={(newValue) => setSelectedDate(newValue)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
-                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
-                <MenuItem value="Visitors (Low to High)">
-                  Visitors (Low to High)
-                </MenuItem>
-                <MenuItem value="Visitors (High to Low)">
-                  Visitors (High to Low)
-                </MenuItem>
-                <MenuItem value="Capacity (Low to High)">
-                  Capacity (Low to High)
-                </MenuItem>
-                <MenuItem value="Capacity (High to Low)">
-                  Capacity (High to Low)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchResetContainer}>
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Destination Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-              aria-label="Search destinations"
+          <Grid item xs={12} sm={6} md={4}>
+            <DatePicker
+              label="Date"
+              value={selectedDate ? new Date(selectedDate) : null}
+              onChange={(newValue) => {
+                if (newValue) {
+                  const formattedDate = newValue.toLocaleDateString("en-CA", {
+                    timeZone: "Pacific/Auckland",
+                  });
+                  setSelectedDate(formattedDate);
+                }
+              }}
+              slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={6} md={2}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
+              fullWidth
             >
-              Reset Filters
+              Reset
             </Button>
           </Grid>
         </Grid>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreate}
-          className={classes.createButton}
-        >
-          Create New Destination
-        </Button>
-
         {filteredDestinations.length === 0 ? (
-          <Typography className={classes.noResults}>
-            No destinations found.
-          </Typography>
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No destinations found matching your criteria.
+            </Typography>
+          </div>
         ) : (
-          <Grid container spacing={3}>
+          <div className={classes.destinationsGrid}>
             {filteredDestinations.map((destination) => (
-              <Grid item xs={12} sm={6} md={4} key={destination.destination_id}>
-                <Destination
-                  destination={destination}
-                  selectedDate={selectedDate}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        )}
-
-        {showModal && (
-          <div className={classes.modal}>
-            <div className={classes.modalContent}>
-              <DestinationForm
-                destination={selectedDestination}
-                onSubmit={handleSubmit}
-                onCancel={() => setShowModal(false)}
+              <DestinationCard
+                key={destination.destination_id}
+                destination={destination}
+                selectedDate={selectedDate}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
               />
-            </div>
+            ))}
           </div>
         )}
+
+        <Dialog
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            className: classes.dialogPaper,
+          }}
+        >
+          <DialogTitle className={classes.dialogTitle}>
+            {selectedDestination
+              ? "Edit Destination"
+              : "Create New Destination"}
+            <IconButton
+              aria-label="close"
+              onClick={() => setShowModal(false)}
+              className={classes.closeButton}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent className={classes.dialogContent}>
+            <DestinationForm
+              destination={selectedDestination}
+              onSubmit={handleSubmit}
+              onCancel={() => setShowModal(false)}
+            />
+          </DialogContent>
+        </Dialog>
       </Container>
     </LocalizationProvider>
   );

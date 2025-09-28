@@ -1,6 +1,14 @@
-// content/admin-panel/src/components/user-management/UserForm.js
 import { useState } from "react";
-import classes from "./User.module.css"; // Reuse CSS module for form styles
+import {
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+} from "@mui/material";
+import classes from "./User.module.css";
 
 // Form component for creating or editing users
 function UserForm({ user, onSubmit, onCancel }) {
@@ -29,61 +37,97 @@ function UserForm({ user, onSubmit, onCancel }) {
 
   return (
     <form className={classes.userForm} onSubmit={handleFormSubmit}>
-      <label>
-        Email:
-        <input
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          disabled={!!user}
-        />
-      </label>
-      <label>
-        First Name:
-        <input
-          type="text"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Last Name:
-        <input
-          type="text"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label>
-        Role:
-        <select name="role" value={formData.role} onChange={handleChange}>
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-          <option value="operator">Manager</option>
-        </select>
-      </label>
-      {!user && (
-        <label>
-          Password:
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            type="email"
+            name="email"
+            label="Email"
+            value={formData.email}
+            onChange={handleChange}
+            disabled={!!user}
+            required={!user}
+            variant="outlined"
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="text"
+            name="firstName"
+            label="First Name"
+            value={formData.firstName}
             onChange={handleChange}
             required
+            variant="outlined"
           />
-        </label>
-      )}
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="text"
+            name="lastName"
+            label="Last Name"
+            value={formData.lastName}
+            onChange={handleChange}
+            required
+            variant="outlined"
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel>Role</InputLabel>
+            <Select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              label="Role"
+            >
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="operator">Manager</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+
+        {!user && (
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              type="password"
+              name="password"
+              label="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              variant="outlined"
+            />
+          </Grid>
+        )}
+      </Grid>
+
       <div className={classes.formActions}>
-        <button type="submit">Save</button>
-        <button type="button" onClick={onCancel}>
+        <Button
+          type="submit"
+          variant="contained"
+          className={classes.saveButton}
+          size="large"
+        >
+          {user ? "Update User" : "Create User"}
+        </Button>
+        <Button
+          type="button"
+          variant="outlined"
+          onClick={onCancel}
+          className={classes.cancelButton}
+          size="large"
+        >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

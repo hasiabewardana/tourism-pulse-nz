@@ -54,4 +54,16 @@ export const ROUTES: RouteConfig[] = [
       pathRewrite: { "^/analytics(/api/.*|$)": "$1" }, // Rewrites /analytics/api/... to /api/..., preserving sub-paths
     }, // Proxying to analytics service
   },
+  {
+    url: "/integration", // Route for integration service
+    auth: false, // No authentication required
+    creditCheck: false, // No credit check required
+    proxy: {
+      target:
+        String(process.env.INTEGRATION_SERVICE_URL) ||
+        "http://analytics:3004/integration-service", // Fallback to default if env variable is not set
+      changeOrigin: true,
+      pathRewrite: { "^/integration(/api/.*|$)": "$1" }, // Rewrites /integration/api/... to /api/..., preserving sub-paths
+    }, // Proxying to integration service
+  },
 ];

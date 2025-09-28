@@ -1,16 +1,38 @@
-// content/admin-panel/src/components/user-management/UserList.js
 import { useState, useEffect } from "react";
+import {
+  Container,
+  Grid,
+  TextField,
+  Button,
+  CircularProgress,
+  Alert,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import User from "./User"; // Import User component
 import UserForm from "./UserForm"; // Import UserForm for create/edit
 import classes from "./User.module.css"; // Import CSS module for styling
 
-// Component to list all users, handle CRUD operations
 function UserList() {
-  const [users, setUsers] = useState([]); // State for user list
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [showModal, setShowModal] = useState(false); // Modal visibility
-  const [selectedUser, setSelectedUser] = useState(null); // Selected user for edit
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Filter and search states
+  const [selectedRole, setSelectedRole] = useState("All");
+  const [sortBy, setSortBy] = useState("Name (A-Z)");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch users on component mount
   useEffect(() => {
@@ -35,6 +57,7 @@ function UserList() {
         }
         const data = await res.json();
         setUsers(data);
+        applySearchAndSort(data);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching users:", err);
@@ -47,6 +70,59 @@ function UserList() {
 
     fetchUsers();
   }, []);
+
+  // Apply search and sort filters
+  const applySearchAndSort = (data) => {
+    let filtered = data.filter((user) => {
+      const matchesSearch =
+        user.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRole =
+        selectedRole === "All" || user.role === selectedRole.toLowerCase();
+      return matchesSearch && matchesRole;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "Name (A-Z)":
+          return `${a.first_name} ${a.last_name}`.localeCompare(
+            `${b.first_name} ${b.last_name}`
+          );
+        case "Name (Z-A)":
+          return `${b.first_name} ${b.last_name}`.localeCompare(
+            `${a.first_name} ${a.last_name}`
+          );
+        case "Email (A-Z)":
+          return a.email.localeCompare(b.email);
+        case "Email (Z-A)":
+          return b.email.localeCompare(a.email);
+        case "Role":
+          return a.role.localeCompare(b.role);
+        case "Newest First":
+          return new Date(b.created_at) - new Date(a.created_at);
+        case "Oldest First":
+          return new Date(a.created_at) - new Date(b.created_at);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredUsers(filtered);
+  };
+
+  // Re-apply filters when search/sort criteria change
+  useEffect(() => {
+    applySearchAndSort(users);
+  }, [users, searchTerm, selectedRole, sortBy]);
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm("");
+    setSelectedRole("All");
+    setSortBy("Name (A-Z)");
+  };
 
   // Handle user creation or update
   const handleSubmit = async (userData) => {
@@ -127,37 +203,164 @@ function UserList() {
     setShowModal(true);
   };
 
-  if (loading) return <p>Loading users...</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (users.length === 0) return <p>No users found.</p>;
+  if (loading) {
+    return (
+      <div className={classes.loadingContainer}>
+        <CircularProgress />
+        <Typography
+          variant="h6"
+          sx={{ mt: 2, color: "var(--tp-secondary-text)" }}
+        >
+          Loading users...
+        </Typography>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" className={classes.container}>
+        <Alert severity="error" className={classes.errorAlert}>
+          {error}
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
-    <div className={classes.userList}>
-      <h1 className={classes.title}>Users</h1>
-      <button className={classes.createButton} onClick={handleCreate}>
-        Create New User
-      </button>
-      <div className={classes.grid}>
-        {users.map((user) => (
-          <User
-            key={user.user_id}
-            user={user}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
-      {showModal && (
-        <div className={classes.modal}>
-          <div className={classes.modalContent}>
-            <UserForm
-              user={selectedUser}
-              onSubmit={handleSubmit}
-              onCancel={() => setShowModal(false)}
+    <div className={classes.container}>
+      <Typography variant="h3" className={classes.title}>
+        User Management
+      </Typography>
+
+      {/* Filter Options Row */}
+      <Grid container spacing={2} className={classes.filtersContainer}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={5}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Search by Name or Email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={classes.searchInput}
+              placeholder="Search by name or email..."
+              aria-label="Search users"
             />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                label="Sort By"
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                <MenuItem value="Email (A-Z)">Email (A-Z)</MenuItem>
+                <MenuItem value="Email (Z-A)">Email (Z-A)</MenuItem>
+                <MenuItem value="Role">Role</MenuItem>
+                <MenuItem value="Newest First">Newest First</MenuItem>
+                <MenuItem value="Oldest First">Oldest First</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreate}
+              className={classes.createButton}
+              fullWidth
+            >
+              Create New User
+            </Button>
+          </Grid>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <FormControl fullWidth>
+            <InputLabel>Role</InputLabel>
+            <Select
+              value={selectedRole}
+              label="Role"
+              onChange={(e) => setSelectedRole(e.target.value)}
+            >
+              <MenuItem value="All">All Roles</MenuItem>
+              <MenuItem value="Admin">Admin</MenuItem>
+              <MenuItem value="Operator">Manager</MenuItem>
+              <MenuItem value="User">User</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={7}>
+          {/* Empty space for alignment */}
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <Button
+            variant="outlined"
+            onClick={resetFilters}
+            className={classes.resetButton}
+            fullWidth
+          >
+            Reset Filters
+          </Button>
+        </Grid>
+      </Grid>
+
+      {/* Results */}
+      {filteredUsers.length === 0 ? (
+        <div className={classes.noResults}>
+          <Typography variant="h6" color="textSecondary">
+            {users.length === 0
+              ? "No users found."
+              : "No users match your search criteria."}
+          </Typography>
+        </div>
+      ) : (
+        <div className={classes.resultsContainer}>
+          <Typography variant="body2" className={classes.resultsCount}>
+            Showing {filteredUsers.length} of {users.length} users
+          </Typography>
+          <div className={classes.grid}>
+            {filteredUsers.map((user) => (
+              <User
+                key={user.user_id}
+                user={user}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))}
           </div>
         </div>
       )}
+
+      {/* Modal */}
+      <Dialog
+        open={showModal}
+        onClose={() => setShowModal(false)}
+        maxWidth="sm"
+        fullWidth
+        className={classes.dialog}
+      >
+        <DialogTitle className={classes.dialogTitle}>
+          {selectedUser ? "Edit User" : "Create New User"}
+          <IconButton
+            onClick={() => setShowModal(false)}
+            className={classes.closeButton}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent className={classes.dialogContent}>
+          <UserForm
+            user={selectedUser}
+            onSubmit={handleSubmit}
+            onCancel={() => setShowModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

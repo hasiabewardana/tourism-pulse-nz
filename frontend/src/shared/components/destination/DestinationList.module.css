@@ -1,0 +1,191 @@
+/* CSS Variables */
+:root {
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-accent: #48d9f3;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-muted-text: #82c2ce;
+  --tp-surface-dark: #282f33;
+  --tp-surface-medium: #374549;
+  --tp-surface-light: #afddef;
+  --tp-surface-hover: #e0eff1;
+  --tp-status-warning: #ff9800;
+  --tp-space-xs: 0.5rem;
+  --tp-space-sm: 1rem;
+  --tp-space-md: 1.5rem;
+  --tp-space-lg: 2rem;
+  --tp-space-xl: 3rem;
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 8px;
+  --tp-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --tp-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --tp-transition-fast: all 0.2s ease;
+}
+
+.filtersContainer {
+  margin-bottom: var(--tp-space-sm);
+  background-color: var(--tp-surface-medium);
+  padding: var(--tp-space-sm);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+}
+
+.primaryActions {
+  margin-bottom: var(--tp-space-md);
+  background-color: var(--tp-surface-dark);
+  padding: var(--tp-space-md);
+  border-radius: var(--tp-radius-md);
+  box-shadow: var(--tp-shadow-sm);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+}
+
+.filtersContainer .MuiFormControl-root {
+  background-color: var(--tp-surface-dark);
+  border-radius: var(--tp-radius-sm);
+}
+
+.filtersContainer .MuiOutlinedInput-root {
+  border-color: rgba(72, 217, 243, 0.3);
+}
+
+.filtersContainer .MuiOutlinedInput-root:hover {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiOutlinedInput-root.Mui-focused {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiInputLabel-root {
+  color: var(--tp-secondary-text);
+}
+
+.filtersContainer .MuiInputLabel-root.Mui-focused {
+  color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiSelect-select {
+  color: var(--tp-primary-text);
+}
+
+.searchInput .MuiOutlinedInput-root {
+  background-color: var(--tp-surface-dark);
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+}
+
+.searchInput .MuiOutlinedInput-root:hover {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.1);
+}
+
+.searchInput .MuiOutlinedInput-root.Mui-focused {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.2);
+}
+
+.searchInput input {
+  color: var(--tp-primary-text);
+  font-weight: 400;
+}
+
+.searchInput .MuiInputLabel-root {
+  color: var(--tp-secondary-text);
+}
+
+.searchInput .MuiInputLabel-root.Mui-focused {
+  color: var(--tp-primary-accent);
+}
+
+.resetButton {
+  height: 56px;
+  border-color: var(--tp-status-warning);
+  color: var(--tp-status-warning);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+  font-weight: 500;
+  text-transform: none;
+}
+
+.resetButton:hover {
+  border-color: var(--tp-status-warning);
+  background-color: var(--tp-status-warning);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
+}
+
+.destinationsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--tp-space-md);
+  margin-top: var(--tp-space-lg);
+  align-items: start;
+  justify-content: center;
+}
+
+/* Ensure smooth layout adjustments */
+.destinationsGrid > * {
+  transition: var(--tp-transition-fast);
+}
+
+.noResultsContainer {
+  background-color: var(--tp-surface-medium);
+  padding: var(--tp-space-xl);
+  border-radius: var(--tp-radius-md);
+  text-align: center;
+  margin-top: var(--tp-space-lg);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+}
+
+.noResults {
+  color: var(--tp-muted-text);
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  color: var(--tp-primary-accent);
+}
+
+.errorAlert {
+  margin: var(--tp-space-lg);
+  border-radius: var(--tp-radius-md);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .primaryActions {
+    padding: var(--tp-space-sm);
+  }
+
+  .filtersContainer {
+    padding: var(--tp-space-xs);
+  }
+
+  .destinationsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--tp-space-sm);
+  }
+
+  .resetButton {
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .primaryActions,
+  .filtersContainer {
+    padding: var(--tp-space-xs);
+  }
+
+  .destinationsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--tp-space-xs);
+  }
+}

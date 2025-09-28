@@ -1,3 +1,5 @@
+/* src/shared/pages/common/About.module.css */
+
 .aboutContainer {
   padding: 2rem;
   background-color: #0fa4af; /* Consistent dark background */
@@ -6,54 +8,519 @@
   min-height: calc(100vh - 4rem); /* Adjust for header margin */
 }
 
+/* Header Section */
+.header {
+  text-align: center;
+  margin-bottom: 4rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+}
+
 .title {
   text-align: center;
   color: #ffffff; /* White accent for neutrality and visibility */
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  font-size: 3rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff 30%, #bdd1d4 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.section {
+.subtitle {
+  color: #bdd1d4;
+  font-weight: 300;
   margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+.tags {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.tag {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+/* Sections */
+.section {
+  margin-bottom: 4rem;
 }
 
 .sectionTitle {
   color: #ffffff; /* Matching white accent */
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
 .content {
-  line-height: 1.6;
+  line-height: 1.7;
   font-size: 1rem;
+  color: #bdd1d4;
 }
 
-.footer {
+/* Cards */
+.card {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Feature Cards */
+.featureCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
   text-align: center;
-  padding-top: 2rem;
-  border-top: 1px solid #4a5b66; /* Subtle divider */
 }
 
-.footerText {
-  color: #a3b8bf; /* Slightly muted text for footer */
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.featureTitle {
+  color: #ffffff !important;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Technology Tags */
+.techTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.techTag {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Security List */
+.securityList {
+  margin-top: 1rem;
+}
+
+.securityItem {
+  color: #bdd1d4 !important;
+  padding: 0.3rem 0;
   font-size: 0.9rem;
 }
 
+/* Stakeholder Section */
+.stakeholderTitle {
+  color: #ffffff !important;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.benefitsList {
+  margin-top: 1rem;
+}
+
+.benefitItem {
+  color: #bdd1d4 !important;
+  padding: 0.4rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Sustainability Section */
+.sustainabilityTitle {
+  color: #ffffff !important;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Team Section */
+.teamTitle {
+  color: #ffffff !important;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.teamMember {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.teamRole {
+  color: #bdd1d4 !important;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.teamDescription {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Contact Information */
+.contactInfo {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.contactItem {
+  margin-bottom: 1rem;
+}
+
+.contactLabel {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.contactValue {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+}
+
+/* Impact Cards */
+.impactCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
+  text-align: center;
+}
+
+.impactCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.impactIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.impactTitle {
+  color: #ffffff !important;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Divider */
+.divider {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  margin: 2rem 0 !important;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 3rem 0 2rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4rem;
+}
+
+.footerText {
+  color: #bdd1d4 !important;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.footerDisclaimer {
+  margin-top: 2rem;
+}
+
+.disclaimerText {
+  color: #bdd1d4 !important;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
+/* Grid fixes for proper column display */
+.gridContainer {
+  display: grid !important;
+  gap: 2rem !important;
+}
+
+.gridTwoColumns {
+  grid-template-columns: 1fr 1fr !important;
+}
+
+.gridThreeColumns {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.gridItem {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* Ensure Material-UI Grid works properly */
+:global(.MuiGrid-container) {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+:global(.MuiGrid-item) {
+  padding-left: 16px !important;
+  padding-top: 16px !important;
+}
+
+/* Fix for Mission/Vision cards */
+.missionVisionGrid {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 2rem !important;
+  margin: 0 !important;
+}
+
+.missionVisionItem {
+  flex: 1 1 calc(50% - 1rem) !important;
+  min-width: 300px !important;
+  max-width: none !important;
+}
+
+/* Fix for stakeholder grid */
+.stakeholderGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1.5rem !important;
+}
+
+.stakeholderItem {
+  width: 100% !important;
+}
+
+/* Fix for feature grid */
+.featureGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.5rem !important;
+}
+
+.featureItem {
+  width: 100% !important;
+}
+
+/* Fix for team section grid */
+.teamGrid {
+  display: flex !important;
+  gap: 2rem !important;
+  align-items: stretch !important;
+}
+
+.teamMainItem {
+  flex: 2 !important;
+  min-width: 300px !important;
+}
+
+.teamContactItem {
+  flex: 1 !important;
+  min-width: 250px !important;
+}
+
+/* Fix for impact grid */
+.impactGrid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.5rem !important;
+}
+
+.impactItem {
+  width: 100% !important;
+}
+
 /* Responsive design */
+@media (max-width: 1200px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.3rem;
+  }
+
+  .featureGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .missionVisionGrid {
+    flex-direction: column !important;
+  }
+
+  .missionVisionItem {
+    flex: 1 1 100% !important;
+  }
+
+  .stakeholderGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .featureGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .teamGrid {
+    flex-direction: column !important;
+  }
+
+  .impactGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 @media (max-width: 768px) {
   .aboutContainer {
     padding: 1rem;
+  }
+
+  .header {
+    padding: 2rem 1rem;
+    margin-bottom: 3rem;
   }
 
   .title {
     font-size: 2rem;
   }
 
+  .subtitle {
+    font-size: 1.1rem;
+  }
+
   .sectionTitle {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 
   .content {
     font-size: 0.9rem;
   }
+
+  .featureIcon,
+  .impactIcon {
+    font-size: 2.5rem;
+  }
+
+  .tags {
+    justify-content: center;
+  }
+
+  .techTags {
+    justify-content: center;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .aboutContainer {
+    padding: 0.5rem;
+  }
+
+  .header {
+    padding: 1.5rem 1rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+
+  .featureIcon,
+  .impactIcon {
+    font-size: 2rem;
+  }
+}
+
+/* Accessibility improvements */
+.card:focus-within {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.tag:focus,
+.techTag:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Hover effects for better interactivity */
+.contactItem:hover .contactLabel {
+  color: #ffffff !important;
+}
+
+.benefitItem:hover {
+  color: #ffffff !important;
+  padding-left: 0.5rem;
+  transition: all 0.2s ease;
 }

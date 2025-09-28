@@ -1,12 +1,23 @@
 /* src/tourist/components/offers/OfferCard.module.css */
 .card {
   height: 100%;
-  transition: transform 0.2s ease-out;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.18
+  ) !important; /* Lighter card background */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Softer border */
+  border-radius: 15px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .card:hover {
-  transform: scale(1.02);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
+  background: rgba(255, 255, 255, 0.25) !important; /* Lighter hover state */
 }
 
 .cardContent {
@@ -15,20 +26,22 @@
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  color: #e0e7ea; /* Lighter text for better contrast */
 }
 
 .cardTitle {
-  color: #1976d2;
+  color: #ffffff; /* White accent for titles */
   margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .cardDescription {
-  color: #666;
+  color: #e0e7ea; /* Lighter text */
   margin-bottom: 1rem;
 }
 
 .cardInfo {
-  color: #333;
+  color: #e0e7ea; /* Lighter text */
   margin-bottom: 0.5rem;
 }
 
@@ -39,16 +52,73 @@
 .destLabel {
   margin-bottom: 0.5rem;
   font-weight: bold;
+  color: #ffffff; /* White accent */
 }
 
 .chip {
   margin: 0.25rem;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.2
+  ) !important; /* Lighter chip background */
+  color: #e0e7ea !important; /* Lighter text */
+  border: 1px solid rgba(255, 255, 255, 0.25); /* Softer border */
+}
+
+.statusChip.MuiChip-colorSuccess {
+  background-color: rgba(
+    0,
+    255,
+    0,
+    0.3
+  ) !important; /* Lighter green for active */
+  color: #e0e7ea !important;
+}
+
+.statusChip.MuiChip-colorDefault {
+  background-color: rgba(
+    128,
+    128,
+    128,
+    0.3
+  ) !important; /* Lighter gray for inactive */
+  color: #e0e7ea !important;
 }
 
 .bookButton {
-  background-color: #1976d2;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.25
+  ) !important; /* Lighter button background */
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Softer border */
 }
 
 .bookButton:hover {
-  background-color: #1565c0;
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.35
+  ) !important; /* Lighter hover state */
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
 }

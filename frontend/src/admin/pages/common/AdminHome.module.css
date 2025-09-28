@@ -1,55 +1,531 @@
+/* src/admin-panel/pages/common/AdminHome.module.css */
+
 .adminContainer {
   padding: 2rem;
-  background-color: #0fa4af;
-  border-radius: 4px;
+  background: linear-gradient(135deg, #0fa4af 0%, #0c6d7a 100%);
   color: #bdd1d4;
-  min-height: calc(
-    100vh - 4rem
-  ); /* Adjust for header margin, consistent with Home */
+  min-height: calc(100vh - 4rem);
+  border-radius: 4px;
 }
 
-.title {
-  text-align: center;
-  color: #48d9f3;
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
+/* Welcome Header */
+.welcomeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 3rem 2rem;
 }
 
-.contentTitle {
-  color: #48d9f3;
+.welcomeContent {
+  flex: 1;
+}
+
+.welcomeTitle {
+  color: #48d9f3 !important;
+  font-size: 3rem;
+  font-weight: 700;
   margin-bottom: 1rem;
-  font-size: 1.5rem;
+  background: linear-gradient(45deg, #48d9f3 30%, #bdd1d4 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.contentList {
-  list-style: none;
-  padding: 0;
+.welcomeSubtitle {
+  color: #bdd1d4 !important;
+  font-weight: 300;
+  line-height: 1.5;
 }
 
-.contentItem {
-  margin: 0.75rem 0;
-  padding-left: 1.5rem;
-  position: relative;
+.userAvatar {
+  margin-left: 2rem;
 }
 
-.contentItem::before {
-  content: "•";
-  color: #48d9f3;
-  position: absolute;
-  left: 0;
+/* Search Section */
+.searchSection {
+  margin-bottom: 4rem;
 }
 
-/* Responsive design, mirrored from Home */
+.searchCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+}
+
+.searchInput {
+  margin-bottom: 1.5rem;
+}
+
+.searchInput :global(.MuiInputBase-root) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+}
+
+.searchInput :global(.MuiInputBase-input::placeholder) {
+  color: #bdd1d4 !important;
+  opacity: 1;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filterChip {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transition: all 0.2s ease;
+}
+
+.filterChip:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.filterChip[variant="filled"] {
+  background-color: #ffffff !important;
+  color: #48d9f3 !important;
+}
+
+/* Sections */
+.section {
+  margin-bottom: 4rem;
+}
+
+.sectionTitle {
+  color: #48d9f3 !important;
+  font-size: 2.5rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+/* Grid centering */
+.section :global(.MuiGrid-container) {
+  justify-content: center !important;
+}
+
+.section :global(.MuiGrid-item) {
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Quick Actions */
+.actionCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  height: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.actionCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.actionIcon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.actionTitle {
+  color: #48d9f3 !important;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.actionDescription {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Overview Cards */
+.overviewCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.overviewCard .MuiCardContent-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+
+.overviewCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.overviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.overviewName {
+  color: #48d9f3 !important;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+/* Capacity Section */
+.capacitySection {
+  margin-bottom: 1.5rem;
+}
+
+.capacityHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.capacityLabel {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+}
+
+.revenueText {
+  color: #ffffff !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Compliance Section */
+.complianceSection {
+  margin-bottom: 1.5rem;
+}
+
+.complianceText {
+  color: #bdd1d4 !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Overview Actions */
+.overviewActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.primaryButton {
+  background-color: #ffffff !important;
+  color: #48d9f3 !important;
+  font-weight: 600;
+  flex: 1;
+  border-radius: 8px;
+}
+
+.primaryButton:hover {
+  background-color: #f0f0f0 !important;
+  transform: translateY(-2px);
+}
+
+/* Insights */
+.insightAlert {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+}
+
+/* Statistics */
+.statsCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 15px !important;
+}
+
+.statItem {
+  text-align: center;
+  padding: 1rem;
+}
+
+.statNumber {
+  color: #48d9f3 !important;
+  font-weight: 700;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #48d9f3 30%, #bdd1d4 90%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.statLabel {
+  color: #bdd1d4 !important;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.statTrend {
+  color: #ffffff !important;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CTA Section */
+.ctaSection {
+  margin-top: 4rem;
+  margin-bottom: 2rem;
+}
+
+.ctaCard {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  text-align: center;
+  padding: 2rem;
+}
+
+.ctaTitle {
+  color: #48d9f3 !important;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.ctaDescription {
+  color: #bdd1d4 !important;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ctaButton {
+  background-color: #ffffff !important;
+  color: #48d9f3 !important;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 12px;
+  min-width: 200px;
+}
+
+.ctaButton:hover {
+  background-color: #f0f0f0 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.ctaSecondaryButton {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 12px 32px;
+  border-radius: 12px;
+  min-width: 200px;
+}
+
+.ctaSecondaryButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .welcomeTitle {
+    font-size: 2.5rem;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .statNumber {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .welcomeHeader {
+    flex-direction: column;
+    text-align: center;
+    gap: 2rem;
+  }
+
+  .userAvatar {
+    margin-left: 0;
+  }
+
+  .overviewActions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ctaButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
 @media (max-width: 768px) {
   .adminContainer {
     padding: 1rem;
   }
 
-  .title {
+  .welcomeHeader {
+    padding: 2rem 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .welcomeTitle {
     font-size: 2rem;
   }
 
-  .contentTitle {
-    font-size: 1.25rem;
+  .sectionTitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
   }
+
+  .actionIcon {
+    font-size: 2.5rem;
+  }
+
+  .section {
+    margin-bottom: 3rem;
+  }
+
+  .filterChips {
+    justify-content: center;
+  }
+
+  .ctaTitle {
+    font-size: 1.8rem;
+  }
+
+  .statNumber {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .adminContainer {
+    padding: 0.5rem;
+  }
+
+  .welcomeHeader {
+    padding: 1.5rem 1rem;
+  }
+
+  .welcomeTitle {
+    font-size: 1.8rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.3rem;
+  }
+
+  .actionIcon {
+    font-size: 2rem;
+  }
+
+  .ctaButton,
+  .ctaSecondaryButton {
+    width: 100%;
+    min-width: auto;
+  }
+
+  .statNumber {
+    font-size: 1.8rem;
+  }
+
+  .capacityHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* Accessibility, Animations, etc. (mirrored for consistency) */
+.actionCard:focus-within,
+.overviewCard:focus-within {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.primaryButton:focus,
+.ctaButton:focus,
+.ctaSecondaryButton:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.actionCard,
+.overviewCard,
+.statsCard,
+.ctaCard {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.statNumber {
+  animation: pulse 2s ease-in-out infinite;
 }

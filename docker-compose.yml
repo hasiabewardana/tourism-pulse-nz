@@ -32,6 +32,17 @@ services: # Service definitions for Tourism Pulse NZ
     networks: # Use a custom network for the Analytics Service
       - tourism-pulse-nz-network
 
+  integration-service: # Integration Service
+    build: # Define the build context and Dockerfile for the Analytics Service
+      context: ./backend/integration-service
+      dockerfile: Dockerfile
+    image: integration-service:latest # Define the image name for the Integration Service
+    ports: # Expose the Integration Service on port 3004
+      - "3004:3004"
+    container_name: integration # Set a custom container name for the Integration Service
+    networks: # Use a custom network for the Integration Service
+      - tourism-pulse-nz-network
+
   api-gateway: # API Gateway Service
     build: # Define the build context and Dockerfile for the API Gateway
       context: ./api-gateway
@@ -42,8 +53,9 @@ services: # Service definitions for Tourism Pulse NZ
     container_name: gateway # Set a custom container name for the API Gateway
     depends_on: # Define dependencies for the API Gateway
       - auth-service
-      - analytics-service
       - destination-service
+      - analytics-service
+      - integration-service
     networks: # Use a custom network for the API Gateway
       - tourism-pulse-nz-network
 

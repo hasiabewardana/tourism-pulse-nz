@@ -1,6 +1,7 @@
 // src/tourist/components/bookings/BookingCard.js
 import { useState } from "react";
 import { Card, CardContent, Typography, Button, Chip } from "@mui/material";
+import axios from "axios"; // New import for API calls
 import classes from "./BookingCard.module.css";
 import BookingForm from "./BookingForm";
 
@@ -16,18 +17,16 @@ function BookingCard({ booking, onRefresh }) {
       status: updatedData.status,
     };
     try {
-      const res = await fetch(
+      const res = await axios.put(
         `http://localhost:3000/dest/api/v1/bookings/${booking.id}`,
+        payload,
         {
-          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
         }
       );
-      if (!res.ok) throw new Error("Failed to update booking");
       setShowEditModal(false);
       onRefresh();
     } catch (err) {
@@ -63,13 +62,13 @@ function BookingCard({ booking, onRefresh }) {
           <Chip
             label={booking.status.toUpperCase()}
             color={booking.status === "confirmed" ? "success" : "default"}
+            className={classes.statusChip}
           />
         </Typography>
         {isEditable && (
           <>
             <Button
               variant="contained"
-              color="primary"
               onClick={() => setShowEditModal(true)}
               className={classes.actionButton}
             >
@@ -77,7 +76,6 @@ function BookingCard({ booking, onRefresh }) {
             </Button>
             <Button
               variant="contained"
-              color="secondary"
               onClick={handleCancel}
               className={classes.actionButton}
             >

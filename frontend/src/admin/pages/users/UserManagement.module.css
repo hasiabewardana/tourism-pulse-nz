@@ -1,14 +1,65 @@
+/* Tourism Pulse Design System - User Management */
+
+/* CSS Variables */
+:root {
+  /* Primary Colors */
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-accent: #48d9f3;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-muted-text: #82c2ce;
+
+  /* Surface Colors */
+  --tp-surface-dark: #282f33;
+  --tp-surface-medium: #374549;
+  --tp-surface-light: #afddef;
+  --tp-surface-hover: #e0eff1;
+
+  /* Status Colors */
+  --tp-status-success: #4caf50;
+  --tp-status-error: #f44336;
+  --tp-status-warning: #ff9800;
+  --tp-status-info: #2196f3;
+
+  /* Spacing Scale */
+  --tp-space-xs: 0.5rem;
+  --tp-space-sm: 1rem;
+  --tp-space-md: 1.5rem;
+  --tp-space-lg: 2rem;
+  --tp-space-xl: 3rem;
+
+  /* Border Radius */
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 8px;
+  --tp-radius-lg: 12px;
+
+  /* Shadows */
+  --tp-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --tp-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --tp-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.25);
+
+  /* Transitions */
+  --tp-transition-fast: all 0.2s ease;
+  --tp-transition-smooth: all 0.3s ease;
+}
+
 .container {
-  padding: 2rem;
-  background-color: #0fa4af;
-  border-radius: 4px;
-  color: #ffffff;
   min-height: calc(100vh - 4rem);
+  padding: var(--tp-space-lg);
+  background-color: var(--tp-primary-bg);
+  color: var(--tp-secondary-text);
+  position: relative;
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: var(--tp-space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--tp-space-xs);
   }
 }

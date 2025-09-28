@@ -1,48 +1,91 @@
-.form {
-  max-width: 40rem;
-  margin: 2rem auto;
-}
-
-.form label,
-.form input,
-.form textarea {
-  display: block;
-  width: 100%;
-}
-
-.form input,
-.form textarea {
-  font: inherit;
-  padding: 0.25rem;
-}
-
-.actions {
+.formContainer {
+  padding: 2rem;
+  min-height: calc(100vh - 6rem);
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
-.actions button {
-  font: inherit;
-  cursor: pointer;
-  padding: 0.5rem 1.5rem;
+.formBox {
+  background: linear-gradient(135deg, #0fa4af, #48d9f3);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 40rem;
+}
+
+.formTitle {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.form {
+  background-color: #fff;
+  padding: 2rem;
   border-radius: 4px;
-  background-color: var(--color-gray-300);
-  color: var(--color-gray-800);
-  border: none;
 }
 
-.actions a {
-  text-decoration: none;
-  background-color: transparent;
-  color: var(--color-gray-300);
+.errorList {
+  list-style: none;
+  padding: 0;
+  color: #d32f2f;
+  margin-bottom: 1rem;
 }
 
-.actions button:hover {
-  background-color: var(--color-primary-300);
+.errorItem {
+  margin: 0.5rem 0;
 }
 
-.actions a:hover {
-  background-color: var(--color-gray-800);
+.message {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  align-items: center;
+}
+
+.switchButton {
+  color: #0fa4af !important;
+  text-transform: none;
+  padding: 0.5rem 1.5rem; /* Ensure visible padding */
+  visibility: visible; /* Ensure button is not hidden */
+}
+
+.switchButton:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.submitButton {
+  background-color: #fff !important;
+  color: #0fa4af !important;
+  padding: 0.5rem 1.5rem;
+}
+
+.submitButton:hover {
+  background-color: #e0eff1 !important;
+}
+
+@media (max-width: 768px) {
+  .formBox {
+    padding: 1rem;
+  }
+  .form {
+    padding: 1rem;
+  }
+  .actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .switchButton,
+  .submitButton {
+    width: 100%;
+  }
 }

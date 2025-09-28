@@ -2,6 +2,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Impor
 import RootLayout from "./shared/pages/common/root/Root"; // Importing the RootLayout component for shared layout structure
 import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
 import Destinations from "./shared/pages/destinations/Destinations";
+import Map from "./shared/pages/map/Map";
 import About from "./shared/pages/common/about/About";
 import Contact from "./shared/pages/common/contact/Contact";
 import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "destinations",
         element: <Destinations />,
+      },
+      {
+        path: "map",
+        element: <Map />,
       },
       {
         path: "about",

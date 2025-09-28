@@ -4,8 +4,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
+dotenv.config();
+
 const app = express();
-const PORT = 3005;
 
 // Middleware for static files (serve React build)
 app.use(express.static(path.join(__dirname, "build")));
@@ -56,6 +57,6 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
-app.listen(PORT, () => {
+app.listen(process.env.PORT || 3005, () => {
   console.log(`Frontend server with file upload on port ${PORT}`);
 });
