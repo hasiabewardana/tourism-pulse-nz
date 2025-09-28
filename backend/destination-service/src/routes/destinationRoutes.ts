@@ -24,7 +24,7 @@ router.get(
 );
 router.get(
   "/v1/destinations/:id",
-  authorize(["public", "admin"]),
+  authorize(["public", "operator", "admin"]),
   getDestinationById
 );
 router.post("/v1/destinations", authorize(["admin"]), addDestination);
