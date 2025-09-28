@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Container,
@@ -104,6 +105,7 @@ const adminInsights = [
 
 function AdminHome() {
   const { user, role } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
@@ -124,7 +126,25 @@ function AdminHome() {
 
   const handleQuickAction = (action) => {
     console.log(`Admin action: ${action}`);
-    // In real app, navigate or trigger modals/APIs
+    switch (action) {
+      case "analytics":
+        navigate("/admin/analytics");
+        break;
+      case "user-management":
+        navigate("/admin/user-management");
+        break;
+      case "destination-management":
+        navigate("/admin/destination-management");
+        break;
+      case "booking-management":
+        navigate("/admin/booking-management");
+        break;
+      case "reports":
+        navigate("/admin/reports");
+        break;
+      default:
+        console.log(`Action ${action} not implemented yet`);
+    }
   };
 
   const filteredOverview = systemOverview.filter(

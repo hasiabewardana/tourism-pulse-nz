@@ -33,6 +33,7 @@ function Navigation() {
       { to: "/map", label: "Map" },
       { to: "/operator/offers", label: "My Offers" },
       { to: "/operator/bookings", label: " My Bookings" },
+      { to: "/operator/analytics", label: "Analytics" },
       { to: "/logout", label: "Logout" },
     ],
     admin: [
@@ -42,6 +43,7 @@ function Navigation() {
       { to: "/map", label: "Map" },
       { to: "/admin/user-management", label: "User Management" },
       { to: "/admin/reports", label: "Reports" },
+      { to: "/admin/analytics", label: "Analytics" },
       { to: "/logout", label: "Logout" },
     ],
   };

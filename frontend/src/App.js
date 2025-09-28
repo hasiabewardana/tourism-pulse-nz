@@ -1,4 +1,5 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
+import { AnalyticsProvider } from "./shared/context/AnalyticsContext";
 import RootLayout from "./shared/pages/common/root/Root"; // Importing the RootLayout component for shared layout structure
 import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
 import Destinations from "./shared/pages/destinations/Destinations";
@@ -25,6 +26,8 @@ import UserManagement from "./admin/pages/users/UserManagement";
 import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
 import BookingManagement from "./admin/pages/bookings/BookingManagement";
 import Reports from "./admin/pages/reports/Reports";
+import ManagerAnalytics from "./manager/pages/analytics/ManagerAnalytics";
+import AdminAnalytics from "./admin/pages/analytics/AdminAnalytics";
 
 const router = createBrowserRouter([
   {
@@ -104,6 +107,11 @@ const router = createBrowserRouter([
             element: <ManagerBookingsPage />,
             loader: checkAuthLoader,
           },
+          {
+            path: "analytics", // Added analytics route
+            element: <ManagerAnalytics />,
+            loader: checkAuthLoader,
+          },
         ],
       },
       {
@@ -136,6 +144,11 @@ const router = createBrowserRouter([
             element: <Reports />,
             loader: checkAuthLoader, // Protect the route
           },
+          {
+            path: "analytics", // Added analytics route
+            element: <AdminAnalytics />,
+            loader: checkAuthLoader, // Protect the route
+          },
         ],
       },
     ],
@@ -144,5 +157,9 @@ const router = createBrowserRouter([
 
 // Main App component that renders the application
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AnalyticsProvider>
+      <RouterProvider router={router} />
+    </AnalyticsProvider>
+  );
 }

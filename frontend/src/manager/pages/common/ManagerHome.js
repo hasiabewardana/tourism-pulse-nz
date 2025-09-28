@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Container,
@@ -123,9 +124,10 @@ const operatorInsights = [
 ];
 
 function ManagerHome() {
-  const { user, role } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -144,7 +146,22 @@ function ManagerHome() {
 
   const handleQuickAction = (action) => {
     console.log(`Operator action: ${action}`);
-    // In real app, navigate or trigger modals/APIs
+    switch (action) {
+      case "analytics":
+        navigate("/operator/analytics");
+        break;
+      case "destinations":
+        navigate("/operator/destinations");
+        break;
+      case "offers":
+        navigate("/operator/offers");
+        break;
+      case "bookings":
+        navigate("/operator/bookings");
+        break;
+      default:
+        console.log(`Action ${action} not implemented yet`);
+    }
   };
 
   const filteredDestinations = managedDestinations.filter(
