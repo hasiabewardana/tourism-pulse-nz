@@ -24,6 +24,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import DestinationCard from "./DestinationCard";
 import DestinationForm from "./DestinationForm";
 import classes from "./DestinationList.module.css";
+import { NZ_REGIONS } from "../../../util/regionParser";
 
 function DestinationList() {
   const [destinations, setDestinations] = useState([]);
@@ -36,6 +37,7 @@ function DestinationList() {
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
+  const [selectedRegion, setSelectedRegion] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
   );
@@ -61,6 +63,7 @@ function DestinationList() {
       if (selectedStatus !== "All") params.status = selectedStatus;
       if (selectedAvailability !== "All")
         params.availability = selectedAvailability;
+      if (selectedRegion !== "All") params.region = selectedRegion;
       if (selectedDate) params.date = selectedDate;
 
       const config = {
@@ -92,7 +95,7 @@ function DestinationList() {
 
   useEffect(() => {
     fetchDestinations();
-  }, [selectedStatus, selectedAvailability, selectedDate]);
+  }, [selectedStatus, selectedAvailability, selectedRegion, selectedDate]);
 
   const applySearchAndSort = (data) => {
     let filtered = data.filter((dest) =>
@@ -201,6 +204,7 @@ function DestinationList() {
   const handleResetFilters = () => {
     setSelectedStatus("All");
     setSelectedAvailability("All");
+    setSelectedRegion("All");
     setSelectedDate(
       new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
     );
@@ -308,7 +312,24 @@ function DestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Region</InputLabel>
+              <Select
+                value={selectedRegion}
+                label="Region"
+                onChange={(e) => setSelectedRegion(e.target.value)}
+              >
+                <MenuItem value="All">All Regions</MenuItem>
+                {NZ_REGIONS.map((region) => (
+                  <MenuItem key={region} value={region}>
+                    {region}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
             <DatePicker
               label="Date"
               value={selectedDate ? new Date(selectedDate) : null}
@@ -323,14 +344,14 @@ function DestinationList() {
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid item xs={12}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
               fullWidth
             >
-              Reset
+              Reset Filters
             </Button>
           </Grid>
         </Grid>

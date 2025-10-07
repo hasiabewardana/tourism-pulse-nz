@@ -410,6 +410,15 @@ function DestinationModal({
 
                     <Box className={classes.infoItem}>
                       <Typography variant="body2" className={classes.infoLabel}>
+                        Region
+                      </Typography>
+                      <Typography variant="body1" className={classes.infoValue}>
+                        {destination.region || "Unknown"}
+                      </Typography>
+                    </Box>
+
+                    <Box className={classes.infoItem}>
+                      <Typography variant="body2" className={classes.infoLabel}>
                         Capacity
                       </Typography>
                       <Typography variant="body1" className={classes.infoValue}>

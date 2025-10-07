@@ -79,10 +79,10 @@ function DestinationCard({ destination, onEdit, onDelete, selectedDate }) {
             <LocationOnIcon className={classes.statIcon} />
             <div>
               <Typography variant="body2" className={classes.statLabel}>
-                Location
+                Region
               </Typography>
               <Typography variant="body1" className={classes.statValue}>
-                {destination.locationName || destination.location || "N/A"}
+                {destination.region || "Unknown"}
               </Typography>
             </div>
           </div>

@@ -126,9 +126,9 @@ function OperatorDestination({ assignment, userName, onDelete, onSubscribe }) {
           </div>
           <div className={classes.statItem}>
             <LocationOnIcon className={classes.statIcon} />
-            <span className={classes.statLabel}>Location</span>
+            <span className={classes.statLabel}>Region</span>
             <span className={classes.statValue}>
-              {assignment.locationName || assignment.region || "N/A"}
+              {assignment.region || "Unknown"}
             </span>
           </div>
           <div className={classes.statItem}>

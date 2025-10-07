@@ -23,6 +23,7 @@ export const getAllDestinations = async (
     status?: string;
     availability?: "Full" | "Available";
     date?: string;
+    region?: string;
   } = {}
 ) => {
   let sql = `
@@ -36,7 +37,8 @@ export const getAllDestinations = async (
       d.updated_at, 
       d.photos, 
       d.description, 
-      d.status
+      d.status,
+      d.region
     FROM dest.destinations d 
     LEFT JOIN (
       SELECT 
@@ -60,6 +62,12 @@ export const getAllDestinations = async (
   if (filters.status) {
     whereConditions.push("d.status = $" + (params.length + 1));
     whereParams.push(filters.status);
+  }
+
+  // Region filter
+  if (filters.region) {
+    whereConditions.push("d.region = $" + (params.length + 1));
+    whereParams.push(filters.region);
   }
 
   // Availability condition (without leading "AND")
@@ -115,7 +123,8 @@ export const findDestinationById = async (destinationId: number) => {
       updated_at, 
       photos, 
       description, 
-      status FROM dest.destinations WHERE destination_id = $1`,
+      status,
+      region FROM dest.destinations WHERE destination_id = $1`,
     [destinationId]
   );
   return result[0] || null;
@@ -127,16 +136,18 @@ export const createDestination = async (
   description: string,
   location: string | null,
   capacity: number,
-  photos: string[]
+  photos: string[],
+  region: string
 ) => {
   const result = await query(
-    "INSERT INTO dest.destinations (name, description, location, capacity, photos) VALUES ($1, $2, ST_GeomFromText($3), $4, $5) RETURNING destination_id",
+    "INSERT INTO dest.destinations (name, description, location, capacity, photos, region) VALUES ($1, $2, ST_GeomFromText($3), $4, $5, $6) RETURNING destination_id",
     [
       name,
       description,
       location || "POINT(0 0)",
       capacity,
       JSON.stringify(photos),
+      region,
     ]
   );
   return result[0].destination_id;
@@ -149,16 +160,18 @@ export const updateDestination = async (
   description: string,
   location: string | null,
   capacity: number,
-  photos: string[]
+  photos: string[],
+  region: string
 ) => {
   const result = await query(
-    "UPDATE dest.destinations SET name = $1, description = $2, location = ST_GeomFromText($3), capacity = $4, photos = $5, updated_at = CURRENT_TIMESTAMP WHERE destination_id = $6 RETURNING destination_id",
+    "UPDATE dest.destinations SET name = $1, description = $2, location = ST_GeomFromText($3), capacity = $4, photos = $5, region = $6, updated_at = CURRENT_TIMESTAMP WHERE destination_id = $7 RETURNING destination_id",
     [
       name,
       description,
       location || "POINT(0 0)",
       capacity,
       JSON.stringify(photos),
+      region,
       destinationId,
     ]
   );

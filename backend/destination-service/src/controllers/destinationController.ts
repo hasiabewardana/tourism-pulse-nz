@@ -7,6 +7,7 @@ import {
   updateDestination,
   deleteDestination,
 } from "../models/destinationModel";
+import { extractRegion } from "../utils/regionParser";
 
 // Zod schema for destination validation
 const destinationSchema = z.object({
@@ -15,18 +16,20 @@ const destinationSchema = z.object({
   location: z.string().optional(), // GeoJSON or WKT string
   capacity: z.number().min(0),
   photos: z.array(z.string()).min(1).optional(),
+  region: z.string().optional(), // Optional - will be auto-extracted if not provided
 });
 
 // Get all destinations
 export const getDestinations = async (req: Request, res: Response) => {
   try {
-    const { status, availability, date } = req.query;
+    const { status, availability, date, region } = req.query;
 
     // Basic validation
     let validatedFilters: {
       status?: string;
       availability?: "Full" | "Available";
       date?: string;
+      region?: string;
     } = {};
     if (status && !["Open", "Closed"].includes(status as string)) {
       return res
@@ -52,6 +55,7 @@ export const getDestinations = async (req: Request, res: Response) => {
     if (availability)
       validatedFilters.availability = availability as "Full" | "Available";
     if (date) validatedFilters.date = date as string;
+    if (region) validatedFilters.region = region as string;
 
     const destinations = await getAllDestinations(validatedFilters);
 
@@ -93,12 +97,17 @@ export const getDestinationById = async (req: Request, res: Response) => {
 export const addDestination = async (req: Request, res: Response) => {
   try {
     const data = destinationSchema.parse(req.body);
+
+    // Auto-extract region if not provided
+    const region = data.region || extractRegion(data.name || "");
+
     const destinationId = await createDestination(
       data.name,
       data.description,
       data.location ?? null,
       data.capacity,
-      data.photos || ["https://default-destination-thumbnail.jpg"]
+      data.photos || ["https://default-destination-thumbnail.jpg"],
+      region
     );
     res.status(201).json({ destinationId });
   } catch (error) {
@@ -113,13 +122,18 @@ export const modifyDestination = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
     const data = destinationSchema.parse(req.body);
+
+    // Auto-extract region if not provided
+    const region = data.region || extractRegion(data.name || "");
+
     const updatedId = await updateDestination(
       destinationId,
       data.name,
       data.description,
       data.location ?? null,
       data.capacity,
-      data.photos || ["https://default-destination-thumbnail.jpg"]
+      data.photos || ["https://default-destination-thumbnail.jpg"],
+      region
     );
     res.json({ destinationId: updatedId });
   } catch (error) {
