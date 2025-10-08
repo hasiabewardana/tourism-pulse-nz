@@ -11,7 +11,13 @@ export const getAllBookings = async () => {
 // Get bookings by user ID (user only, their own)
 export const getBookingsByUserId = async (userId: number) => {
   const result = await query(
-    "SELECT * FROM dest.bookings WHERE user_id = $1 ORDER BY created_at DESC",
+    `SELECT b.*, o.name as offer_name, o.description as offer_description, 
+     o.destination_id, d.name as destination_name
+     FROM dest.bookings b
+     LEFT JOIN dest.offers o ON b.offer_id = o.offer_id
+     LEFT JOIN dest.destinations d ON o.destination_id = d.destination_id
+     WHERE b.user_id = $1 
+     ORDER BY b.created_at DESC`,
     [userId]
   );
   return result;

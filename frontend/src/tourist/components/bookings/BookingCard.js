@@ -4,9 +4,11 @@ import { Card, CardContent, Typography, Button, Chip } from "@mui/material";
 import axios from "axios"; // New import for API calls
 import classes from "./BookingCard.module.css";
 import BookingForm from "./BookingForm";
+import ReviewDialog from "./ReviewDialog";
 
 function BookingCard({ booking, onRefresh }) {
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showReviewDialog, setShowReviewDialog] = useState(false);
 
   const handleEditSubmit = async (updatedData) => {
     const token = localStorage.getItem("token");
@@ -40,7 +42,12 @@ function BookingCard({ booking, onRefresh }) {
     }
   };
 
+  const handleReviewSubmitted = () => {
+    onRefresh();
+  };
+
   const isEditable = booking.status !== "confirmed";
+  const canReview = booking.status === "confirmed" && !booking.hasReview;
 
   return (
     <Card className={classes.card}>
@@ -83,13 +90,23 @@ function BookingCard({ booking, onRefresh }) {
             </Button>
           </>
         )}
+        {canReview && (
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setShowReviewDialog(true)}
+            className={classes.actionButton}
+          >
+            Write Review
+          </Button>
+        )}
       </CardContent>
 
       {showEditModal && (
         <div className={classes.modal}>
           <div className={classes.modalContent}>
             <BookingForm
-              offer={booking.offer || { name: booking.offerName, id: null }} // Fallback offer
+              offer={booking.offer || { name: booking.offerName, id: null }}
               booking={booking}
               onSubmit={handleEditSubmit}
               onCancel={() => setShowEditModal(false)}
@@ -97,6 +114,13 @@ function BookingCard({ booking, onRefresh }) {
           </div>
         </div>
       )}
+
+      <ReviewDialog
+        open={showReviewDialog}
+        onClose={() => setShowReviewDialog(false)}
+        booking={booking}
+        onReviewSubmitted={handleReviewSubmitted}
+      />
     </Card>
   );
 }

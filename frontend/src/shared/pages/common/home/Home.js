@@ -23,19 +23,11 @@ import DestinationModal from "../../../components/destination/DestinationModal";
 import { useAuth } from "../../../context/AuthContext";
 import classes from "./Home.module.css";
 
-// Testimonials for credibility and user engagement
-const testimonials = [
-  { text: "TourismPulseNZ made planning my trip so easy!", author: "Jane Doe" },
-  {
-    text: "Real-time updates saved our business during peak season.",
-    author: "John Smith",
-  },
-];
-
 function Home() {
   const { isAuthenticated } = useAuth();
   const [activeRole, setActiveRole] = useState("public"); // State to manage role-based content
   const [destinations, setDestinations] = useState([]); // State for fetched destinations
+  const [reviews, setReviews] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]); // State for filtered destinations
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
@@ -76,6 +68,28 @@ function Home() {
     };
 
     fetchDestinations();
+  }, []);
+
+  // Fetch featured reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/dest/api/v1/reviews/featured",
+          {
+            params: { limit: 6 },
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setReviews(response.data);
+      } catch (err) {
+        console.error("Failed to load reviews:", err);
+      }
+    };
+
+    fetchReviews();
   }, []);
 
   // Apply search and sort functionality
@@ -321,21 +335,36 @@ function Home() {
         What Our Users Say
       </Typography>
       <Grid container spacing={3} className={classes.testimonialGrid}>
-        {testimonials.map((testimonial, index) => (
-          <Grid item xs={12} sm={6} key={index}>
-            <Card className={classes.testimonialCard}>
-              <CardContent>
-                <Typography variant="body1">{testimonial.text}</Typography>
-                <Typography
-                  variant="caption"
-                  className={classes.testimonialAuthor}
-                >
-                  - {testimonial.author}
-                </Typography>
-              </CardContent>
-            </Card>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <Grid item xs={12} sm={6} key={review.review_id}>
+              <Card className={classes.testimonialCard}>
+                <CardContent>
+                  <Typography variant="body1">{review.comment}</Typography>
+                  <Typography
+                    variant="caption"
+                    className={classes.testimonialAuthor}
+                  >
+                    - {review.username || "Anonymous"}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    {"★".repeat(review.rating)}
+                    {"☆".repeat(5 - review.rating)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Grid item xs={12}>
+            <Typography variant="body2" align="center">
+              No reviews yet. Be the first to share your experience!
+            </Typography>
           </Grid>
-        ))}
+        )}
       </Grid>
 
       {/* Final Call-to-Action */}

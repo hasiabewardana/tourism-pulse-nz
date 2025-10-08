@@ -62,7 +62,20 @@ function BookingsPage() {
         }
       );
       const data = res.data;
-      console.log("API Response:", data); // Debug log
+      console.log("API Response:", data);
+
+      const reviewsRes = await axios.get(
+        `http://localhost:3000/dest/api/v1/users/${userId}/reviews`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const reviews = reviewsRes.data;
+      const reviewedBookingIds = new Set(reviews.map((r) => r.booking_id));
+
       setBookings(
         data.map((b) => ({
           id: b.booking_id,
@@ -70,10 +83,12 @@ function BookingsPage() {
           visitorCount: b.visitor_count,
           status: b.status,
           offerName: b.offer?.name || "",
+          destinationId: b.offer?.destination_id || null,
           offer: b.offer || {
             name: b.offerName,
             description: "No description",
-          }, // Fallback
+          },
+          hasReview: reviewedBookingIds.has(b.booking_id),
         }))
       );
     } catch (err) {

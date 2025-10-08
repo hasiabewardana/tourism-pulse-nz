@@ -55,7 +55,20 @@ export const getUserBookings = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId, 10);
     const bookings = await getBookingsByUserId(userId);
-    res.json(bookings);
+
+    const enrichedBookings = bookings.map((booking: any) => ({
+      booking_id: booking.booking_id,
+      booking_date: booking.booking_date,
+      visitor_count: booking.visitor_count,
+      status: booking.status,
+      offer: {
+        name: booking.offer_name,
+        description: booking.offer_description,
+        destination_id: booking.destination_id,
+      },
+    }));
+
+    res.json(enrichedBookings);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -142,12 +155,10 @@ export const addBooking = async (req: Request, res: Response) => {
       `[addBooking] Error stack:`,
       error instanceof Error ? error.stack : "No stack trace"
     );
-    res
-      .status(500)
-      .json({
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : String(error),
-      });
+    res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 

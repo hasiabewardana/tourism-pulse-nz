@@ -8,6 +8,7 @@ import operatorDestinationRoutes from "./routes/operatorDestinationRoutes"; // I
 import offerRoutes from "./routes/offerRoutes"; // Import offer routes
 import recommendationRoutes from "./routes/recommendationRoutes"; // Import recommendation routes
 import advancedFilterRoutes from "./routes/advancedFilterRoutes"; // Import advanced filter routes
+import reviewRoutes from "./routes/reviewRoutes"; // Import review routes
 
 const app = express(); // Create Express application
 
@@ -22,6 +23,7 @@ app.use("/dest-service/api", operatorDestinationRoutes); // Mount operator desti
 app.use("/dest-service/api", offerRoutes); // Mount offer routes under /api
 app.use("/dest-service/api/recommendations", recommendationRoutes); // Mount recommendation routes
 app.use("/dest-service/api/destinations", advancedFilterRoutes); // Mount advanced filter routes
+app.use("/dest-service/api", reviewRoutes); // Mount review routes
 
 // Global error handler
 app.use(
