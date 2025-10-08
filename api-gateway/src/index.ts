@@ -25,7 +25,7 @@ try {
 // Allow frontend origin
 app.use(
   cors({
-    origin: "http://localhost:3005", // allow frontend
+    origin: "http://localhost:3006", // allow frontend on port 3006
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })

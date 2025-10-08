@@ -43,6 +43,31 @@ services: # Service definitions for Tourism Pulse NZ
     networks: # Use a custom network for the Integration Service
       - tourism-pulse-nz-network
 
+  payment-service: # Payment Service (Stripe Integration)
+    build: # Define the build context and Dockerfile for the Payment Service
+      context: ./backend/payment-service
+      dockerfile: Dockerfile
+    image: payment-service:latest # Define the image name for the Payment Service
+    ports: # Expose the Payment Service on port 3005
+      - "3005:3005"
+    container_name: payment # Set a custom container name for the Payment Service
+    environment:
+      - PORT=3005
+      - NODE_ENV=production
+      - DB_HOST=${DB_HOST:-localhost}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-tourism_pulse}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - DEFAULT_CURRENCY=nzd
+      - FRONTEND_URL=http://localhost:8080
+      - API_GATEWAY_URL=http://gateway:3000
+    networks: # Use a custom network for the Payment Service
+      - tourism-pulse-nz-network
+
   api-gateway: # API Gateway Service
     build: # Define the build context and Dockerfile for the API Gateway
       context: ./api-gateway
@@ -56,6 +81,7 @@ services: # Service definitions for Tourism Pulse NZ
       - destination-service
       - analytics-service
       - integration-service
+      - payment-service
     networks: # Use a custom network for the API Gateway
       - tourism-pulse-nz-network
 
@@ -64,9 +90,11 @@ services: # Service definitions for Tourism Pulse NZ
       context: ./frontend
       dockerfile: Dockerfile
     image: frontend:latest # Define the image name for the frontend
-    ports: # Expose the frontend on port 3000
-      - "3005:3005"
+    ports: # Expose the frontend on port 3006
+      - "3006:3006"
     container_name: frontend # Set a custom container name for the frontend
+    environment:
+      - PORT=3006
     networks: # Use a custom network for the frontend
       - tourism-pulse-nz-network
     volumes:

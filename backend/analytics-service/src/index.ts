@@ -22,9 +22,9 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:3005",
-      "http://localhost:3001",
-      "http://localhost:3000",
+      "http://localhost:3006", // Frontend
+      "http://localhost:3001", // Auth service
+      "http://localhost:3000", // API Gateway
     ],
     credentials: true,
   })
