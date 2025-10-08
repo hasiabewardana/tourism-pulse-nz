@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import openWeatherMapRoutes from "./routes/openWeatherMapRoutes";
+import statsnzRoutes from "./routes/statsnzRoutes";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -13,6 +14,7 @@ app.use(cors());
 app.use(helmet());
 
 app.use("/integration-service/api", openWeatherMapRoutes);
+app.use("/integration-service/api/statsnz", statsnzRoutes);
 
 // Global error handler
 app.use(

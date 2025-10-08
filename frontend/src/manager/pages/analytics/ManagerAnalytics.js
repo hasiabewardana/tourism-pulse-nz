@@ -8,6 +8,7 @@ import {
   TrendAnalysisCard,
   AlertsCard,
 } from "../../../shared/components/analytics/AnalyticsCards";
+import StatsNZInsights from "../../components/StatsNZInsights";
 import {
   Box,
   Container,
@@ -36,15 +37,15 @@ import {
 const ManagerAnalytics = () => {
   const {
     demandForecast,
-    staffingInsights,
+    staffingRecommendations: staffingInsights,
     peakSeasons,
-    resourceOptimization,
+    resourceUtilization: resourceOptimization,
     loading,
     error,
     fetchDemandForecast,
-    fetchStaffingInsights,
+    fetchStaffingRecommendations: fetchStaffingInsights,
     fetchPeakSeasons,
-    fetchResourceOptimization,
+    fetchResourceUtilization: fetchResourceOptimization,
   } = useContext(AnalyticsContext);
 
   const [selectedDestination, setSelectedDestination] = useState("all");
@@ -279,7 +280,14 @@ const ManagerAnalytics = () => {
             <DemandForecastCard forecast={demandForecast} />
           </Grid>
           <Grid item xs={12} md={6}>
-            <PeakSeasonAnalyticsCard peakSeasons={peakSeasons} />
+            <StaffingInsightCard insights={staffingInsights} />
+          </Grid>
+
+          {/* Stats NZ National Tourism Insights */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 0, overflow: "hidden" }}>
+              <StatsNZInsights />
+            </Paper>
           </Grid>
         </Grid>
       )}

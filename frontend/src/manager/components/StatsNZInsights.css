@@ -1,0 +1,192 @@
+.stats-nz-insights {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stats-nz-insights .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stats-nz-insights .header h2 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.stats-nz-insights .region-select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.stats-nz-insights .insight-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stats-nz-insights .insight-card h3 {
+  margin: 0 0 15px 0;
+  color: #34495e;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+}
+
+.stats-nz-insights .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.stats-nz-insights .stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.stats-nz-insights .stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stats-nz-insights .stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.stats-nz-insights .growth-positive {
+  color: #27ae60;
+}
+
+.stats-nz-insights .recommendation {
+  padding: 12px;
+  background: #e8f5e9;
+  border-left: 4px solid #4caf50;
+  border-radius: 4px;
+  margin: 15px 0;
+}
+
+.stats-nz-insights .top-markets {
+  margin-top: 15px;
+}
+
+.stats-nz-insights .market-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.stats-nz-insights .market-tag {
+  padding: 4px 12px;
+  background: #3498db;
+  color: white;
+  border-radius: 16px;
+  font-size: 13px;
+}
+
+.stats-nz-insights .insights-list ul {
+  margin: 10px 0 0 0;
+  padding-left: 20px;
+}
+
+.stats-nz-insights .insights-list li {
+  margin: 8px 0;
+  color: #555;
+}
+
+.stats-nz-insights .trend-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.stats-nz-insights .trends-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stats-nz-insights .trend-item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 15px;
+  align-items: center;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.stats-nz-insights .trend-month {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.stats-nz-insights .trend-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stats-nz-insights .trend-bar {
+  display: grid;
+  grid-template-columns: 80px 1fr 60px;
+  gap: 10px;
+  align-items: center;
+}
+
+.stats-nz-insights .bar-label {
+  font-size: 12px;
+  color: #666;
+}
+
+.stats-nz-insights .bar-container {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.stats-nz-insights .bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.stats-nz-insights .bar-fill.arrivals {
+  background: linear-gradient(90deg, #3498db, #2980b9);
+}
+
+.stats-nz-insights .bar-fill.occupancy {
+  background: linear-gradient(90deg, #27ae60, #229954);
+}
+
+.stats-nz-insights .bar-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c3e50;
+  text-align: right;
+}
+
+.stats-nz-insights .data-source {
+  text-align: center;
+  padding: 15px;
+  color: #7f8c8d;
+  font-size: 12px;
+  border-top: 1px solid #ecf0f1;
+  margin-top: 20px;
+}

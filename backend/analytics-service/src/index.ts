@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import mongoose from "mongoose";
 import { Server } from "ws";
 import http from "http";
@@ -7,6 +8,7 @@ import { query } from "./services/db";
 import analyticsRoutes from "./routes/analyticsRoutes";
 import subscribeRoutes from "./routes/subscribeRoutes";
 import healthRoutes from "./routes/healthRoutes";
+import statsnzRoutes from "./routes/statsnzRoutes";
 import { URL } from "url";
 import { connectMongoDB } from "./config/mongodb";
 import { initializeScheduledJobs } from "./jobs/scheduledJobs";
@@ -15,6 +17,19 @@ dotenv.config();
 const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
 
 const app = express();
+
+// Enable CORS for development
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3005",
+      "http://localhost:3001",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // Connect to MongoDB (with better error handling)
@@ -123,6 +138,7 @@ wss.on("connection", (ws, req) => {
 app.use("/analytics-service/api", healthRoutes);
 app.use("/analytics-service/api", analyticsRoutes);
 app.use("/analytics-service/api", subscribeRoutes);
+app.use("/analytics-service/api/statsnz", statsnzRoutes);
 
 // Global error handler
 app.use(
