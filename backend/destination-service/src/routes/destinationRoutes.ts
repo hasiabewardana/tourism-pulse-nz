@@ -11,7 +11,8 @@ import { authenticate, authorize } from "../middleware/authMiddleware";
 const router = Router();
 
 // Public access
-router.get("/v1/destinations/public", getDestinations); // Public list with thumbnails
+router.get("/v1/destinations/public", getDestinations);
+router.get("/v1/destinations/:id/public", getDestinationById);
 
 // Protected routes
 router.use(authenticate);
