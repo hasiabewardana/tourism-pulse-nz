@@ -81,11 +81,16 @@ function TouristHome() {
       </Box>
 
       <Box className={classes.section}>
-        <Grid container spacing={4} justifyContent="center">
+        <Grid
+          container
+          spacing={4}
+          justifyContent="center"
+          sx={{ maxWidth: "900px", margin: "0 auto" }}
+        >
           {navigationCards.map((card, index) => {
             const IconComponent = card.icon;
             return (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+              <Grid item xs={12} sm={6} md={6} lg={6} key={index}>
                 <Card
                   className={classes.navCard}
                   onClick={() => navigate(card.path)}

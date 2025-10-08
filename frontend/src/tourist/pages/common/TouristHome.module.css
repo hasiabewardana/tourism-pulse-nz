@@ -48,23 +48,32 @@
 /* Sections */
 .section {
   margin-bottom: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Navigation Cards */
 .navCard {
   background: rgba(255, 255, 255, 0.95) !important;
   border-radius: 16px !important;
-  height: 100%;
+  height: 280px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
 .navCardContent {
   text-align: center;
   padding: 2.5rem 1.5rem !important;
-  display: flex;
+  display: flex !important;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
+  flex: 1;
+  height: 100%;
 }
 
 .iconWrapper {
@@ -76,6 +85,7 @@
   justify-content: center;
   margin-bottom: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .navCardTitle {
@@ -83,12 +93,22 @@
   font-weight: 600 !important;
   font-size: 1.25rem !important;
   margin-bottom: 0.5rem;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navCardDescription {
   color: #666666 !important;
   font-size: 0.9rem !important;
   line-height: 1.5;
+  min-height: 54px;
+  max-height: 54px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 /* Responsive Styles */
@@ -130,6 +150,10 @@
     margin-bottom: 2rem;
   }
 
+  .navCard {
+    height: 240px;
+  }
+
   .navCardContent {
     padding: 2rem 1rem !important;
   }
@@ -141,5 +165,13 @@
 
   .iconWrapper svg {
     font-size: 2rem !important;
+  }
+
+  .navCardTitle {
+    font-size: 1.1rem !important;
+  }
+
+  .navCardDescription {
+    font-size: 0.85rem !important;
   }
 }
