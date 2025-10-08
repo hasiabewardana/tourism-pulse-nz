@@ -102,30 +102,48 @@ function Contact() {
     setSubmitStatus(null);
 
     try {
-      // Simulate API call - replace with actual backend integration
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(
+        "http://localhost:3004/integration-service/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      console.log("Form submitted:", formData);
+      const data = await response.json();
 
-      setSubmitStatus({
-        type: "success",
-        message:
-          "Thank you for your message! We will get back to you within 24-48 hours.",
-      });
+      if (response.ok && data.success) {
+        setSubmitStatus({
+          type: "success",
+          message:
+            data.message ||
+            "Thank you for your message! We will get back to you within 24-48 hours.",
+        });
 
-      setFormData({
-        name: "",
-        email: "",
-        organization: "",
-        contactType: "",
-        subject: "",
-        message: "",
-      });
+        setFormData({
+          name: "",
+          email: "",
+          organization: "",
+          contactType: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        // Log detailed validation errors
+        if (data.details) {
+          console.error("Validation errors:", data.details);
+        }
+        throw new Error(data.error || "Failed to send message");
+      }
     } catch (error) {
+      console.error("Error submitting contact form:", error);
       setSubmitStatus({
         type: "error",
         message:
-          "Sorry, there was an error sending your message. Please try again or contact us directly via email.",
+          "Sorry, there was an error sending your message. Please try again or contact us directly via email at tourism.pulse.nz@gmail.com",
       });
     } finally {
       setIsSubmitting(false);

@@ -11,6 +11,7 @@ A tourism management platform for New Zealand with integrated payment processing
 - 🔐 **Authentication** - JWT-based authentication
 - 🌐 **API Gateway** - Centralized routing and rate limiting
 - 📱 **Responsive Frontend** - Modern React-based interface
+- 📧 **Contact Form** - Public contact form with email notifications
 
 ## Setup
 
@@ -37,6 +38,26 @@ This project includes **Stripe payment integration** for booking payments.
 - [Payment Setup Checklist](docs/PAYMENT_SETUP_CHECKLIST.md) - Step-by-step checklist
 - [Test Cards Reference](docs/TEST_CARDS_REFERENCE.md) - Test card numbers
 - [Payment Architecture](docs/PAYMENT_ARCHITECTURE.md) - System architecture
+
+## Contact Form 📧
+
+Anyone can contact the admin via the contact form with email notifications.
+
+### Quick Start
+
+1. Configure email service (Gmail recommended)
+2. Get App Password from Google Account
+3. Set environment variables
+4. Test the contact form
+
+**📚 Documentation:**
+
+- [Quick Setup Guide](CONTACT_SETUP.md) - Get started in 5 minutes
+- [Email Configuration](backend/integration-service/EMAIL_SETUP.md) - Detailed email setup
+- [Complete Documentation](docs/CONTACT_FORM.md) - Full API reference
+- [Implementation Summary](IMPLEMENTATION_SUMMARY.md) - What's included
+
+**Test:** `node scripts/test-email.js` or visit `http://localhost:3000/contact`
 
 ## API Documentation
 
