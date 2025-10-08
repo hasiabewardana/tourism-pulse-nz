@@ -15,6 +15,8 @@ import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
 import OffersPage from "./tourist/pages/offers/OffersPage";
 import BookingsPage from "./tourist/pages/bookings/BookingsPage";
+import CheckoutPage from "./tourist/pages/CheckoutPage";
+import PaymentConfirmationPage from "./tourist/pages/PaymentConfirmationPage";
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
 import ManagerHome from "./manager/pages/common/ManagerHome";
 import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
@@ -80,6 +82,16 @@ const router = createBrowserRouter([
           {
             path: "bookings", // Added bookings route
             element: <BookingsPage />,
+            loader: checkAuthLoader,
+          },
+          {
+            path: "bookings/:bookingId/checkout", // Checkout page
+            element: <CheckoutPage />,
+            loader: checkAuthLoader,
+          },
+          {
+            path: "bookings/:bookingId/confirmation", // Payment confirmation
+            element: <PaymentConfirmationPage />,
             loader: checkAuthLoader,
           },
         ],

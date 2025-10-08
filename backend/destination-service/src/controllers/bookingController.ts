@@ -90,6 +90,10 @@ export const getBookingById = async (req: Request, res: Response) => {
 // Add a new booking
 export const addBooking = async (req: Request, res: Response) => {
   try {
+    console.log(
+      "[addBooking] Request body:",
+      JSON.stringify(req.body, null, 2)
+    );
     const data = createBookingSchema.parse(req.body);
 
     if (!data.userId) {
@@ -99,13 +103,17 @@ export const addBooking = async (req: Request, res: Response) => {
     // Fetch offer to calculate price
     const offer = await getOfferById(data.offerId);
     if (!offer) {
-      console.log(`Booking failed: Offer not found - OfferID: ${data.offerId}`);
+      console.log(
+        `[addBooking] Booking failed: Offer not found - OfferID: ${data.offerId}`
+      );
       return res.status(404).json({ error: "Offer not found" });
     }
     const calculatedPrice = offer.price * data.visitorCount;
     const operatorId = data.operatorId ?? offer.operator_id;
 
-    // TODO: Auto-set operatorId from offer if omitted (e.g., data.operatorId ?? offer.operator_id)
+    console.log(
+      `[addBooking] Creating booking - OfferID: ${data.offerId}, UserID: ${data.userId}, Price: ${calculatedPrice}, OperatorID: ${operatorId}`
+    );
 
     const bookingId = await createBooking(
       data.offerId,
@@ -124,12 +132,22 @@ export const addBooking = async (req: Request, res: Response) => {
       .json({ bookingId, message: "Booking created successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("[addBooking] Validation error:", error.issues);
       return res
         .status(400)
         .json({ error: error.issues.map((e) => e.message).join(", ") });
     }
-    console.error(`Booking creation error: ${error}`);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(`[addBooking] Error:`, error);
+    console.error(
+      `[addBooking] Error stack:`,
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    res
+      .status(500)
+      .json({
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : String(error),
+      });
   }
 };
 
