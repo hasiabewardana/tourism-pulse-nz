@@ -8,6 +8,8 @@ import analyticsRoutes from "./routes/analyticsRoutes";
 import subscribeRoutes from "./routes/subscribeRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import { URL } from "url";
+import { connectMongoDB } from "./config/mongodb";
+import { initializeScheduledJobs } from "./jobs/scheduledJobs";
 
 dotenv.config();
 const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
@@ -15,14 +17,14 @@ const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
 const app = express();
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose
-  .connect(
-    process.env.MONGODB_URI ||
-      "mongodb://host.docker.internal:27017/tourismpulsenz_analytics"
-  )
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+// Connect to MongoDB (with better error handling)
+connectMongoDB().catch((err) => {
+  console.error("Failed to connect to MongoDB:", err);
+  process.exit(1);
+});
+
+// Initialize scheduled jobs for analytics optimization
+initializeScheduledJobs();
 
 // WebSocket setup
 const server = http.createServer(app);

@@ -17,6 +17,10 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import TrendingSearches from "../../../components/search/TrendingSearches";
+import RecommendationsList from "../../../components/recommendations/RecommendationsList";
+import DestinationModal from "../../../components/destination/DestinationModal";
+import { useAuth } from "../../../context/AuthContext";
 import classes from "./Home.module.css";
 
 // Testimonials for credibility and user engagement
@@ -29,6 +33,7 @@ const testimonials = [
 ];
 
 function Home() {
+  const { isAuthenticated } = useAuth();
   const [activeRole, setActiveRole] = useState("public"); // State to manage role-based content
   const [destinations, setDestinations] = useState([]); // State for fetched destinations
   const [filteredDestinations, setFilteredDestinations] = useState([]); // State for filtered destinations
@@ -38,6 +43,8 @@ function Home() {
   const [selectedStatus, setSelectedStatus] = useState("All"); // Status filter
   const [sortBy, setSortBy] = useState("Name (A-Z)"); // Sort state
   const [selectedRegion, setSelectedRegion] = useState("All"); // Region filter
+  const [selectedDestinationId, setSelectedDestinationId] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const navigate = useNavigate();
 
   // Fetch destinations from API and limit to 5
@@ -148,6 +155,22 @@ function Home() {
     setSelectedRegion("All");
   };
 
+  const handleTrendingSearchClick = (searchQuery) => {
+    setSearchTerm(searchQuery);
+    // Optionally navigate to destinations page with search
+    // navigate(`/destinations?search=${encodeURIComponent(searchQuery)}`);
+  };
+
+  const handleDestinationClick = (destinationId) => {
+    setSelectedDestinationId(destinationId);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedDestinationId(null);
+  };
+
   // Apply filters when dependencies change
   useEffect(() => {
     applySearchAndSort(destinations);
@@ -233,6 +256,31 @@ function Home() {
         </div>
       </div>
 
+      {/* Trending Searches Section */}
+      {isAuthenticated && (
+        <Box sx={{ mb: 4 }}>
+          <TrendingSearches onSearchClick={handleTrendingSearchClick} />
+        </Box>
+      )}
+
+      {/* Personalized Recommendations Section */}
+      {isAuthenticated && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" className={classes.sectionTitle}>
+            Recommended For You
+          </Typography>
+          <RecommendationsList
+            preferences={{
+              categories: [], // Can be customized based on user preferences
+              preferredRegions:
+                selectedRegion !== "All" ? [selectedRegion] : [],
+              minRating: 3.5,
+            }}
+            onDestinationClick={handleDestinationClick}
+          />
+        </Box>
+      )}
+
       {/* Featured Destinations Section */}
       <Typography variant="h4" className={classes.sectionTitle}>
         Explore Destinations
@@ -295,6 +343,13 @@ function Home() {
           Get Started Today
         </Button>
       </Box>
+
+      {/* Destination Modal for detailed view */}
+      <DestinationModal
+        open={openModal}
+        onClose={handleCloseModal}
+        destinationId={selectedDestinationId}
+      />
     </Container>
   );
 }

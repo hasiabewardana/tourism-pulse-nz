@@ -16,9 +16,12 @@ import PeopleIcon from "@mui/icons-material/People";
 import PersonIcon from "@mui/icons-material/Person";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import DeleteIcon from "@mui/icons-material/Delete";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import { useNavigate } from "react-router-dom";
 import classes from "./OperatorDestination.module.css";
 
 function OperatorDestination({ assignment, userName, onDelete, onSubscribe }) {
+  const navigate = useNavigate();
   const [subscribed, setSubscribed] = React.useState(
     assignment.subscribed || false
   );
@@ -142,21 +145,30 @@ function OperatorDestination({ assignment, userName, onDelete, onSubscribe }) {
         </div>
 
         <div className={classes.actions}>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<BarChartIcon />}
+            onClick={() =>
+              navigate(
+                `/manager/destinations/${assignment.destinationId}/analytics`
+              )
+            }
+            className={classes.analyticsButton}
+            size="small"
+          >
+            Analytics
+          </Button>
           <FormControlLabel
             control={
               <Switch
                 checked={subscribed}
                 onChange={handleSubscribe}
-                color="primary"
-                size="small"
+                icon={<NotificationsIcon />}
+                checkedIcon={<NotificationsIcon />}
               />
             }
-            label={
-              <div className={classes.switchLabel}>
-                <NotificationsIcon className={classes.switchIcon} />
-                Alerts
-              </div>
-            }
+            label={subscribed ? "Alerts ON" : "Alerts OFF"}
             className={classes.alertToggle}
           />
           <Button

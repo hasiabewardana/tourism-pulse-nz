@@ -263,6 +263,95 @@ class AnalyticsService {
       spring: { months: [8, 9, 10], intensity: 75 },
     };
   }
+
+  // User Interaction Tracking
+  async trackInteraction(data) {
+    try {
+      const response = await this.api.post("/analytics/interaction", {
+        destinationId: data.destinationId,
+        interactionType: data.interactionType, // 'view', 'click', 'bookmark', 'share'
+        durationSeconds: data.durationSeconds || 0,
+        rating: data.rating,
+        metadata: data.metadata || {},
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error tracking interaction:", error);
+      return null;
+    }
+  }
+
+  // Track search query
+  async trackSearch(searchQuery, filters, resultsCount) {
+    try {
+      const response = await this.api.post("/analytics/search", {
+        searchQuery,
+        filters,
+        resultsCount,
+        noResultsFound: resultsCount === 0,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error tracking search:", error);
+      return null;
+    }
+  }
+
+  // Get destination insights (for admin/manager dashboard)
+  async getDestinationInsights(destinationId, days = 7) {
+    try {
+      const response = await this.api.get(
+        `/analytics/destinations/${destinationId}/insights?days=${days}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching destination insights:", error);
+      throw error;
+    }
+  }
+
+  // Get popular destinations
+  async getPopularDestinations(region = null, limit = 10) {
+    try {
+      const params = new URLSearchParams();
+      if (region) params.append("region", region);
+      params.append("limit", limit);
+
+      const response = await this.api.get(
+        `/analytics/popular?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching popular destinations:", error);
+      throw error;
+    }
+  }
+
+  // Get trending searches
+  async getTrendingSearches(limit = 10) {
+    try {
+      const response = await this.api.get(
+        `/analytics/trending-searches?limit=${limit}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching trending searches:", error);
+      throw error;
+    }
+  }
+
+  // Get user behavior summary
+  async getUserBehavior(days = 30) {
+    try {
+      const response = await this.api.get(
+        `/analytics/user/behavior?days=${days}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching user behavior:", error);
+      throw error;
+    }
+  }
 }
 
 export default new AnalyticsService();

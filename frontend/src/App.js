@@ -18,12 +18,14 @@ import BookingsPage from "./tourist/pages/bookings/BookingsPage";
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
 import ManagerHome from "./manager/pages/common/ManagerHome";
 import OperatorDestinations from "./manager/pages/destinations/OperatorDestinations";
+import OperatorDestinationAnalytics from "./manager/pages/destinations/OperatorDestinationAnalytics";
 import OfferManagement from "./manager/pages/offers/OfferManagement";
 import ManagerBookingsPage from "./manager/pages/bookings/ManagerBookingsPage";
 import AdminLayout from "./admin/pages/common/AdminLayout";
 import AdminHome from "./admin/pages/common/AdminHome";
 import UserManagement from "./admin/pages/users/UserManagement";
 import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
+import DestinationAnalytics from "./admin/pages/destinations/DestinationAnalytics";
 import BookingManagement from "./admin/pages/bookings/BookingManagement";
 import Reports from "./admin/pages/reports/Reports";
 import ManagerAnalytics from "./manager/pages/analytics/ManagerAnalytics";
@@ -98,6 +100,11 @@ const router = createBrowserRouter([
             loader: checkAuthLoader, // Protect the route
           },
           {
+            path: "destinations/:destinationId/analytics",
+            element: <OperatorDestinationAnalytics />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
             path: "offers",
             element: <OfferManagement />,
             loader: checkAuthLoader, // Protect the route
@@ -132,6 +139,11 @@ const router = createBrowserRouter([
           {
             path: "destination-management",
             element: <DestinationManagement />,
+            loader: checkAuthLoader, // Protect the route
+          },
+          {
+            path: "destinations/:destinationId/analytics",
+            element: <DestinationAnalytics />,
             loader: checkAuthLoader, // Protect the route
           },
           {
