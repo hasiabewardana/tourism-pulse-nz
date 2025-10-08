@@ -157,13 +157,15 @@ function Home() {
 
   const handleTrendingSearchClick = (searchQuery) => {
     setSearchTerm(searchQuery);
-    // Optionally navigate to destinations page with search
-    // navigate(`/destinations?search=${encodeURIComponent(searchQuery)}`);
   };
 
   const handleDestinationClick = (destinationId) => {
     setSelectedDestinationId(destinationId);
     setOpenModal(true);
+  };
+
+  const handleViewDestinations = () => {
+    navigate("/destinations");
   };
 
   const handleCloseModal = () => {
@@ -201,7 +203,7 @@ function Home() {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleLoginClick}
+          onClick={handleViewDestinations}
           className={classes.heroButton}
         >
           Explore Now
@@ -289,7 +291,11 @@ function Home() {
       <Grid container spacing={3} className={classes.destinationGrid}>
         {filteredDestinations.map((dest, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card className={classes.destinationCard}>
+            <Card
+              className={classes.destinationCard}
+              onClick={handleViewDestinations}
+              sx={{ cursor: "pointer" }}
+            >
               <CardMedia
                 component="img"
                 height="200"
@@ -337,7 +343,7 @@ function Home() {
         <Button
           variant="contained"
           color="secondary"
-          onClick={handleLoginClick}
+          onClick={handleViewDestinations}
           className={classes.loginButton}
         >
           Get Started Today

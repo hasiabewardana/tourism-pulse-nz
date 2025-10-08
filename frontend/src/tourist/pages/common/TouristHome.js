@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Container,
@@ -139,6 +140,7 @@ const travelInsights = [
 
 function TouristHome() {
   const { user, role } = useAuth();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("all");
 
@@ -160,9 +162,11 @@ function TouristHome() {
   };
 
   const handleQuickAction = (action) => {
-    // Handle different actions
     console.log(`Quick action: ${action}`);
-    // In real app, navigate to appropriate pages or open modals
+  };
+
+  const handleViewDestination = () => {
+    navigate("/destinations");
   };
 
   const filteredDestinations = popularDestinations.filter(
@@ -281,7 +285,11 @@ function TouristHome() {
         <Grid container spacing={3} justifyContent="center">
           {filteredDestinations.map((destination) => (
             <Grid item xs={12} md={6} lg={6} key={destination.id}>
-              <Card className={classes.destinationCard}>
+              <Card
+                className={classes.destinationCard}
+                onClick={handleViewDestination}
+                sx={{ cursor: "pointer" }}
+              >
                 <CardContent>
                   <Box className={classes.destinationHeader}>
                     <Box className={classes.destinationInfo}>
@@ -372,12 +380,17 @@ function TouristHome() {
                       variant="contained"
                       className={classes.primaryButton}
                       startIcon={<LocationOn />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDestination();
+                      }}
                     >
                       View Details
                     </Button>
                     <Button
                       variant="outlined"
                       className={classes.secondaryButton}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Plan Visit
                     </Button>
@@ -509,6 +522,7 @@ function TouristHome() {
                 variant="contained"
                 size="large"
                 className={classes.ctaButton}
+                onClick={() => navigate("/destinations")}
               >
                 Start Planning
               </Button>
@@ -516,6 +530,7 @@ function TouristHome() {
                 variant="outlined"
                 size="large"
                 className={classes.ctaSecondaryButton}
+                onClick={() => navigate("/destinations")}
               >
                 Explore Destinations
               </Button>

@@ -21,7 +21,6 @@ function Destinations() {
         Explore Destinations
       </Typography>
 
-      {/* Advanced Filter Panel */}
       <Box sx={{ mb: 3 }}>
         <AdvancedFilterPanel
           onFilterChange={handleFilterChange}
@@ -29,7 +28,6 @@ function Destinations() {
         />
       </Box>
 
-      {/* Destination List */}
       <DestinationList filters={filters} />
     </Container>
   );
