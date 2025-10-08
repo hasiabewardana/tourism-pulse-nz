@@ -17,24 +17,14 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  IconButton,
-  Tooltip,
+  Collapse,
 } from "@mui/material";
-import {
-  ExpandMore,
-  FilterList,
-  Clear,
-  Search,
-  TrendingUp,
-} from "@mui/icons-material";
+import { ExpandMore } from "@mui/icons-material";
 import recommendationService from "../../../util/recommendationService";
 import { NZ_REGIONS } from "../../../util/regionParser";
 
-/**
- * Advanced Filter Panel Component
- * Provides comprehensive filtering options for destination search
- */
 function AdvancedFilterPanel({ onFilterChange, onReset }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState({
     searchQuery: "",
     categories: [],
@@ -161,55 +151,134 @@ function AdvancedFilterPanel({ onFilterChange, onReset }) {
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <FilterList sx={{ mr: 1 }} />
+    <Paper elevation={3} sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          p: 2,
+          cursor: "pointer",
+          "&:hover": { backgroundColor: "action.hover" },
+        }}
+        onClick={() => setIsOpen(!isOpen)}
+      >
         <Typography variant="h6" component="h2">
           Advanced Filters
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
-        <Tooltip title="Reset all filters">
-          <IconButton onClick={handleResetFilters} size="small">
-            <Clear />
-          </IconButton>
-        </Tooltip>
+        <ExpandMore
+          sx={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.3s",
+          }}
+        />
       </Box>
 
-      {/* Basic Search */}
-      <Accordion
-        expanded={expanded.basic}
-        onChange={handleAccordionChange("basic")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>🔍 Search & Categories</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Search destinations"
-                placeholder="Enter name, description..."
-                value={filters.searchQuery}
-                onChange={(e) =>
-                  handleFilterChange("searchQuery", e.target.value)
-                }
-                InputProps={{
-                  startAdornment: (
-                    <Search sx={{ mr: 1, color: "action.active" }} />
-                  ),
-                }}
-              />
-            </Grid>
+      <Collapse in={isOpen}>
+        <Box sx={{ p: 3, pt: 0 }}>
+          <Accordion
+            expanded={expanded.basic}
+            onChange={handleAccordionChange("basic")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Search & Categories</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Search destinations"
+                    placeholder="Enter name, description..."
+                    value={filters.searchQuery}
+                    onChange={(e) =>
+                      handleFilterChange("searchQuery", e.target.value)
+                    }
+                  />
+                </Grid>
 
-            <Grid item xs={12}>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Categories</InputLabel>
+                    <Select
+                      multiple
+                      value={filters.categories}
+                      onChange={(e) =>
+                        handleFilterChange("categories", e.target.value)
+                      }
+                      renderValue={(selected) => (
+                        <Box
+                          sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}
+                        >
+                          {selected.map((value) => (
+                            <Chip key={value} label={value} size="small" />
+                          ))}
+                        </Box>
+                      )}
+                    >
+                      {filterOptions.categories.map((category) => (
+                        <MenuItem key={category} value={category}>
+                          {category}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography variant="body2" gutterBottom>
+                    Tags
+                  </Typography>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                    {filterOptions.tags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        onClick={() => handleMultiSelectChange("tags", tag)}
+                        color={
+                          filters.tags.includes(tag) ? "primary" : "default"
+                        }
+                        variant={
+                          filters.tags.includes(tag) ? "filled" : "outlined"
+                        }
+                      />
+                    ))}
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.trendingOnly}
+                        onChange={(e) =>
+                          handleFilterChange("trendingOnly", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Show trending destinations only"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Location Filters */}
+          <Accordion
+            expanded={expanded.location}
+            onChange={handleAccordionChange("location")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Location</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
               <FormControl fullWidth>
-                <InputLabel>Categories</InputLabel>
+                <InputLabel>Regions</InputLabel>
                 <Select
                   multiple
-                  value={filters.categories}
+                  value={filters.regions}
                   onChange={(e) =>
-                    handleFilterChange("categories", e.target.value)
+                    handleFilterChange("regions", e.target.value)
                   }
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
@@ -219,374 +288,313 @@ function AdvancedFilterPanel({ onFilterChange, onReset }) {
                     </Box>
                   )}
                 >
-                  {filterOptions.categories.map((category) => (
-                    <MenuItem key={category} value={category}>
-                      {category}
+                  {NZ_REGIONS.map((region) => (
+                    <MenuItem key={region} value={region}>
+                      {region}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
-            </Grid>
+            </AccordionDetails>
+          </Accordion>
 
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Tags
-              </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                {filterOptions.tags.map((tag) => (
-                  <Chip
-                    key={tag}
-                    label={tag}
-                    onClick={() => handleMultiSelectChange("tags", tag)}
-                    color={filters.tags.includes(tag) ? "primary" : "default"}
-                    variant={filters.tags.includes(tag) ? "filled" : "outlined"}
-                  />
-                ))}
-              </Box>
-            </Grid>
+          {/* Price Filters */}
+          <Accordion
+            expanded={expanded.price}
+            onChange={handleAccordionChange("price")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Price Range</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel>Price Category</InputLabel>
+                    <Select
+                      value={filters.priceRange}
+                      onChange={(e) =>
+                        handleFilterChange("priceRange", e.target.value)
+                      }
+                    >
+                      <MenuItem value="">Any</MenuItem>
+                      <MenuItem value="free">Free</MenuItem>
+                      <MenuItem value="budget">Budget ($)</MenuItem>
+                      <MenuItem value="moderate">Moderate ($$)</MenuItem>
+                      <MenuItem value="premium">Premium ($$$)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.trendingOnly}
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Min Price ($)"
+                    type="number"
+                    value={filters.minPrice}
                     onChange={(e) =>
-                      handleFilterChange("trendingOnly", e.target.checked)
+                      handleFilterChange("minPrice", e.target.value)
                     }
-                    icon={<TrendingUp />}
-                    checkedIcon={<TrendingUp />}
                   />
-                }
-                label="Show trending destinations only"
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+                </Grid>
 
-      {/* Location Filters */}
-      <Accordion
-        expanded={expanded.location}
-        onChange={handleAccordionChange("location")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>📍 Location</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormControl fullWidth>
-            <InputLabel>Regions</InputLabel>
-            <Select
-              multiple
-              value={filters.regions}
-              onChange={(e) => handleFilterChange("regions", e.target.value)}
-              renderValue={(selected) => (
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                  {selected.map((value) => (
-                    <Chip key={value} label={value} size="small" />
-                  ))}
-                </Box>
-              )}
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Max Price ($)"
+                    type="number"
+                    value={filters.maxPrice}
+                    onChange={(e) =>
+                      handleFilterChange("maxPrice", e.target.value)
+                    }
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Rating Filters */}
+          <Accordion
+            expanded={expanded.rating}
+            onChange={handleAccordionChange("rating")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Rating & Reviews</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <Typography gutterBottom>
+                    Minimum Rating: {filters.minRating}
+                  </Typography>
+                  <Slider
+                    value={filters.minRating}
+                    onChange={(e, value) =>
+                      handleFilterChange("minRating", value)
+                    }
+                    min={0}
+                    max={5}
+                    step={0.5}
+                    marks
+                    valueLabelDisplay="auto"
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Minimum Reviews"
+                    type="number"
+                    value={filters.minReviews}
+                    onChange={(e) =>
+                      handleFilterChange("minReviews", e.target.value)
+                    }
+                    helperText="Show only destinations with at least this many reviews"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Accessibility Filters */}
+          <Accordion
+            expanded={expanded.accessibility}
+            onChange={handleAccordionChange("accessibility")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Accessibility & Amenities</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.wheelchairAccessible}
+                        onChange={(e) =>
+                          handleFilterChange(
+                            "wheelchairAccessible",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Wheelchair Accessible"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.familyFriendly}
+                        onChange={(e) =>
+                          handleFilterChange("familyFriendly", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Family Friendly"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.petFriendly}
+                        onChange={(e) =>
+                          handleFilterChange("petFriendly", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Pet Friendly"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.parkingAvailable}
+                        onChange={(e) =>
+                          handleFilterChange(
+                            "parkingAvailable",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Parking Available"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.publicTransportNearby}
+                        onChange={(e) =>
+                          handleFilterChange(
+                            "publicTransportNearby",
+                            e.target.checked
+                          )
+                        }
+                      />
+                    }
+                    label="Public Transport Nearby"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Environment Filters */}
+          <Accordion
+            expanded={expanded.environment}
+            onChange={handleAccordionChange("environment")}
+          >
+            <AccordionSummary expandIcon={<ExpandMore />}>
+              <Typography>Environment & Capacity</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.isIndoor}
+                        onChange={(e) =>
+                          handleFilterChange("isIndoor", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Indoor Activities"
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={filters.isOutdoor}
+                        onChange={(e) =>
+                          handleFilterChange("isOutdoor", e.target.checked)
+                        }
+                      />
+                    }
+                    label="Outdoor Activities"
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <TextField
+                    fullWidth
+                    label="Minimum Capacity"
+                    type="number"
+                    value={filters.minCapacity}
+                    onChange={(e) =>
+                      handleFilterChange("minCapacity", e.target.value)
+                    }
+                    helperText="Required capacity for group visits"
+                  />
+                </Grid>
+              </Grid>
+            </AccordionDetails>
+          </Accordion>
+
+          {/* Sort Options */}
+          <Box sx={{ mt: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Sort By</InputLabel>
+                  <Select
+                    value={filters.sortBy}
+                    onChange={(e) =>
+                      handleFilterChange("sortBy", e.target.value)
+                    }
+                  >
+                    <MenuItem value="rating">Rating</MenuItem>
+                    <MenuItem value="price">Price</MenuItem>
+                    <MenuItem value="popularity">Popularity</MenuItem>
+                    <MenuItem value="name">Name</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={6}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>Order</InputLabel>
+                  <Select
+                    value={filters.sortOrder}
+                    onChange={(e) =>
+                      handleFilterChange("sortOrder", e.target.value)
+                    }
+                  >
+                    <MenuItem value="DESC">Descending</MenuItem>
+                    <MenuItem value="ASC">Ascending</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleApplyFilters}
             >
-              {NZ_REGIONS.map((region) => (
-                <MenuItem key={region} value={region}>
-                  {region}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </AccordionDetails>
-      </Accordion>
+              Apply Filters
+            </Button>
 
-      {/* Price Filters */}
-      <Accordion
-        expanded={expanded.price}
-        onChange={handleAccordionChange("price")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>💰 Price Range</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel>Price Category</InputLabel>
-                <Select
-                  value={filters.priceRange}
-                  onChange={(e) =>
-                    handleFilterChange("priceRange", e.target.value)
-                  }
-                >
-                  <MenuItem value="">Any</MenuItem>
-                  <MenuItem value="free">Free</MenuItem>
-                  <MenuItem value="budget">Budget ($)</MenuItem>
-                  <MenuItem value="moderate">Moderate ($$)</MenuItem>
-                  <MenuItem value="premium">Premium ($$$)</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Min Price ($)"
-                type="number"
-                value={filters.minPrice}
-                onChange={(e) => handleFilterChange("minPrice", e.target.value)}
-              />
-            </Grid>
-
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Max Price ($)"
-                type="number"
-                value={filters.maxPrice}
-                onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Rating Filters */}
-      <Accordion
-        expanded={expanded.rating}
-        onChange={handleAccordionChange("rating")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>⭐ Rating & Reviews</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography gutterBottom>
-                Minimum Rating: {filters.minRating}
-              </Typography>
-              <Slider
-                value={filters.minRating}
-                onChange={(e, value) => handleFilterChange("minRating", value)}
-                min={0}
-                max={5}
-                step={0.5}
-                marks
-                valueLabelDisplay="auto"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Minimum Reviews"
-                type="number"
-                value={filters.minReviews}
-                onChange={(e) =>
-                  handleFilterChange("minReviews", e.target.value)
-                }
-                helperText="Show only destinations with at least this many reviews"
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Accessibility Filters */}
-      <Accordion
-        expanded={expanded.accessibility}
-        onChange={handleAccordionChange("accessibility")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>♿ Accessibility & Amenities</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.wheelchairAccessible}
-                    onChange={(e) =>
-                      handleFilterChange(
-                        "wheelchairAccessible",
-                        e.target.checked
-                      )
-                    }
-                  />
-                }
-                label="Wheelchair Accessible"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.familyFriendly}
-                    onChange={(e) =>
-                      handleFilterChange("familyFriendly", e.target.checked)
-                    }
-                  />
-                }
-                label="Family Friendly"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.petFriendly}
-                    onChange={(e) =>
-                      handleFilterChange("petFriendly", e.target.checked)
-                    }
-                  />
-                }
-                label="Pet Friendly"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.parkingAvailable}
-                    onChange={(e) =>
-                      handleFilterChange("parkingAvailable", e.target.checked)
-                    }
-                  />
-                }
-                label="Parking Available"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.publicTransportNearby}
-                    onChange={(e) =>
-                      handleFilterChange(
-                        "publicTransportNearby",
-                        e.target.checked
-                      )
-                    }
-                  />
-                }
-                label="Public Transport Nearby"
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Environment Filters */}
-      <Accordion
-        expanded={expanded.environment}
-        onChange={handleAccordionChange("environment")}
-      >
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography>🌤️ Environment & Capacity</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.isIndoor}
-                    onChange={(e) =>
-                      handleFilterChange("isIndoor", e.target.checked)
-                    }
-                  />
-                }
-                label="Indoor Activities"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={filters.isOutdoor}
-                    onChange={(e) =>
-                      handleFilterChange("isOutdoor", e.target.checked)
-                    }
-                  />
-                }
-                label="Outdoor Activities"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Minimum Capacity"
-                type="number"
-                value={filters.minCapacity}
-                onChange={(e) =>
-                  handleFilterChange("minCapacity", e.target.value)
-                }
-                helperText="Required capacity for group visits"
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Sort Options */}
-      <Box sx={{ mt: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-              >
-                <MenuItem value="rating">Rating</MenuItem>
-                <MenuItem value="price">Price</MenuItem>
-                <MenuItem value="popularity">Popularity</MenuItem>
-                <MenuItem value="name">Name</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid item xs={6}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Order</InputLabel>
-              <Select
-                value={filters.sortOrder}
-                onChange={(e) =>
-                  handleFilterChange("sortOrder", e.target.value)
-                }
-              >
-                <MenuItem value="DESC">Descending</MenuItem>
-                <MenuItem value="ASC">Ascending</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Action Buttons */}
-      <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleApplyFilters}
-          startIcon={<FilterList />}
-        >
-          Apply Filters
-        </Button>
-
-        <Button
-          variant="outlined"
-          onClick={handleResetFilters}
-          startIcon={<Clear />}
-        >
-          Reset
-        </Button>
-      </Box>
+            <Button variant="outlined" onClick={handleResetFilters}>
+              Reset
+            </Button>
+          </Box>
+        </Box>
+      </Collapse>
     </Paper>
   );
 }
