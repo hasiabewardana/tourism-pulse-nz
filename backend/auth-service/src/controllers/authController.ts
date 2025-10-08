@@ -32,8 +32,10 @@ export const register = async (req: Request, res: Response) => {
     );
     // Check if user already exists
     const existingUser = await findUserByEmail(email);
-    if (existingUser)
+    if (existingUser) {
+      console.log(`Registration failed: User already exists - ${email}`);
       return res.status(409).json({ error: "User already exists" });
+    }
     // Hash password and create user
     const passwordHash = await bcrypt.hash(password, 10);
     // Create user in DB
@@ -44,10 +46,12 @@ export const register = async (req: Request, res: Response) => {
       lastName,
       role
     );
+    console.log(`✓ User registered successfully: ${email} (${role})`);
     res.status(201).json({ userId });
   } catch (error) {
     if (error instanceof z.ZodError)
       return res.status(400).json({ error: error.message });
+    console.error(`Registration error: ${error}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -59,10 +63,16 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = loginSchema.parse(req.body);
     // Find user by email
     const user = await findUserByEmail(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      console.log(`Login failed: User not found - ${email}`);
+      return res.status(404).json({ error: "User not found" });
+    }
     // Compare passwords
     const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(401).json({ error: "Invalid credentials" });
+    if (!match) {
+      console.log(`Login failed: Invalid credentials - ${email}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -72,10 +82,12 @@ export const login = async (req: Request, res: Response) => {
     );
     // Store session in DB
     await createSession(user.user_id, token);
+    console.log(`✓ User logged in successfully: ${email} (${user.role})`);
     res.json({ userId: user.user_id, token, role: user.role });
   } catch (error) {
     if (error instanceof z.ZodError)
       return res.status(400).json({ error: error.message });
+    console.error(`Login error: ${error}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };

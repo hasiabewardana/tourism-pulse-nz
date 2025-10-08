@@ -99,6 +99,7 @@ export const addBooking = async (req: Request, res: Response) => {
     // Fetch offer to calculate price
     const offer = await getOfferById(data.offerId);
     if (!offer) {
+      console.log(`Booking failed: Offer not found - OfferID: ${data.offerId}`);
       return res.status(404).json({ error: "Offer not found" });
     }
     const calculatedPrice = offer.price * data.visitorCount;
@@ -115,6 +116,9 @@ export const addBooking = async (req: Request, res: Response) => {
       calculatedPrice,
       operatorId
     );
+    console.log(
+      `✓ Booking created: ID ${bookingId} by User ${data.userId} - ${data.visitorCount} visitors`
+    );
     res
       .status(201)
       .json({ bookingId, message: "Booking created successfully" });
@@ -124,7 +128,7 @@ export const addBooking = async (req: Request, res: Response) => {
         .status(400)
         .json({ error: error.issues.map((e) => e.message).join(", ") });
     }
-    console.error(error);
+    console.error(`Booking creation error: ${error}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -200,9 +204,10 @@ export const removeBooking = async (req: Request, res: Response) => {
     }
 
     await deleteBooking(bookingId);
+    console.log(`✓ Booking cancelled/deleted: ID ${bookingId}`);
     res.status(204).json({ message: "Booking deleted successfully" }).end();
   } catch (error) {
-    console.error(error);
+    console.error(`Booking deletion error: ${error}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };

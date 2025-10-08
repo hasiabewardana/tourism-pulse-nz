@@ -13,9 +13,14 @@ const app = express(); // Initializing Express application as the API gateway
 const port = process.env.PORT || 3000; // Setting port from environment variable or default to 3000
 
 // Load OpenAPI specification
-const swaggerDocument = YAML.load(
-  path.join(__dirname, "../../docs/openapi.yaml")
-);
+let swaggerDocument;
+try {
+  swaggerDocument = YAML.load(path.join(__dirname, "../../docs/openapi.yaml"));
+  console.log("✓ OpenAPI specification loaded successfully");
+} catch (error) {
+  console.error("✗ Failed to load OpenAPI specification:", error);
+  swaggerDocument = null;
+}
 
 // Allow frontend origin
 app.use(
@@ -27,19 +32,26 @@ app.use(
 );
 
 // Swagger UI setup
-app.use(
-  "/api-docs",
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerDocument, {
-    customCss: ".swagger-ui .topbar { display: none }",
-    customSiteTitle: "TourismPulseNZ API Documentation",
-    customfavIcon: "/favicon.ico",
-  })
-);
+if (swaggerDocument) {
+  app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {
+      customCss: ".swagger-ui .topbar { display: none }",
+      customSiteTitle: "TourismPulseNZ API Documentation",
+      customfavIcon: "/favicon.ico",
+    })
+  );
+  console.log("✓ Swagger UI configured at /api-docs");
+}
 
 // API documentation redirect
 app.get("/", (req, res) => {
-  res.redirect("/api-docs");
+  if (swaggerDocument) {
+    res.redirect("/api-docs");
+  } else {
+    res.status(503).json({ error: "API documentation unavailable" });
+  }
 });
 
 // Applying middleware in sequence for request processing
@@ -48,10 +60,31 @@ setupRateLimit(app, ROUTES); // Applying rate limiting based on route configurat
 setupCreditCheck(app, ROUTES); // Implementing credit checks for premium routes
 setupProxies(app, ROUTES); // Setting up proxy rules to route requests to backend services
 
+// Global error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[ERROR] ${err.message}`, {
+      url: req.url,
+      method: req.method,
+    });
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  }
+);
+
 app.listen(port, () => {
   // Starting the server and listening on the specified port
-  console.log(`API Gateway running on port ${port}`);
-  console.log(
-    `API Documentation available at http://localhost:${port}/api-docs`
-  );
+  console.log(`✓ API Gateway running on port ${port}`);
+  console.log(`✓ API Documentation: http://localhost:${port}/api-docs`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
 });

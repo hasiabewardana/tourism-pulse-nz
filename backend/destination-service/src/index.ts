@@ -23,7 +23,30 @@ app.use("/dest-service/api", offerRoutes); // Mount offer routes under /api
 app.use("/dest-service/api/recommendations", recommendationRoutes); // Mount recommendation routes
 app.use("/dest-service/api/destinations", advancedFilterRoutes); // Mount advanced filter routes
 
+// Global error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[DESTINATION-SERVICE ERROR] ${err.message}`, {
+      url: req.url,
+      method: req.method,
+    });
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  }
+);
+
 const PORT = process.env.PORT || 3002; // Use PORT from .env or default to 3002
-app.listen(PORT, () =>
-  console.log(`Destination service running on port ${PORT}`)
-); // Start server
+app.listen(PORT, () => {
+  console.log(`✓ Destination service running on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
+}); // Start server

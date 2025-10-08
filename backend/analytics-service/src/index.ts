@@ -18,13 +18,16 @@ const app = express();
 app.use(express.json());
 
 // Connect to MongoDB (with better error handling)
-connectMongoDB().catch((err) => {
-  console.error("Failed to connect to MongoDB:", err);
-  process.exit(1);
-});
+connectMongoDB()
+  .then(() => console.log("✓ MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("✗ Failed to connect to MongoDB:", err);
+    process.exit(1);
+  });
 
 // Initialize scheduled jobs for analytics optimization
 initializeScheduledJobs();
+console.log("✓ Scheduled jobs initialized");
 
 // WebSocket setup
 const server = http.createServer(app);
@@ -90,6 +93,9 @@ wss.on("connection", (ws, req) => {
             type: "alert",
             message: `Capacity exceeded ${CAPACITY_THRESHOLD}% at ${item.name} (ID: ${item.destination_id})`,
           });
+          console.log(
+            `⚠ Capacity alert: ${item.name} at ${item.occupancy_percentage}%`
+          );
           operatorConnections
             .get(operatorId)
             ?.forEach((client: import("ws").WebSocket) => {
@@ -118,7 +124,31 @@ app.use("/analytics-service/api", healthRoutes);
 app.use("/analytics-service/api", analyticsRoutes);
 app.use("/analytics-service/api", subscribeRoutes);
 
+// Global error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[ANALYTICS-SERVICE ERROR] ${err.message}`, {
+      url: req.url,
+      method: req.method,
+    });
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  }
+);
+
 const PORT = 3003;
 server.listen(PORT, () => {
-  console.log(`Analytics service running on port ${PORT}`);
+  console.log(`✓ Analytics service running on port ${PORT}`);
+  console.log(`✓ WebSocket server ready on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
 });
