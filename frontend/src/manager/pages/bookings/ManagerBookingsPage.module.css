@@ -1,41 +1,142 @@
-/* src/manager/pages/bookings/ManagerBookingsPage.module.css */
-/* Mirroring tourist's BookingsPage.module.css */
+:root {
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-accent: #48d9f3;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-muted-text: #82c2ce;
+  --tp-surface-dark: #282f33;
+  --tp-surface-medium: #374549;
+  --tp-surface-light: #afddef;
+  --tp-surface-hover: #e0eff1;
+  --tp-status-warning: #ff9800;
+  --tp-status-success: #4caf50;
+  --tp-space-xs: 0.5rem;
+  --tp-space-sm: 1rem;
+  --tp-space-md: 1.5rem;
+  --tp-space-lg: 2rem;
+  --tp-space-xl: 3rem;
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 8px;
+  --tp-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --tp-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --tp-transition-fast: all 0.2s ease;
+}
+
 .container {
-  padding: 2rem;
   min-height: calc(100vh - 4rem);
-  background-color: #f5f5f5;
+  padding: var(--tp-space-lg);
+  background-color: var(--tp-primary-bg);
+  color: var(--tp-secondary-text);
 }
 
 .title {
   text-align: center;
-  margin-bottom: 2rem;
-  color: #333;
+  color: var(--tp-primary-text);
+  margin-bottom: var(--tp-space-lg);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .filtersContainer {
-  margin-bottom: 1rem;
+  margin-bottom: var(--tp-space-sm);
+  background-color: var(--tp-surface-medium);
+  padding: var(--tp-space-sm);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
 }
 
 .filtersContainer .MuiFormControl-root {
-  background-color: #fff;
+  background-color: var(--tp-surface-dark);
+  border-radius: var(--tp-radius-sm);
 }
 
-.searchContainer {
-  margin-bottom: 2rem;
+.filtersContainer .MuiOutlinedInput-root {
+  border-color: rgba(72, 217, 243, 0.3);
 }
 
-.searchInput {
-  background-color: #fff;
+.filtersContainer .MuiOutlinedInput-root:hover {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiOutlinedInput-root.Mui-focused {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiInputLabel-root {
+  color: var(--tp-secondary-text);
+}
+
+.filtersContainer .MuiInputLabel-root.Mui-focused {
+  color: var(--tp-primary-accent);
+}
+
+.filtersContainer .MuiSelect-select {
+  color: var(--tp-primary-text);
+}
+
+.searchInput .MuiOutlinedInput-root {
+  background-color: var(--tp-surface-dark);
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+}
+
+.searchInput .MuiOutlinedInput-root:hover {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.1);
+}
+
+.searchInput .MuiOutlinedInput-root.Mui-focused {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.2);
+}
+
+.searchInput input {
+  color: var(--tp-primary-text);
+  font-weight: 400;
+}
+
+.searchInput .MuiInputLabel-root {
+  color: var(--tp-secondary-text);
+}
+
+.searchInput .MuiInputLabel-root.Mui-focused {
+  color: var(--tp-primary-accent);
+}
+
+.createButton {
+  background-color: var(--tp-status-success);
+  color: var(--tp-primary-text);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+  font-weight: 500;
+  text-transform: none;
+  height: 56px;
+}
+
+.createButton:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
 }
 
 .resetButton {
   height: 56px;
-  border-color: #1976d2;
-  color: #1976d2;
+  border-color: var(--tp-status-warning);
+  color: var(--tp-status-warning);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+  font-weight: 500;
+  text-transform: none;
 }
 
 .resetButton:hover {
-  background-color: #e3f2fd;
+  border-color: var(--tp-status-warning);
+  background-color: var(--tp-status-warning);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
 }
 
 .loadingContainer {
@@ -43,24 +144,47 @@
   justify-content: center;
   align-items: center;
   height: 50vh;
+  color: var(--tp-primary-accent);
 }
 
 .noResults {
-  color: #666;
+  color: var(--tp-muted-text);
   margin-top: 2rem;
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.125rem;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: var(--tp-space-sm);
   }
-  .filtersContainer,
-  .searchContainer {
-    flex-direction: column;
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: var(--tp-space-sm);
   }
-  .resetButton {
-    margin-top: 0.5rem;
+
+  .filtersContainer {
+    padding: var(--tp-space-xs);
+  }
+
+  .resetButton,
+  .createButton {
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--tp-space-xs);
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .filtersContainer {
+    padding: var(--tp-space-xs);
   }
 }

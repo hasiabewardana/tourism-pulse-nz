@@ -28,10 +28,8 @@ function ManagerBookingsPage() {
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedViewMode, setSelectedViewMode] = useState("Upcoming");
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
   const [sortBy, setSortBy] = useState("Booking Date (Asc)");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -87,15 +85,7 @@ function ManagerBookingsPage() {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [
-    bookings,
-    selectedViewMode,
-    selectedStatus,
-    startDate,
-    endDate,
-    sortBy,
-    searchTerm,
-  ]);
+  }, [bookings, selectedViewMode, startDate, sortBy, searchTerm]);
 
   const applyFiltersAndSort = () => {
     const now = new Date();
@@ -113,21 +103,10 @@ function ManagerBookingsPage() {
       });
     }
 
-    if (selectedStatus !== "All") {
-      filtered = filtered.filter(
-        (b) => b.status === selectedStatus.toLowerCase()
-      );
-    }
-
     if (startDate)
       filtered = filtered.filter((b) => {
         const date = new Date(b.bookingDate);
         return date >= startDate && !isNaN(date);
-      });
-    if (endDate)
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date <= endDate && !isNaN(date);
       });
 
     if (searchTerm.trim()) {
@@ -169,10 +148,8 @@ function ManagerBookingsPage() {
   };
 
   const handleResetFilters = () => {
-    setSelectedViewMode("Upcoming");
-    setSelectedStatus("All");
+    setSelectedViewMode("All");
     setStartDate(null);
-    setEndDate(null);
     setSortBy("Booking Date (Asc)");
     setSearchTerm("");
   };
@@ -182,106 +159,97 @@ function ManagerBookingsPage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container className={classes.container}>
-        <Typography variant="h4" className={classes.title}>
-          Operator Bookings
+      <Container maxWidth="lg" className={classes.container}>
+        <Typography variant="h3" className={classes.title}>
+          My Bookings
         </Typography>
 
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Destination or User Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search bookings"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  label="Sort By"
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <MenuItem value="Booking Date (Asc)">
+                    Booking Date (Asc)
+                  </MenuItem>
+                  <MenuItem value="Booking Date (Desc)">
+                    Booking Date (Desc)
+                  </MenuItem>
+                  <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
+                  <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
+                  <MenuItem value="Visitor Count (Low-High)">
+                    Visitor Count (Low-High)
+                  </MenuItem>
+                  <MenuItem value="Visitor Count (High-Low)">
+                    Visitor Count (High-Low)
+                  </MenuItem>
+                  <MenuItem value="Tourist Name (A-Z)">
+                    User Name (A-Z)
+                  </MenuItem>
+                  <MenuItem value="Tourist Name (Z-A)">
+                    User Name (Z-A)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/operator/offers")}
+                className={classes.createButton}
+                fullWidth
+              >
+                Add Destination
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>View Mode</InputLabel>
               <Select
                 value={selectedViewMode}
+                label="View Mode"
                 onChange={(e) => setSelectedViewMode(e.target.value)}
               >
+                <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Upcoming">Upcoming</MenuItem>
                 <MenuItem value="Expired">Expired</MenuItem>
-                <MenuItem value="All">All</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Confirmed">Confirmed</MenuItem>
-                <MenuItem value="Cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <DatePicker
-              label="Start Date"
+              label="Select Date"
               value={startDate}
               onChange={setStartDate}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={setEndDate}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="Booking Date (Asc)">
-                  Booking Date (Asc)
-                </MenuItem>
-                <MenuItem value="Booking Date (Desc)">
-                  Booking Date (Desc)
-                </MenuItem>
-                <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
-                <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
-                <MenuItem value="Visitor Count (Low-High)">
-                  Visitor Count (Low-High)
-                </MenuItem>
-                <MenuItem value="Visitor Count (High-Low)">
-                  Visitor Count (High-Low)
-                </MenuItem>
-                <MenuItem value="Tourist Name (A-Z)">
-                  Tourist Name (A-Z)
-                </MenuItem>
-                <MenuItem value="Tourist Name (Z-A)">
-                  Tourist Name (Z-A)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
-            >
-              Reset Filters
-            </Button>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12}>
-            <TextField
               fullWidth
-              variant="outlined"
-              label="Search by Offer Name, Description, Tourist Name, or Email"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-            />
+            >
+              Reset
+            </Button>
           </Grid>
         </Grid>
 
