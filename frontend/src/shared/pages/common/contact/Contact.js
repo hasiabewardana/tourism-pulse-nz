@@ -229,33 +229,36 @@ function Contact() {
             )}
 
             <form onSubmit={handleSubmit} className={classes.form}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+              {/* Form fields arranged in vertical stack - Updated */}
+              <Grid container spacing={2} sx={{ width: "100%" }}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="name"
-                    label="Full Name *"
+                    label="Full Name **"
                     value={formData.name}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="email"
-                    label="Email Address *"
+                    label="Email Address **"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="organization"
@@ -264,19 +267,21 @@ function Contact() {
                     onChange={handleChange}
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     select
                     name="contactType"
-                    label="Inquiry Type *"
+                    label="Inquiry Type **"
                     value={formData.contactType}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                     SelectProps={{
                       native: true,
                     }}
@@ -289,23 +294,24 @@ function Contact() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="subject"
-                    label="Subject *"
+                    label="Subject **"
                     value={formData.subject}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="message"
-                    label="Message *"
+                    label="Message **"
                     multiline
                     rows={6}
                     value={formData.message}
@@ -313,6 +319,7 @@ function Contact() {
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                     placeholder="Please provide details about your inquiry..."
                   />
                 </Grid>
