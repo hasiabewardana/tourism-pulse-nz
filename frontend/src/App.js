@@ -29,7 +29,6 @@ import UserManagement from "./admin/pages/users/UserManagement";
 import DestinationManagement from "./admin/pages/destinations/DestinationManagement";
 import DestinationAnalytics from "./admin/pages/destinations/DestinationAnalytics";
 import BookingManagement from "./admin/pages/bookings/BookingManagement";
-import Reports from "./admin/pages/reports/Reports";
 import ManagerAnalytics from "./manager/pages/analytics/ManagerAnalytics";
 import AdminAnalytics from "./admin/pages/analytics/AdminAnalytics";
 
@@ -161,11 +160,6 @@ const router = createBrowserRouter([
           {
             path: "booking-management",
             element: <BookingManagement />,
-            loader: checkAuthLoader, // Protect the route
-          },
-          {
-            path: "reports",
-            element: <Reports />,
             loader: checkAuthLoader, // Protect the route
           },
           {

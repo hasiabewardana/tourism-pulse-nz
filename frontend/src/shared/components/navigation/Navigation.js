@@ -46,7 +46,6 @@ function Navigation() {
       { to: "/admin/destination-management", label: "Destination Management" },
       { to: "/map", label: "Map" },
       { to: "/admin/user-management", label: "User Management" },
-      { to: "/admin/reports", label: "Reports" },
       { to: "/admin/analytics", label: "Analytics" },
       { to: "/logout", label: "Logout" },
     ],

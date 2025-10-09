@@ -15,7 +15,6 @@ import {
   LocationOn,
   Business,
   Map as MapIcon,
-  Assessment,
 } from "@mui/icons-material";
 import { useAuth } from "../../../shared/context/AuthContext";
 import classes from "./AdminHome.module.css";
@@ -48,13 +47,6 @@ const navigationCards = [
     icon: SupervisedUserCircle,
     path: "/admin/user-management",
     color: "#f57c00",
-  },
-  {
-    title: "Reports",
-    description: "Generate and view system-wide reports",
-    icon: Assessment,
-    path: "/admin/reports",
-    color: "#7b1fa2",
   },
   {
     title: "Analytics",
