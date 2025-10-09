@@ -490,18 +490,29 @@ export const DemandForecastCard = ({ forecast }) => {
   if (!forecast) return null;
 
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           Demand Forecast
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
             Next 30 days outlook
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={1}>
             <TrendingUp color="success" />
-            <Typography variant="h5">
+            <Typography variant="h5" sx={{ color: "#ffffff" }}>
               +{forecast?.growth || "15"}% expected growth
             </Typography>
           </Box>
@@ -513,18 +524,29 @@ export const DemandForecastCard = ({ forecast }) => {
 
 export const StaffingInsightCard = ({ insights }) => {
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           Staffing Insights
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
             Current staffing recommendations
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={1}>
-            <Groups />
-            <Typography variant="body1">
+            <Groups sx={{ color: "#48d9f3" }} />
+            <Typography variant="body1" sx={{ color: "#ffffff" }}>
               {insights?.recommendation || "Optimal staffing levels maintained"}
             </Typography>
           </Box>
@@ -536,18 +558,29 @@ export const StaffingInsightCard = ({ insights }) => {
 
 export const ResourceOptimizationCard = ({ optimization }) => {
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           Resource Optimization
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
             Current efficiency levels
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={1}>
-            <Assessment />
-            <Typography variant="body1">
+            <Assessment sx={{ color: "#48d9f3" }} />
+            <Typography variant="body1" sx={{ color: "#ffffff" }}>
               {optimization?.efficiency || "92"}% resource utilization
             </Typography>
           </Box>
@@ -571,16 +604,29 @@ export const PerformanceMetricCard = ({
   };
 
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#bdd1d4" }}>
           {title}
         </Typography>
         <Box display="flex" alignItems="center" gap={1}>
-          <Typography variant="h4">{value}</Typography>
+          <Typography variant="h4" sx={{ color: "#ffffff" }}>
+            {value}
+          </Typography>
           {getTrendIcon()}
         </Box>
-        <Typography variant="body2" color="textSecondary">
+        <Typography variant="body2" sx={{ color: "#82c2ce" }}>
           {change} {timeframe}
         </Typography>
       </CardContent>
@@ -590,13 +636,24 @@ export const PerformanceMetricCard = ({
 
 export const TrendAnalysisCard = ({ trends, title }) => {
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           {title || "Trend Analysis"}
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
             Key trend indicators
           </Typography>
           <Box sx={{ mt: 1 }}>
@@ -607,8 +664,14 @@ export const TrendAnalysisCard = ({ trends, title }) => {
                 justifyContent="space-between"
                 py={0.5}
               >
-                <Typography variant="body2">{key}</Typography>
-                <Typography variant="body2" fontWeight="bold">
+                <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
+                  {key}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight="bold"
+                  sx={{ color: "#ffffff" }}
+                >
                   {value}
                 </Typography>
               </Box>
@@ -650,9 +713,20 @@ export const AlertsCard = ({ alerts }) => {
   };
 
   return (
-    <Card>
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           System Alerts
         </Typography>
         <Box sx={{ mt: 2 }}>
@@ -660,13 +734,20 @@ export const AlertsCard = ({ alerts }) => {
             <Alert
               key={index}
               severity={getAlertSeverity(alert.type)}
-              sx={{ mb: 1 }}
+              sx={{
+                mb: 1,
+                backgroundColor: "#374549",
+                color: "#ffffff",
+                "& .MuiAlert-icon": {
+                  color: "inherit",
+                },
+              }}
               icon={getAlertIcon(alert.type)}
             >
               {alert.message}
             </Alert>
           )) || (
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
               No alerts at this time
             </Typography>
           )}
@@ -678,22 +759,35 @@ export const AlertsCard = ({ alerts }) => {
 
 // Peak Season Card for Analytics Dashboard (handles peakSeasons prop)
 export const PeakSeasonAnalyticsCard = ({ peakSeasons }) => {
+  const cardStyle = {
+    backgroundColor: "#282f33",
+    border: "1px solid rgba(72, 217, 243, 0.1)",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      borderColor: "rgba(72, 217, 243, 0.2)",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    },
+  };
+
   if (!peakSeasons) {
     return (
-      <Card>
+      <Card sx={cardStyle}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
             Peak Season Predictions
           </Typography>
           <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
               Next peak season: Summer 2025
             </Typography>
             <Box display="flex" alignItems="center" gap={1} mt={1}>
               <TrendingUp color="success" />
-              <Typography variant="body1">85% increase expected</Typography>
+              <Typography variant="body1" sx={{ color: "#ffffff" }}>
+                85% increase expected
+              </Typography>
             </Box>
-            <Typography variant="caption" color="textSecondary" mt={1}>
+            <Typography variant="caption" sx={{ color: "#82c2ce" }} mt={1}>
               Based on historical patterns
             </Typography>
           </Box>
@@ -706,22 +800,22 @@ export const PeakSeasonAnalyticsCard = ({ peakSeasons }) => {
   if (Array.isArray(peakSeasons) && peakSeasons.length > 0) {
     const nextSeason = peakSeasons[0];
     return (
-      <Card>
+      <Card sx={cardStyle}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
+          <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
             Peak Season Predictions
           </Typography>
           <Box sx={{ mt: 2 }}>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
               Next: {nextSeason.name || "Upcoming Season"}
             </Typography>
             <Box display="flex" alignItems="center" gap={1} mt={1}>
               <TrendingUp color="success" />
-              <Typography variant="body1">
+              <Typography variant="body1" sx={{ color: "#ffffff" }}>
                 {nextSeason.growth || "+15"}% increase expected
               </Typography>
             </Box>
-            <Typography variant="caption" color="textSecondary" mt={1}>
+            <Typography variant="caption" sx={{ color: "#82c2ce" }} mt={1}>
               Confidence: {nextSeason.confidence || "85"}%
             </Typography>
           </Box>
@@ -732,22 +826,22 @@ export const PeakSeasonAnalyticsCard = ({ peakSeasons }) => {
 
   // Handle if peakSeasons is an object
   return (
-    <Card>
+    <Card sx={cardStyle}>
       <CardContent>
-        <Typography variant="h6" gutterBottom>
+        <Typography variant="h6" gutterBottom sx={{ color: "#ffffff" }}>
           Peak Season Predictions
         </Typography>
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" color="textSecondary">
+          <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
             Next: {peakSeasons.nextSeason || "Summer 2025"}
           </Typography>
           <Box display="flex" alignItems="center" gap={1} mt={1}>
             <TrendingUp color="success" />
-            <Typography variant="body1">
+            <Typography variant="body1" sx={{ color: "#ffffff" }}>
               {peakSeasons.expectedGrowth || "+85"}% increase expected
             </Typography>
           </Box>
-          <Typography variant="caption" color="textSecondary" mt={1}>
+          <Typography variant="caption" sx={{ color: "#82c2ce" }} mt={1}>
             Confidence: {peakSeasons.confidence || "90"}%
           </Typography>
         </Box>
