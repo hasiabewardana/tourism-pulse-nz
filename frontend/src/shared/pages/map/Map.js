@@ -975,109 +975,129 @@ function Map() {
 
         {/* Basic Filters/Search mirror Destinations.js */}
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} md={9} lg={10}>
-            <Autocomplete
-              freeSolo
-              fullWidth
-              options={autocompleteOptions}
-              getOptionLabel={(option) =>
-                typeof option === "string" ? option : option.label
-              }
-              value={searchTerm}
-              inputValue={searchInputValue}
-              onChange={handleSearchChange}
-              onInputChange={handleSearchInputChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Destinations"
-                  placeholder="Type to search destinations..."
-                  className={classes.searchInput}
-                  variant="outlined"
-                />
-              )}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} key={option.id || option.label}>
-                  <Box>
-                    <Typography variant="body1" fontWeight="bold">
-                      {option.label}
-                    </Typography>
-                    {option.description && (
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {option.description.length > 60
-                          ? `${option.description.substring(0, 60)}...`
-                          : option.description}
+          {/* Primary Row: Search and Sort */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <Autocomplete
+                freeSolo
+                fullWidth
+                options={autocompleteOptions}
+                getOptionLabel={(option) =>
+                  typeof option === "string" ? option : option.label
+                }
+                value={searchTerm}
+                inputValue={searchInputValue}
+                onChange={handleSearchChange}
+                onInputChange={handleSearchInputChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search by Destination Name"
+                    placeholder="Type to search destinations..."
+                    className={classes.searchInput}
+                    variant="outlined"
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    {...props}
+                    key={option.id || option.label}
+                  >
+                    <Box>
+                      <Typography variant="body1" fontWeight="bold">
+                        {option.label}
                       </Typography>
-                    )}
+                      {option.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {option.description.length > 60
+                            ? `${option.description.substring(0, 60)}...`
+                            : option.description}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              )}
-              PaperComponent={({ children, ...other }) => (
-                <Paper {...other} elevation={3}>
-                  {children}
-                </Paper>
-              )}
-              noOptionsText="No destinations found"
-              loadingText="Loading destinations..."
-            />
+                )}
+                PaperComponent={({ children, ...other }) => (
+                  <Paper {...other} elevation={3}>
+                    {children}
+                  </Paper>
+                )}
+                noOptionsText="No destinations found"
+                loadingText="Loading destinations..."
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  label="Sort By"
+                >
+                  <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                  <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                  <MenuItem value="Capacity (Low to High)">
+                    Capacity (Low to High)
+                  </MenuItem>
+                  <MenuItem value="Capacity (High to Low)">
+                    Capacity (High to Low)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6} md={2} lg={1.5}>
+
+          {/* Secondary Row: Filters */}
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select value={sortBy} onChange={handleSortChange}>
-                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
-                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
-                <MenuItem value="Capacity (Low to High)">
-                  Capacity (Low to High)
-                </MenuItem>
-                <MenuItem value="Capacity (High to Low)">
-                  Capacity (High to Low)
-                </MenuItem>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                label="Status"
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid container spacing={2} sx={{ mt: 0 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select value={selectedStatus} onChange={handleStatusChange}>
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Availability</InputLabel>
-                <Select
-                  value={selectedAvailability}
-                  onChange={handleAvailabilityChange}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="available">Available</MenuItem>
-                  <MenuItem value="full">Full</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <DatePicker
-                label="Select Date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Button
-                variant="outlined"
-                onClick={handleResetFilters}
-                className={classes.resetButton}
-                fullWidth
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Availability</InputLabel>
+              <Select
+                value={selectedAvailability}
+                onChange={handleAvailabilityChange}
+                label="Availability"
               >
-                Reset Filters
-              </Button>
-            </Grid>
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="available">Available</MenuItem>
+                <MenuItem value="full">Full</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <DatePicker
+              label="Select Date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilters}
+              className={classes.resetButton}
+              fullWidth
+            >
+              RESET
+            </Button>
           </Grid>
         </Grid>
         {/* Map Display */}

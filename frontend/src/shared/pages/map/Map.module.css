@@ -64,81 +64,69 @@
 /* Filter Controls */
 .filtersContainer {
   margin-bottom: var(--tp-space-lg);
-  padding: var(--tp-space-md);
   background-color: var(--tp-surface-medium);
-  border-radius: var(--tp-radius-lg);
-  box-shadow: var(--tp-shadow-md);
-  border: 1px solid var(--tp-surface-light);
+  padding: var(--tp-space-sm);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
 }
 
 .filtersContainer :global(.MuiFormControl-root) {
   background-color: var(--tp-surface-dark);
-  border-radius: var(--tp-radius-md);
-  transition: var(--tp-transition-smooth);
+  border-radius: var(--tp-radius-sm);
 }
 
-.filtersContainer :global(.MuiFormControl-root:hover) {
-  background-color: var(--tp-surface-medium);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+.filtersContainer :global(.MuiOutlinedInput-root) {
+  border-color: rgba(72, 217, 243, 0.3);
+}
+
+.filtersContainer :global(.MuiOutlinedInput-root:hover) {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer :global(.MuiOutlinedInput-root.Mui-focused) {
+  border-color: var(--tp-primary-accent);
 }
 
 .filtersContainer :global(.MuiInputLabel-root) {
   color: var(--tp-secondary-text);
-  font-weight: 500;
+}
+
+.filtersContainer :global(.MuiInputLabel-root.Mui-focused) {
+  color: var(--tp-primary-accent);
 }
 
 .filtersContainer :global(.MuiSelect-select) {
   color: var(--tp-primary-text);
 }
 
-.filtersContainer :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-surface-light);
-}
-
-.filtersContainer
-  :global(.MuiFormControl-root:hover .MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-primary-accent);
-}
-
-/* Search and Reset Section */
-.searchResetContainer {
-  margin-bottom: calc(var(--tp-space-xl) + var(--tp-space-lg));
-  padding: var(--tp-space-md);
-  background-color: var(--tp-surface-medium);
-  border-radius: var(--tp-radius-lg);
-  box-shadow: var(--tp-shadow-md);
-  border: 1px solid var(--tp-surface-light);
-}
-
-.searchInput {
+.searchInput :global(.MuiOutlinedInput-root) {
   background-color: var(--tp-surface-dark);
-  border-radius: var(--tp-radius-md);
-  transition: var(--tp-transition-smooth);
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
 }
 
-.searchInput:hover {
-  background-color: var(--tp-surface-medium);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+.searchInput :global(.MuiOutlinedInput-root:hover) {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.1);
 }
 
-.searchInput :global(.MuiInputBase-input) {
+.searchInput :global(.MuiOutlinedInput-root.Mui-focused) {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.2);
+}
+
+.searchInput :global(input) {
   color: var(--tp-primary-text);
+  font-weight: 400;
 }
 
 .searchInput :global(.MuiInputLabel-root) {
   color: var(--tp-secondary-text);
-  font-weight: 500;
 }
 
-.searchInput :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-surface-light);
-}
-
-.searchInput
-  :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-primary-accent);
+.searchInput :global(.MuiInputLabel-root.Mui-focused) {
+  color: var(--tp-primary-accent);
 }
 
 /* Autocomplete Dropdown Styling */
@@ -172,21 +160,20 @@
 /* Reset Button */
 .resetButton {
   height: 56px;
-  border: 2px solid var(--tp-primary-accent);
-  color: var(--tp-primary-accent);
-  background: transparent;
-  border-radius: var(--tp-radius-md);
-  font-weight: 600;
-  transition: var(--tp-transition-smooth);
+  border-color: var(--tp-status-warning);
+  color: var(--tp-status-warning);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+  font-weight: 500;
   text-transform: none;
 }
 
 .resetButton:hover {
-  border-color: var(--tp-surface-light);
-  background-color: var(--tp-surface-light);
-  color: var(--tp-surface-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+  border-color: var(--tp-status-warning);
+  background-color: var(--tp-status-warning);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
 }
 
 /* Loading State */
