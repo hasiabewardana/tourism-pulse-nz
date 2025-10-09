@@ -24,7 +24,7 @@ import { useAuth } from "../../../context/AuthContext";
 import classes from "./Home.module.css";
 
 function Home() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, role } = useAuth();
   const [activeRole, setActiveRole] = useState("public"); // State to manage role-based content
   const [destinations, setDestinations] = useState([]); // State for fetched destinations
   const [reviews, setReviews] = useState([]);
@@ -279,8 +279,8 @@ function Home() {
         </Box>
       )}
 
-      {/* Personalized Recommendations Section */}
-      {isAuthenticated && (
+      {/* Personalized Recommendations Section - Only for regular users/tourists */}
+      {isAuthenticated && role === "public" && (
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" className={classes.sectionTitle}>
             Recommended For You
