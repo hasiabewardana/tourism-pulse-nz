@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Container,
   Box,
   Typography,
   Grid,
@@ -8,6 +9,8 @@ import {
   Alert,
   Card,
   CardContent,
+  Button,
+  ButtonGroup,
 } from "@mui/material";
 import {
   TrendingUp,
@@ -28,9 +31,6 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import classes from "./AdminAnalytics.module.css";
 
@@ -38,7 +38,7 @@ const AdminAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
-  const [days] = useState(30);
+  const [days, setDays] = useState(30);
 
   const token = localStorage.getItem("token");
 
@@ -61,7 +61,13 @@ const AdminAnalytics = () => {
       if (!response.ok) throw new Error("Failed to fetch analytics");
 
       const result = await response.json();
-      setData(result);
+
+      if (result.success && result.data) {
+        setData(result.data);
+      } else {
+        throw new Error("Invalid response format");
+      }
+
       setError(null);
     } catch (err) {
       console.error("Error fetching analytics:", err);
@@ -129,42 +135,40 @@ const AdminAnalytics = () => {
 
   if (loading) {
     return (
-      <Box className={classes.loadingContainer}>
-        <CircularProgress size={60} className={classes.loadingSpinner} />
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Box className={classes.loadingContainer}>
+          <CircularProgress size={60} sx={{ color: "#48d9f3" }} />
+        </Box>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <Box className={classes.container}>
-        <Box className={classes.innerContainer}>
-          <Alert severity="error" className={classes.errorAlert}>
-            {error}
-          </Alert>
-        </Box>
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      </Container>
     );
   }
 
-  if (!data || !data.platform) {
+  if (!data || !data.stats) {
     return (
-      <Box className={classes.container}>
-        <Box className={classes.innerContainer}>
-          <Alert severity="info">No analytics data available</Alert>
-        </Box>
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          No analytics data available
+        </Alert>
+      </Container>
     );
   }
 
-  const { platform, revenueChart, operatorPerformance, bookingTrend } = data;
-
-  const COLORS = ["#48d9f3", "#4caf50", "#ffc107", "#f44336", "#9c27b0"];
+  const { stats, revenueTrend, bookingsTrend, topOperators } = data;
 
   return (
-    <Box className={classes.container}>
-      <Box className={classes.innerContainer}>
-        <Box className={classes.header}>
+    <Container maxWidth="lg" className={classes.container}>
+      <Box className={classes.header}>
+        <Box>
           <Typography variant="h3" className={classes.title}>
             Platform Analytics
           </Typography>
@@ -172,56 +176,200 @@ const AdminAnalytics = () => {
             Last {days} days platform-wide overview
           </Typography>
         </Box>
+        <ButtonGroup
+          variant="outlined"
+          sx={{
+            "& .MuiButton-root": {
+              borderColor: "#48d9f3",
+              color: "#48d9f3",
+              "&:hover": {
+                borderColor: "#48d9f3",
+                backgroundColor: "rgba(72, 217, 243, 0.1)",
+              },
+            },
+            "& .MuiButton-root.active": {
+              backgroundColor: "#48d9f3",
+              color: "#1a1d1f",
+              "&:hover": {
+                backgroundColor: "#0fa4af",
+              },
+            },
+          }}
+        >
+          <Button
+            className={days === 7 ? "active" : ""}
+            onClick={() => setDays(7)}
+          >
+            7 Days
+          </Button>
+          <Button
+            className={days === 30 ? "active" : ""}
+            onClick={() => setDays(30)}
+          >
+            30 Days
+          </Button>
+          <Button
+            className={days === 90 ? "active" : ""}
+            onClick={() => setDays(90)}
+          >
+            90 Days
+          </Button>
+        </ButtonGroup>
+      </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Revenue"
-              value={`$${parseFloat(
-                platform.totalRevenue || 0
-              ).toLocaleString()}`}
-              subtitle={`${platform.revenueGrowth}% vs previous period`}
-              trend={parseFloat(platform.revenueGrowth || 0)}
-              icon={<AttachMoney sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Revenue"
+            value={`$${parseFloat(stats.totalRevenue || 0).toLocaleString()}`}
+            subtitle={`Avg $${parseFloat(
+              stats.totalBookings > 0
+                ? stats.totalRevenue / stats.totalBookings
+                : 0
+            ).toFixed(2)} per booking`}
+            icon={<AttachMoney sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Bookings"
-              value={platform.totalBookings || 0}
-              subtitle={`Avg $${parseFloat(
-                platform.avgBookingValue || 0
-              ).toFixed(2)} per booking`}
-              icon={<BookOnline sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Bookings"
+            value={stats.totalBookings || 0}
+            subtitle={`${stats.totalOperators || 0} active operators`}
+            icon={<BookOnline sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Active Operators"
-              value={platform.totalOperators || 0}
-              subtitle={`${platform.totalDestinations || 0} destinations`}
-              icon={<Business sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Active Operators"
+            value={stats.totalOperators || 0}
+            subtitle="Platform operators"
+            icon={<Business sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Users"
-              value={platform.totalUsers || 0}
-              subtitle="Platform users"
-              icon={<People sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Users"
+            value={stats.totalUsers || 0}
+            subtitle="Platform users"
+            icon={<People sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} lg={8}>
+        <Grid item xs={12} lg={8}>
+          <Paper className={classes.contentPaper}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Revenue & Bookings Trend
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={(revenueTrend || []).map((item, index) => ({
+                  date: item.date,
+                  revenue: item.amount,
+                  bookings:
+                    bookingsTrend && bookingsTrend[index]
+                      ? bookingsTrend[index].count
+                      : 0,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#bdd1d4"
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString("en-NZ", {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  }
+                />
+                <YAxis stroke="#bdd1d4" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#282f33",
+                    border: "1px solid #48d9f3",
+                    borderRadius: "4px",
+                    color: "#ffffff",
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#48d9f3"
+                  strokeWidth={2}
+                  name="Revenue ($)"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="bookings"
+                  stroke="#4caf50"
+                  strokeWidth={2}
+                  name="Bookings"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Paper className={classes.contentPaper}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Top Operators
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              {topOperators && topOperators.length > 0 ? (
+                topOperators.map((operator, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1.5,
+                      mb: 1,
+                      backgroundColor: "#374549",
+                      borderRadius: "4px",
+                      border: "1px solid rgba(72, 217, 243, 0.1)",
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#ffffff", fontWeight: 500 }}
+                      >
+                        {operator.operator}
+                      </Typography>
+                    </Box>
+                    <Box textAlign="right">
+                      <Typography variant="body2" sx={{ color: "#ffffff" }}>
+                        ${parseFloat(operator.revenue || 0).toLocaleString()}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#82c2ce" }}>
+                        Revenue
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" sx={{ color: "#82c2ce" }}>
+                  No operator data available
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        </Grid>
+
+        {bookingsTrend && bookingsTrend.length > 0 && (
+          <Grid item xs={12}>
             <Paper className={classes.contentPaper}>
               <Typography variant="h6" className={classes.sectionTitle}>
-                Revenue Trend
+                Booking Trend
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={revenueChart || []}>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={bookingsTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
                   <XAxis
                     dataKey="date"
@@ -243,115 +391,14 @@ const AdminAnalytics = () => {
                     }}
                   />
                   <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#48d9f3"
-                    strokeWidth={2}
-                    name="Revenue ($)"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="bookings"
-                    stroke="#4caf50"
-                    strokeWidth={2}
-                    name="Bookings"
-                  />
-                </LineChart>
+                  <Bar dataKey="count" fill="#48d9f3" name="Bookings" />
+                </BarChart>
               </ResponsiveContainer>
             </Paper>
           </Grid>
-
-          <Grid item xs={12} lg={4}>
-            <Paper className={classes.contentPaper}>
-              <Typography variant="h6" className={classes.sectionTitle}>
-                Top Operators
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {operatorPerformance && operatorPerformance.length > 0 ? (
-                  operatorPerformance.slice(0, 5).map((operator, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        p: 1.5,
-                        mb: 1,
-                        backgroundColor: "#374549",
-                        borderRadius: "4px",
-                        border: "1px solid rgba(72, 217, 243, 0.1)",
-                      }}
-                    >
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#ffffff", fontWeight: 500 }}
-                        >
-                          {operator.operatorName}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#82c2ce" }}>
-                          {operator.destinations} destinations
-                        </Typography>
-                      </Box>
-                      <Box textAlign="right">
-                        <Typography variant="body2" sx={{ color: "#ffffff" }}>
-                          ${parseFloat(operator.revenue || 0).toLocaleString()}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#82c2ce" }}>
-                          {operator.bookings} bookings
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))
-                ) : (
-                  <Typography variant="body2" sx={{ color: "#82c2ce" }}>
-                    No operator data available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {bookingTrend && bookingTrend.length > 0 && (
-            <Grid item xs={12}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Weekly Booking Trend
-                </Typography>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={bookingTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
-                    <XAxis
-                      dataKey="week"
-                      stroke="#bdd1d4"
-                      tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString("en-NZ", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      }
-                    />
-                    <YAxis stroke="#bdd1d4" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#282f33",
-                        border: "1px solid #48d9f3",
-                        borderRadius: "4px",
-                        color: "#ffffff",
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="bookings" fill="#48d9f3" name="Bookings" />
-                    <Bar dataKey="revenue" fill="#4caf50" name="Revenue ($)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-      </Box>
-    </Box>
+        )}
+      </Grid>
+    </Container>
   );
 };
 
