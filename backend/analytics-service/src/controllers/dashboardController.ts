@@ -92,15 +92,27 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
     res.json({
       success: true,
       data: {
-        stats: {
+        overview: {
           totalRevenue: Math.round(totalRevenue * 100) / 100,
           totalBookings,
-          totalDestinations: destinations.length,
+          activeDestinations: destinations.length,
           avgRating: Math.round(avgRating * 10) / 10,
+          avgBookingValue:
+            totalBookings > 0
+              ? Math.round((totalRevenue / totalBookings) * 100) / 100
+              : 0,
+          revenueGrowth: 0,
+          avgOccupancy: 0,
         },
-        revenueTrend,
+        revenueChart: revenueTrend.map((item) => ({
+          date: item.date,
+          revenue: item.amount,
+        })),
         topDestinations,
-        weeklyBookings,
+        bookingTrend: weeklyBookings.map((item) => ({
+          date: item.date,
+          bookings: item.count,
+        })),
       },
     });
   } catch (error: any) {

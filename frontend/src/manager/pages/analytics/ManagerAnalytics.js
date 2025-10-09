@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  Container,
   Box,
   Typography,
   Grid,
@@ -8,6 +9,8 @@ import {
   Alert,
   Card,
   CardContent,
+  Button,
+  ButtonGroup,
 } from "@mui/material";
 import {
   TrendingUp,
@@ -35,7 +38,7 @@ const ManagerAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
-  const [days] = useState(30);
+  const [days, setDays] = useState(30);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -59,7 +62,13 @@ const ManagerAnalytics = () => {
       if (!response.ok) throw new Error("Failed to fetch analytics");
 
       const result = await response.json();
-      setData(result);
+
+      if (result.success && result.data) {
+        setData(result.data);
+      } else {
+        throw new Error("Invalid response format");
+      }
+
       setError(null);
     } catch (err) {
       console.error("Error fetching analytics:", err);
@@ -127,40 +136,40 @@ const ManagerAnalytics = () => {
 
   if (loading) {
     return (
-      <Box className={classes.loadingContainer}>
-        <CircularProgress size={60} className={classes.loadingSpinner} />
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Box className={classes.loadingContainer}>
+          <CircularProgress size={60} sx={{ color: "#48d9f3" }} />
+        </Box>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <Box className={classes.container}>
-        <Box className={classes.innerContainer}>
-          <Alert severity="error" className={classes.errorAlert}>
-            {error}
-          </Alert>
-        </Box>
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      </Container>
     );
   }
 
   if (!data || !data.overview) {
     return (
-      <Box className={classes.container}>
-        <Box className={classes.innerContainer}>
-          <Alert severity="info">No analytics data available</Alert>
-        </Box>
-      </Box>
+      <Container maxWidth="lg" className={classes.container}>
+        <Alert severity="info" sx={{ mt: 2 }}>
+          No analytics data available
+        </Alert>
+      </Container>
     );
   }
 
   const { overview, revenueChart, topDestinations, bookingTrend } = data;
 
   return (
-    <Box className={classes.container}>
-      <Box className={classes.innerContainer}>
-        <Box className={classes.header}>
+    <Container maxWidth="lg" className={classes.container}>
+      <Box className={classes.header}>
+        <Box>
           <Typography variant="h3" className={classes.title}>
             Analytics Dashboard
           </Typography>
@@ -168,56 +177,186 @@ const ManagerAnalytics = () => {
             Last {days} days performance overview
           </Typography>
         </Box>
+        <ButtonGroup
+          variant="outlined"
+          sx={{
+            "& .MuiButton-root": {
+              borderColor: "#48d9f3",
+              color: "#48d9f3",
+              "&:hover": {
+                borderColor: "#48d9f3",
+                backgroundColor: "rgba(72, 217, 243, 0.1)",
+              },
+            },
+            "& .MuiButton-root.active": {
+              backgroundColor: "#48d9f3",
+              color: "#1a1d1f",
+              "&:hover": {
+                backgroundColor: "#0fa4af",
+              },
+            },
+          }}
+        >
+          <Button
+            className={days === 7 ? "active" : ""}
+            onClick={() => setDays(7)}
+          >
+            7 Days
+          </Button>
+          <Button
+            className={days === 30 ? "active" : ""}
+            onClick={() => setDays(30)}
+          >
+            30 Days
+          </Button>
+          <Button
+            className={days === 90 ? "active" : ""}
+            onClick={() => setDays(90)}
+          >
+            90 Days
+          </Button>
+        </ButtonGroup>
+      </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Revenue"
-              value={`$${parseFloat(
-                overview.totalRevenue || 0
-              ).toLocaleString()}`}
-              subtitle={`${overview.revenueGrowth}% vs previous period`}
-              trend={parseFloat(overview.revenueGrowth || 0)}
-              icon={<AttachMoney sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Revenue"
+            value={`$${parseFloat(
+              overview.totalRevenue || 0
+            ).toLocaleString()}`}
+            subtitle={`${overview.revenueGrowth}% vs previous period`}
+            trend={parseFloat(overview.revenueGrowth || 0)}
+            icon={<AttachMoney sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Total Bookings"
-              value={overview.totalBookings || 0}
-              subtitle={`Avg $${parseFloat(
-                overview.avgBookingValue || 0
-              ).toFixed(2)} per booking`}
-              icon={<BookOnline sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Bookings"
+            value={overview.totalBookings || 0}
+            subtitle={`Avg $${parseFloat(overview.avgBookingValue || 0).toFixed(
+              2
+            )} per booking`}
+            icon={<BookOnline sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Active Destinations"
-              value={overview.activeDestinations || 0}
-              subtitle={`${overview.avgOccupancy}% avg occupancy`}
-              icon={<Place sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Active Destinations"
+            value={overview.activeDestinations || 0}
+            subtitle={`${overview.avgOccupancy}% avg occupancy`}
+            icon={<Place sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Average Rating"
-              value={overview.avgRating || "0.0"}
-              subtitle="Overall satisfaction"
-              icon={<Star sx={{ color: "#48d9f3", fontSize: 32 }} />}
-            />
-          </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Average Rating"
+            value={overview.avgRating || "0.0"}
+            subtitle="Overall satisfaction"
+            icon={<Star sx={{ color: "#48d9f3", fontSize: 32 }} />}
+          />
+        </Grid>
 
-          <Grid item xs={12} lg={8}>
+        <Grid item xs={12} lg={8}>
+          <Paper className={classes.contentPaper}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Revenue Trend
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueChart || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
+                <XAxis
+                  dataKey="date"
+                  stroke="#bdd1d4"
+                  tickFormatter={(value) =>
+                    new Date(value).toLocaleDateString("en-NZ", {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  }
+                />
+                <YAxis stroke="#bdd1d4" />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#282f33",
+                    border: "1px solid #48d9f3",
+                    borderRadius: "4px",
+                    color: "#ffffff",
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#48d9f3"
+                  strokeWidth={2}
+                  name="Revenue ($)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={4}>
+          <Paper className={classes.contentPaper}>
+            <Typography variant="h6" className={classes.sectionTitle}>
+              Top Destinations
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              {topDestinations && topDestinations.length > 0 ? (
+                topDestinations.map((dest, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      p: 1.5,
+                      mb: 1,
+                      backgroundColor: "#374549",
+                      borderRadius: "4px",
+                      border: "1px solid rgba(72, 217, 243, 0.1)",
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#ffffff", fontWeight: 500 }}
+                      >
+                        {dest.name}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#82c2ce" }}>
+                        {dest.bookings} bookings • {dest.occupancy}% occupied
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center">
+                      <Star sx={{ color: "#ffc107", fontSize: 16, mr: 0.5 }} />
+                      <Typography variant="body2" sx={{ color: "#ffffff" }}>
+                        {dest.rating ? dest.rating.toFixed(1) : "N/A"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" sx={{ color: "#82c2ce" }}>
+                  No destination data available
+                </Typography>
+              )}
+            </Box>
+          </Paper>
+        </Grid>
+
+        {bookingTrend && bookingTrend.length > 0 && (
+          <Grid item xs={12}>
             <Paper className={classes.contentPaper}>
               <Typography variant="h6" className={classes.sectionTitle}>
-                Revenue Trend
+                Booking Trend
               </Typography>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={revenueChart || []}>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={bookingTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
                   <XAxis
                     dataKey="date"
@@ -239,115 +378,14 @@ const ManagerAnalytics = () => {
                     }}
                   />
                   <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#48d9f3"
-                    strokeWidth={2}
-                    name="Revenue ($)"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="bookings"
-                    stroke="#4caf50"
-                    strokeWidth={2}
-                    name="Bookings"
-                  />
-                </LineChart>
+                  <Bar dataKey="bookings" fill="#48d9f3" name="Bookings" />
+                </BarChart>
               </ResponsiveContainer>
             </Paper>
           </Grid>
-
-          <Grid item xs={12} lg={4}>
-            <Paper className={classes.contentPaper}>
-              <Typography variant="h6" className={classes.sectionTitle}>
-                Top Destinations
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {topDestinations && topDestinations.length > 0 ? (
-                  topDestinations.map((dest, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        p: 1.5,
-                        mb: 1,
-                        backgroundColor: "#374549",
-                        borderRadius: "4px",
-                        border: "1px solid rgba(72, 217, 243, 0.1)",
-                      }}
-                    >
-                      <Box>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "#ffffff", fontWeight: 500 }}
-                        >
-                          {dest.name}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: "#82c2ce" }}>
-                          {dest.bookings} bookings • {dest.occupancy}% occupied
-                        </Typography>
-                      </Box>
-                      <Box display="flex" alignItems="center">
-                        <Star
-                          sx={{ color: "#ffc107", fontSize: 16, mr: 0.5 }}
-                        />
-                        <Typography variant="body2" sx={{ color: "#ffffff" }}>
-                          {dest.rating ? dest.rating.toFixed(1) : "N/A"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  ))
-                ) : (
-                  <Typography variant="body2" sx={{ color: "#82c2ce" }}>
-                    No destination data available
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {bookingTrend && bookingTrend.length > 0 && (
-            <Grid item xs={12}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Weekly Booking Trend
-                </Typography>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={bookingTrend}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
-                    <XAxis
-                      dataKey="week"
-                      stroke="#bdd1d4"
-                      tickFormatter={(value) =>
-                        new Date(value).toLocaleDateString("en-NZ", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      }
-                    />
-                    <YAxis stroke="#bdd1d4" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#282f33",
-                        border: "1px solid #48d9f3",
-                        borderRadius: "4px",
-                        color: "#ffffff",
-                      }}
-                    />
-                    <Legend />
-                    <Bar dataKey="bookings" fill="#48d9f3" name="Bookings" />
-                    <Bar dataKey="revenue" fill="#4caf50" name="Revenue ($)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-      </Box>
-    </Box>
+        )}
+      </Grid>
+    </Container>
   );
 };
 
