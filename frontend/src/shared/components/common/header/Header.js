@@ -16,7 +16,7 @@ function Header() {
       >
         <img
           className={classes.logo}
-          src="tourism-pulse-nz-logo.png"
+          src="/tourism-pulse-nz-logo.png"
           alt="TourismPulseNZ Logo"
         />
         <div>
