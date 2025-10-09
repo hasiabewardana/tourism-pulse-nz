@@ -260,9 +260,11 @@ function DestinationModal({
 
   const handleBookNow = () => {
     if (isAuthenticated) {
-      navigate(`/booking/${destinationId}`);
+      // Navigate to offers page with destination ID to show relevant offers
+      navigate(`/tourist/offers/${destinationId}`);
+      onClose(); // Close the modal after navigation
     } else {
-      navigate("/login");
+      navigate("/auth");
     }
   };
 

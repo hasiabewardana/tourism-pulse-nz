@@ -14,6 +14,7 @@ import {
   Select,
   MenuItem,
   Chip,
+  Box,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -40,8 +41,27 @@ function OffersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [destinationName, setDestinationName] = useState("");
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
+
+  // Fetch destination name if destinationId is provided
+  useEffect(() => {
+    const fetchDestinationName = async () => {
+      if (!destinationId) return;
+      try {
+        const url = isAuthenticated
+          ? `http://localhost:3000/dest/api/v1/destinations/${destinationId}`
+          : `http://localhost:3000/dest/api/v1/destinations/${destinationId}/public`;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await axios.get(url, { headers });
+        setDestinationName(res.data.name || "");
+      } catch (err) {
+        console.error("Failed to fetch destination name:", err);
+      }
+    };
+    fetchDestinationName();
+  }, [destinationId, token]);
 
   useEffect(() => {
     if (!token) {
@@ -212,8 +232,23 @@ function OffersPage() {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container className={classes.container}>
         <Typography variant="h4" className={classes.title}>
-          {destinationId ? "Offers for Destination" : "All Offers"}
+          {destinationId && destinationName
+            ? `Offers for ${destinationName}`
+            : destinationId
+            ? "Offers for Selected Destination"
+            : "All Offers"}
         </Typography>
+
+        {destinationId && (
+          <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+            <Chip
+              label={`Filtered by: ${destinationName || "Destination"}`}
+              onDelete={() => navigate("/tourist/offers")}
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
+        )}
 
         <Grid container spacing={2} className={classes.filtersContainer}>
           <Grid item xs={12} sm={3}>
