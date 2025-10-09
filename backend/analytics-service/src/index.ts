@@ -6,12 +6,14 @@ import http from "http";
 import dotenv from "dotenv";
 import { query } from "./services/db";
 import analyticsRoutes from "./routes/analyticsRoutes";
+import realAnalyticsRoutes from "./routes/realAnalyticsRoutes";
 import subscribeRoutes from "./routes/subscribeRoutes";
 import healthRoutes from "./routes/healthRoutes";
 import statsnzRoutes from "./routes/statsnzRoutes";
 import { URL } from "url";
 import { connectMongoDB } from "./config/mongodb";
 import { initializeScheduledJobs } from "./jobs/scheduledJobs";
+import { startDataSyncJobs, performFullSync } from "./jobs/dataSync";
 
 dotenv.config();
 const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
@@ -34,7 +36,12 @@ app.use(express.json());
 
 // Connect to MongoDB (with better error handling)
 connectMongoDB()
-  .then(() => console.log("✓ MongoDB connected successfully"))
+  .then(() => {
+    console.log("✓ MongoDB connected successfully");
+    performFullSync();
+    startDataSyncJobs();
+    console.log("✓ Analytics data sync started");
+  })
   .catch((err) => {
     console.error("✗ Failed to connect to MongoDB:", err);
     process.exit(1);
@@ -137,6 +144,7 @@ wss.on("connection", (ws, req) => {
 // Mount routes
 app.use("/analytics-service/api", healthRoutes);
 app.use("/analytics-service/api", analyticsRoutes);
+app.use("/analytics-service/api", realAnalyticsRoutes);
 app.use("/analytics-service/api", subscribeRoutes);
 app.use("/analytics-service/api/statsnz", statsnzRoutes);
 

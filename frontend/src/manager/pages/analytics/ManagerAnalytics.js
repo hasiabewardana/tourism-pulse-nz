@@ -1,104 +1,129 @@
-import React, { useState, useContext, useEffect } from "react";
-import {
-  DemandForecastCard,
-  StaffingInsightCard,
-  PeakSeasonAnalyticsCard,
-  ResourceOptimizationCard,
-  PerformanceMetricCard,
-  TrendAnalysisCard,
-  AlertsCard,
-} from "../../../shared/components/analytics/AnalyticsCards";
-import StatsNZInsights from "../../components/StatsNZInsights";
+import React, { useState, useEffect } from "react";
 import {
   Box,
-  Container,
   Typography,
   Grid,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
   CircularProgress,
-  Tabs,
-  Tab,
-  Chip,
+  Alert,
+  Card,
+  CardContent,
 } from "@mui/material";
-import { AnalyticsContext } from "../../../shared/context/AnalyticsContext";
 import {
-  DemandChart,
-  StaffingChart,
-  PeakSeasonChart,
-  ResourceChart,
-  RevenueTrendChart,
-} from "../../../shared/components/analytics/Charts";
+  TrendingUp,
+  TrendingDown,
+  AttachMoney,
+  BookOnline,
+  Place,
+  Star,
+} from "@mui/icons-material";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import classes from "./ManagerAnalytics.module.css";
 
 const ManagerAnalytics = () => {
-  const {
-    demandForecast,
-    staffingRecommendations: staffingInsights,
-    peakSeasons,
-    resourceUtilization: resourceOptimization,
-    loading,
-    error,
-    fetchDemandForecast,
-    fetchStaffingRecommendations: fetchStaffingInsights,
-    fetchPeakSeasons,
-    fetchResourceUtilization: fetchResourceOptimization,
-  } = useContext(AnalyticsContext);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
+  const [days] = useState(30);
 
-  const [selectedDestination, setSelectedDestination] = useState("all");
-  const [timeRange, setTimeRange] = useState("30");
-  const [tabValue, setTabValue] = useState(0);
-
-  // Sample destinations for the dropdown
-  const destinations = [
-    { value: "all", label: "All Destinations" },
-    { value: "queenstown", label: "Queenstown" },
-    { value: "rotorua", label: "Rotorua" },
-    { value: "auckland", label: "Auckland" },
-    { value: "wellington", label: "Wellington" },
-    { value: "christchurch", label: "Christchurch" },
-  ];
-
-  const timeRanges = [
-    { value: "7", label: "Last 7 Days" },
-    { value: "30", label: "Last 30 Days" },
-    { value: "90", label: "Last 3 Months" },
-    { value: "365", label: "Last Year" },
-  ];
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    // Load initial data
-    const loadData = async () => {
-      try {
-        await Promise.all([
-          fetchDemandForecast(selectedDestination, parseInt(timeRange)),
-          fetchStaffingInsights(selectedDestination),
-          fetchPeakSeasons(selectedDestination),
-          fetchResourceOptimization(selectedDestination),
-        ]);
-      } catch (err) {
-        console.error("Failed to load analytics data:", err);
-      }
-    };
+    fetchAnalyticsData();
+  }, [days]);
 
-    loadData();
-  }, [selectedDestination, timeRange]);
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:3000/analytics-service/api/operator/${userId}/dashboard?days=${days}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
+      if (!response.ok) throw new Error("Failed to fetch analytics");
+
+      const result = await response.json();
+      setData(result);
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching analytics:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDestinationChange = (event) => {
-    setSelectedDestination(event.target.value);
-  };
-
-  const handleTimeRangeChange = (event) => {
-    setTimeRange(event.target.value);
-  };
+  const StatCard = ({ title, value, subtitle, icon, trend }) => (
+    <Card
+      sx={{
+        backgroundColor: "#282f33",
+        border: "1px solid rgba(72, 217, 243, 0.1)",
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.2s ease",
+        "&:hover": {
+          borderColor: "rgba(72, 217, 243, 0.2)",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+        },
+      }}
+    >
+      <CardContent>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box>
+            <Typography variant="body2" sx={{ color: "#bdd1d4", mb: 1 }}>
+              {title}
+            </Typography>
+            <Typography variant="h4" sx={{ color: "#ffffff", fontWeight: 600 }}>
+              {value}
+            </Typography>
+            {subtitle && (
+              <Box display="flex" alignItems="center" mt={0.5}>
+                {trend > 0 ? (
+                  <TrendingUp
+                    sx={{ color: "#4caf50", fontSize: 18, mr: 0.5 }}
+                  />
+                ) : trend < 0 ? (
+                  <TrendingDown
+                    sx={{ color: "#f44336", fontSize: 18, mr: 0.5 }}
+                  />
+                ) : null}
+                <Typography variant="caption" sx={{ color: "#82c2ce" }}>
+                  {subtitle}
+                </Typography>
+              </Box>
+            )}
+          </Box>
+          <Box
+            sx={{
+              backgroundColor: "#374549",
+              borderRadius: "50%",
+              p: 1.5,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {icon}
+          </Box>
+        </Box>
+      </CardContent>
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -108,339 +133,221 @@ const ManagerAnalytics = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Box className={classes.container}>
+        <Box className={classes.innerContainer}>
+          <Alert severity="error" className={classes.errorAlert}>
+            {error}
+          </Alert>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (!data || !data.overview) {
+    return (
+      <Box className={classes.container}>
+        <Box className={classes.innerContainer}>
+          <Alert severity="info">No analytics data available</Alert>
+        </Box>
+      </Box>
+    );
+  }
+
+  const { overview, revenueChart, topDestinations, bookingTrend } = data;
+
   return (
-    <Container maxWidth="lg" className={classes.container}>
+    <Box className={classes.container}>
       <Box className={classes.innerContainer}>
         <Box className={classes.header}>
           <Typography variant="h3" className={classes.title}>
-            Manager Analytics Dashboard
+            Analytics Dashboard
           </Typography>
           <Typography variant="subtitle1" className={classes.subtitle}>
-            Monitor performance, forecast demand, and optimize resources
+            Last {days} days performance overview
           </Typography>
         </Box>
 
-        <Paper className={classes.filterPaper}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Destination</InputLabel>
-                <Select
-                  value={selectedDestination}
-                  label="Destination"
-                  onChange={handleDestinationChange}
-                >
-                  {destinations.map((dest) => (
-                    <MenuItem key={dest.value} value={dest.value}>
-                      {dest.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Time Range</InputLabel>
-                <Select
-                  value={timeRange}
-                  label="Time Range"
-                  onChange={handleTimeRangeChange}
-                >
-                  {timeRanges.map((range) => (
-                    <MenuItem key={range.value} value={range.value}>
-                      {range.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box display="flex" gap={1} flexWrap="wrap">
-                <Chip label="Real-time Updates" color="success" size="small" />
-                <Chip
-                  label="Predictive Analytics"
-                  color="primary"
-                  size="small"
-                />
-                <Chip
-                  label="Resource Optimization"
-                  color="secondary"
-                  size="small"
-                />
+        <Grid container spacing={3}>
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Total Revenue"
+              value={`$${parseFloat(
+                overview.totalRevenue || 0
+              ).toLocaleString()}`}
+              subtitle={`${overview.revenueGrowth}% vs previous period`}
+              trend={parseFloat(overview.revenueGrowth || 0)}
+              icon={<AttachMoney sx={{ color: "#48d9f3", fontSize: 32 }} />}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Total Bookings"
+              value={overview.totalBookings || 0}
+              subtitle={`Avg $${parseFloat(
+                overview.avgBookingValue || 0
+              ).toFixed(2)} per booking`}
+              icon={<BookOnline sx={{ color: "#48d9f3", fontSize: 32 }} />}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Active Destinations"
+              value={overview.activeDestinations || 0}
+              subtitle={`${overview.avgOccupancy}% avg occupancy`}
+              icon={<Place sx={{ color: "#48d9f3", fontSize: 32 }} />}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <StatCard
+              title="Average Rating"
+              value={overview.avgRating || "0.0"}
+              subtitle="Overall satisfaction"
+              icon={<Star sx={{ color: "#48d9f3", fontSize: 32 }} />}
+            />
+          </Grid>
+
+          <Grid item xs={12} lg={8}>
+            <Paper className={classes.contentPaper}>
+              <Typography variant="h6" className={classes.sectionTitle}>
+                Revenue Trend
+              </Typography>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={revenueChart || []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#bdd1d4"
+                    tickFormatter={(value) =>
+                      new Date(value).toLocaleDateString("en-NZ", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    }
+                  />
+                  <YAxis stroke="#bdd1d4" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#282f33",
+                      border: "1px solid #48d9f3",
+                      borderRadius: "4px",
+                      color: "#ffffff",
+                    }}
+                  />
+                  <Legend />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#48d9f3"
+                    strokeWidth={2}
+                    name="Revenue ($)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bookings"
+                    stroke="#4caf50"
+                    strokeWidth={2}
+                    name="Bookings"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} lg={4}>
+            <Paper className={classes.contentPaper}>
+              <Typography variant="h6" className={classes.sectionTitle}>
+                Top Destinations
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                {topDestinations && topDestinations.length > 0 ? (
+                  topDestinations.map((dest, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        p: 1.5,
+                        mb: 1,
+                        backgroundColor: "#374549",
+                        borderRadius: "4px",
+                        border: "1px solid rgba(72, 217, 243, 0.1)",
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#ffffff", fontWeight: 500 }}
+                        >
+                          {dest.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#82c2ce" }}>
+                          {dest.bookings} bookings • {dest.occupancy}% occupied
+                        </Typography>
+                      </Box>
+                      <Box display="flex" alignItems="center">
+                        <Star
+                          sx={{ color: "#ffc107", fontSize: 16, mr: 0.5 }}
+                        />
+                        <Typography variant="body2" sx={{ color: "#ffffff" }}>
+                          {dest.rating ? dest.rating.toFixed(1) : "N/A"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Typography variant="body2" sx={{ color: "#82c2ce" }}>
+                    No destination data available
+                  </Typography>
+                )}
               </Box>
-            </Grid>
+            </Paper>
           </Grid>
-        </Paper>
 
-        {/* Error Display */}
-        {error && (
-          <Alert severity="error" className={classes.errorAlert}>
-            {typeof error === "string"
-              ? error
-              : error.message ||
-                "An error occurred while loading analytics data"}
-          </Alert>
-        )}
-
-        {/* Tabs */}
-        <Paper className={classes.tabsPaper}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-          >
-            <Tab label="Overview" />
-            <Tab label="Demand Forecasting" />
-            <Tab label="Staffing Analytics" />
-            <Tab label="Resource Management" />
-            <Tab label="Performance Insights" />
-          </Tabs>
-        </Paper>
-
-        {/* Tab Content */}
-        {/* Overview Tab */}
-        {tabValue === 0 && (
-          <Grid container spacing={3}>
-            {/* Key Performance Cards */}
-            <Grid item xs={12} sm={6} lg={3}>
-              <PerformanceMetricCard
-                title="Total Visitors"
-                value="12,845"
-                change="+15.3%"
-                trend="up"
-                timeframe="vs last month"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} lg={3}>
-              <PerformanceMetricCard
-                title="Revenue"
-                value="$485,320"
-                change="+8.7%"
-                trend="up"
-                timeframe="vs last month"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} lg={3}>
-              <PerformanceMetricCard
-                title="Staff Efficiency"
-                value="87.5%"
-                change="+3.2%"
-                trend="up"
-                timeframe="optimal level"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} lg={3}>
-              <PerformanceMetricCard
-                title="Resource Utilization"
-                value="92.1%"
-                change="-2.1%"
-                trend="down"
-                timeframe="capacity usage"
-              />
-            </Grid>
-
-            {/* Charts */}
-            <Grid item xs={12} lg={8}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Visitor Trends & Revenue
-                </Typography>
-                <RevenueTrendChart
-                  data={demandForecast?.historical || []}
-                  height={300}
-                />
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} lg={4}>
-              <AlertsCard
-                alerts={[
-                  {
-                    type: "warning",
-                    message: "Peak season approaching - increase staff by 25%",
-                    priority: "high",
-                  },
-                  {
-                    type: "info",
-                    message: "New marketing campaign showing positive results",
-                    priority: "medium",
-                  },
-                  {
-                    type: "success",
-                    message: "Resource optimization target achieved",
-                    priority: "low",
-                  },
-                ]}
-              />
-            </Grid>
-
-            {/* Quick Insights */}
-            <Grid item xs={12} md={6}>
-              <DemandForecastCard forecast={demandForecast} />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <StaffingInsightCard insights={staffingInsights} />
-            </Grid>
-
-            {/* Stats NZ National Tourism Insights */}
-            <Grid item xs={12}>
-              <Paper
-                className={classes.contentPaper}
-                sx={{ p: 0, overflow: "hidden" }}
-              >
-                <StatsNZInsights />
-              </Paper>
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Demand Forecasting Tab */}
-        {tabValue === 1 && (
-          <Grid container spacing={3}>
+          {bookingTrend && bookingTrend.length > 0 && (
             <Grid item xs={12}>
               <Paper className={classes.contentPaper}>
                 <Typography variant="h6" className={classes.sectionTitle}>
-                  Demand Forecast Analysis
+                  Weekly Booking Trend
                 </Typography>
-                <DemandChart
-                  data={demandForecast?.forecast || []}
-                  height={400}
-                />
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={bookingTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374549" />
+                    <XAxis
+                      dataKey="week"
+                      stroke="#bdd1d4"
+                      tickFormatter={(value) =>
+                        new Date(value).toLocaleDateString("en-NZ", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      }
+                    />
+                    <YAxis stroke="#bdd1d4" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#282f33",
+                        border: "1px solid #48d9f3",
+                        borderRadius: "4px",
+                        color: "#ffffff",
+                      }}
+                    />
+                    <Legend />
+                    <Bar dataKey="bookings" fill="#48d9f3" name="Bookings" />
+                    <Bar dataKey="revenue" fill="#4caf50" name="Revenue ($)" />
+                  </BarChart>
+                </ResponsiveContainer>
               </Paper>
             </Grid>
-
-            <Grid item xs={12} md={6}>
-              <DemandForecastCard forecast={demandForecast} />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TrendAnalysisCard
-                trends={demandForecast?.trends || {}}
-                title="Demand Trends"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Staffing Analytics Tab */}
-        {tabValue === 2 && (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Staffing Requirements & Efficiency
-                </Typography>
-                <StaffingChart
-                  data={staffingInsights?.recommendations || []}
-                  height={400}
-                />
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <StaffingInsightCard insights={staffingInsights} />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <PerformanceMetricCard
-                title="Staff Productivity"
-                value="94.2%"
-                change="+5.8%"
-                trend="up"
-                timeframe="efficiency score"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Resource Management Tab */}
-        {tabValue === 3 && (
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Resource Allocation & Optimization
-                </Typography>
-                <ResourceChart
-                  data={resourceOptimization?.allocation || []}
-                  height={400}
-                />
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <ResourceOptimizationCard optimization={resourceOptimization} />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <TrendAnalysisCard
-                trends={resourceOptimization?.efficiency || {}}
-                title="Resource Efficiency Trends"
-              />
-            </Grid>
-          </Grid>
-        )}
-
-        {/* Performance Insights Tab */}
-        {tabValue === 4 && (
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={3}>
-              <PerformanceMetricCard
-                title="Visitor Satisfaction"
-                value="4.7/5.0"
-                change="+0.3"
-                trend="up"
-                timeframe="rating score"
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <PerformanceMetricCard
-                title="Booking Conversion"
-                value="23.8%"
-                change="+2.1%"
-                trend="up"
-                timeframe="conversion rate"
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <PerformanceMetricCard
-                title="Average Stay"
-                value="3.2 days"
-                change="+0.4"
-                trend="up"
-                timeframe="duration"
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <PerformanceMetricCard
-                title="Repeat Visitors"
-                value="34.5%"
-                change="+1.8%"
-                trend="up"
-                timeframe="return rate"
-              />
-            </Grid>
-
-            <Grid item xs={12} lg={8}>
-              <Paper className={classes.contentPaper}>
-                <Typography variant="h6" className={classes.sectionTitle}>
-                  Peak Season Predictions
-                </Typography>
-                <PeakSeasonChart
-                  data={peakSeasons?.predictions || []}
-                  height={350}
-                />
-              </Paper>
-            </Grid>
-
-            <Grid item xs={12} lg={4}>
-              <PeakSeasonAnalyticsCard peakSeasons={peakSeasons} />
-            </Grid>
-          </Grid>
-        )}
+          )}
+        </Grid>
       </Box>
-    </Container>
+    </Box>
   );
 };
 
