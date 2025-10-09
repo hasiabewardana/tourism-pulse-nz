@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import recommendationService from "../../../util/recommendationService";
 import {
   Container,
   TextField,
@@ -24,7 +23,7 @@ import DestinationCard from "./DestinationCard";
 import DestinationModal from "./DestinationModal";
 import classes from "./DestinationList.module.css";
 
-function DestinationList({ filters: advancedFilters }) {
+function DestinationList() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [destinations, setDestinations] = useState([]);
@@ -51,36 +50,24 @@ function DestinationList({ filters: advancedFilters }) {
 
       const token = isAuthenticated ? localStorage.getItem("token") : null;
 
-      // If advanced filters are provided, use the filter endpoint
-      if (advancedFilters && Object.keys(advancedFilters).length > 0) {
-        const response = await recommendationService.filterDestinations(
-          advancedFilters
-        );
-        if (response.success) {
-          setDestinations(response.destinations);
-          setFilteredDestinations(response.destinations);
-        }
-      } else {
-        // Otherwise use the regular endpoint
-        const params = {};
-        if (selectedStatus !== "All") params.status = selectedStatus;
-        if (selectedAvailability !== "All")
-          params.availability = selectedAvailability;
-        if (selectedDate) params.date = selectedDate;
+      const params = {};
+      if (selectedStatus !== "All") params.status = selectedStatus;
+      if (selectedAvailability !== "All")
+        params.availability = selectedAvailability;
+      if (selectedDate) params.date = selectedDate;
 
-        const apiUrl = isAuthenticated
-          ? "http://localhost:3000/dest/api/v1/destinations"
-          : "http://localhost:3000/dest/api/v1/destinations/public";
+      const apiUrl = isAuthenticated
+        ? "http://localhost:3000/dest/api/v1/destinations"
+        : "http://localhost:3000/dest/api/v1/destinations/public";
 
-        const config = {
-          params,
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        };
+      const config = {
+        params,
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      };
 
-        const response = await axios.get(apiUrl, config);
-        setDestinations(response.data);
-        applySearchAndSort(response.data);
-      }
+      const response = await axios.get(apiUrl, config);
+      setDestinations(response.data);
+      applySearchAndSort(response.data);
     } catch (error) {
       console.error("Error fetching destinations:", error);
       const errorMessage =
@@ -201,13 +188,11 @@ function DestinationList({ filters: advancedFilters }) {
 
   useEffect(() => {
     fetchDestinations();
-  }, [selectedStatus, selectedAvailability, selectedDate, advancedFilters]);
+  }, [selectedStatus, selectedAvailability, selectedDate]);
 
   useEffect(() => {
-    if (!advancedFilters || Object.keys(advancedFilters).length === 0) {
-      applySearchAndSort(destinations);
-    }
-  }, [searchTerm, sortBy, selectedRegion, destinations, advancedFilters]);
+    applySearchAndSort(destinations);
+  }, [searchTerm, sortBy, selectedRegion, destinations]);
 
   if (loading) {
     return (

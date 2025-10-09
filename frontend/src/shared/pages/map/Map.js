@@ -903,10 +903,6 @@ function Map() {
     setCurrentLayer(layerType);
   }, []);
 
-  const handleDrawerToggle = useCallback(() => {
-    setDrawerOpen(!drawerOpen);
-  }, [drawerOpen]);
-
   // Map ready handler
   const handleMapReady = useCallback((map) => {
     setMapInstance(map);
@@ -1033,23 +1029,6 @@ function Map() {
                 }}
               >
                 <LayersIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Advanced Filters">
-              <IconButton
-                onClick={handleDrawerToggle}
-                className={classes.actionButton}
-                sx={{
-                  bgcolor: drawerOpen ? "#48d9f3" : "#374549",
-                  color: drawerOpen ? "#282f33" : "#48d9f3",
-                  border: "1px solid #48d9f3",
-                  "&:hover": {
-                    bgcolor: "#48d9f3",
-                    color: "#282f33",
-                  },
-                }}
-              >
-                <FilterIcon />
               </IconButton>
             </Tooltip>
             {routeCoordinates.length > 0 && (
