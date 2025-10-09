@@ -36,6 +36,7 @@ function Navigation() {
       { to: "/operator/offers", label: "My Offers" },
       { to: "/operator/bookings", label: " My Bookings" },
       { to: "/operator/analytics", label: "Analytics" },
+      { to: "/contact", label: "Contact" },
       { to: "/logout", label: "Logout" },
     ],
     admin: [
