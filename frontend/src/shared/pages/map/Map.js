@@ -101,18 +101,6 @@ const MAP_LAYERS = {
   },
 };
 
-// Destination categories for enhanced filtering
-const DESTINATION_CATEGORIES = [
-  "Adventure & Sports",
-  "Cultural & Heritage",
-  "Nature & Wildlife",
-  "Food & Wine",
-  "Urban Attractions",
-  "Beaches & Coastal",
-  "Mountains & Hiking",
-  "Family-Friendly",
-];
-
 // Utility functions
 const isValidCoordinate = (lat, lon) => {
   return (
@@ -345,12 +333,6 @@ function Map() {
   const [selectedAvailability, setSelectedAvailability] = useState("All");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sortBy, setSortBy] = useState("Name (A-Z)");
-
-  // Enhanced filtering state
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [priceRange, setPriceRange] = useState([0, 500]);
-  const [ratingFilter, setRatingFilter] = useState(0);
-  const [radiusFilter, setRadiusFilter] = useState(50);
 
   // Map display state
   const [currentLayer, setCurrentLayer] = useState("street");
@@ -748,36 +730,6 @@ function Map() {
           );
         }
 
-        // Apply category filter
-        if (selectedCategory !== "All") {
-          filtered = filtered.filter(
-            (dest) => dest.category === selectedCategory
-          );
-        }
-
-        // Apply rating filter
-        if (ratingFilter > 0) {
-          filtered = filtered.filter(
-            (dest) => (dest.rating || 0) >= ratingFilter
-          );
-        }
-
-        // Apply radius filter if user location is available
-        if (userLocation && radiusFilter < 50) {
-          filtered = filtered.filter((dest) => {
-            if (dest.latitude && dest.longitude) {
-              const distance = calculateDistance(
-                userLocation.lat,
-                userLocation.lon,
-                parseFloat(dest.latitude),
-                parseFloat(dest.longitude)
-              );
-              return distance <= radiusFilter;
-            }
-            return true;
-          });
-        }
-
         // Apply sorting
         switch (sortBy) {
           case "Name (A-Z)":
@@ -877,26 +829,6 @@ function Map() {
     setSortBy("Name (A-Z)");
     setSearchTerm("");
     setSearchInputValue("");
-    setSelectedCategory("All");
-    setPriceRange([0, 500]);
-    setRatingFilter(0);
-    setRadiusFilter(50);
-  }, []);
-
-  const handleCategoryChange = useCallback((e) => {
-    setSelectedCategory(e.target.value);
-  }, []);
-
-  const handlePriceRangeChange = useCallback((event, newValue) => {
-    setPriceRange(newValue);
-  }, []);
-
-  const handleRatingFilterChange = useCallback((event, newValue) => {
-    setRatingFilter(newValue);
-  }, []);
-
-  const handleRadiusFilterChange = useCallback((event, newValue) => {
-    setRadiusFilter(newValue);
   }, []);
 
   const handleLayerChange = useCallback((layerType) => {
@@ -944,18 +876,6 @@ function Map() {
       applySearchAndSort(destinations);
     }
   }, [destinations, applySearchAndSort]);
-
-  // Update the applySearchAndSort dependency array
-  const applySearchAndSortMemo = useCallback(applySearchAndSort, [
-    debouncedSearchTerm,
-    sortBy,
-    geocodeDestination,
-    mapInstance,
-    selectedCategory,
-    ratingFilter,
-    userLocation,
-    radiusFilter,
-  ]);
 
   // Clean up expired geocoding cache entries on mount
   useEffect(() => {
@@ -1052,69 +972,6 @@ function Map() {
             )}
           </Box>
         </Box>
-        {/* Enhanced Filters Section */}
-        <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12}>
-            <Typography variant="h6" color="white" gutterBottom>
-              Enhanced Search & Filters
-            </Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select value={selectedCategory} onChange={handleCategoryChange}>
-                <MenuItem value="All">All Categories</MenuItem>
-                {DESTINATION_CATEGORIES.map((category) => (
-                  <MenuItem key={category} value={category}>
-                    {category}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Box>
-              <Typography variant="body2" color="white" gutterBottom>
-                Minimum Rating: {ratingFilter} stars
-              </Typography>
-              <Slider
-                value={ratingFilter}
-                onChange={handleRatingFilterChange}
-                min={0}
-                max={5}
-                step={0.5}
-                marks={[
-                  { value: 0, label: "Any" },
-                  { value: 2.5, label: "2.5+" },
-                  { value: 5, label: "5" },
-                ]}
-                sx={{ color: "white" }}
-              />
-            </Box>
-          </Grid>
-          {userLocation && (
-            <Grid item xs={12} md={6}>
-              <Box>
-                <Typography variant="body2" color="white" gutterBottom>
-                  Radius: {radiusFilter === 50 ? "All" : `${radiusFilter} km`}
-                </Typography>
-                <Slider
-                  value={radiusFilter}
-                  onChange={handleRadiusFilterChange}
-                  min={1}
-                  max={50}
-                  step={1}
-                  marks={[
-                    { value: 1, label: "1km" },
-                    { value: 25, label: "25km" },
-                    { value: 50, label: "All" },
-                  ]}
-                  sx={{ color: "white" }}
-                />
-              </Box>
-            </Grid>
-          )}
-        </Grid>
 
         {/* Basic Filters/Search mirror Destinations.js */}
         <Grid container spacing={2} className={classes.filtersContainer}>
@@ -1164,7 +1021,7 @@ function Map() {
               loadingText="Loading destinations..."
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid item xs={12} sm={6} md={2} lg={1.5}>
             <FormControl fullWidth>
               <InputLabel>Sort By</InputLabel>
               <Select value={sortBy} onChange={handleSortChange}>
@@ -1179,8 +1036,8 @@ function Map() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
+          <Grid container spacing={2} sx={{ mt: 0 }}>
+            <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select value={selectedStatus} onChange={handleStatusChange}>
@@ -1190,7 +1047,7 @@ function Map() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Availability</InputLabel>
                 <Select
@@ -1203,7 +1060,7 @@ function Map() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid item xs={12} sm={6} md={3}>
               <DatePicker
                 label="Select Date"
                 value={selectedDate}
@@ -1211,7 +1068,7 @@ function Map() {
                 slotProps={{ textField: { fullWidth: true } }}
               />
             </Grid>
-            <Grid item xs={12} md={3} lg={2}>
+            <Grid item xs={12} sm={6} md={3}>
               <Button
                 variant="outlined"
                 onClick={handleResetFilters}
