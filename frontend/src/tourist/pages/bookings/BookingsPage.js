@@ -26,14 +26,16 @@ function BookingsPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [activeBookings, setActiveBookings] = useState([]);
+  const [expiredBookings, setExpiredBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedViewMode, setSelectedViewMode] = useState("Upcoming");
+  const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [sortBy, setSortBy] = useState("Booking Date (Asc)");
+  const [sortBy, setSortBy] = useState("Booking Date (Desc)");
   const [searchTerm, setSearchTerm] = useState("");
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
@@ -76,21 +78,27 @@ function BookingsPage() {
       const reviews = reviewsRes.data;
       const reviewedBookingIds = new Set(reviews.map((r) => r.booking_id));
 
-      setBookings(
-        data.map((b) => ({
-          id: b.booking_id,
-          bookingDate: b.booking_date,
-          visitorCount: b.visitor_count,
-          status: b.status,
-          offerName: b.offer?.name || "",
-          destinationId: b.offer?.destination_id || null,
-          offer: b.offer || {
-            name: b.offerName,
-            description: "No description",
-          },
-          hasReview: reviewedBookingIds.has(b.booking_id),
-        }))
-      );
+      const now = new Date();
+      const allBookings = data.map((b) => ({
+        id: b.booking_id,
+        bookingDate: b.booking_date,
+        visitorCount: b.visitor_count,
+        status: b.status,
+        offerName: b.offer_name || "",
+        destinationId: b.destination_id || null,
+        offer: {
+          name: b.offer_name || "",
+          description: b.offer_description || "No description",
+        },
+        hasReview: reviewedBookingIds.has(b.booking_id),
+      }));
+
+      const active = allBookings.filter((b) => new Date(b.bookingDate) >= now);
+      const expired = allBookings.filter((b) => new Date(b.bookingDate) < now);
+
+      setBookings(allBookings);
+      setActiveBookings(active);
+      setExpiredBookings(expired);
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Failed to fetch bookings"
@@ -104,6 +112,8 @@ function BookingsPage() {
     applyFiltersAndSort();
   }, [
     bookings,
+    activeBookings,
+    expiredBookings,
     selectedViewMode,
     selectedStatus,
     startDate,
@@ -114,19 +124,19 @@ function BookingsPage() {
 
   const applyFiltersAndSort = () => {
     const now = new Date();
-    let filtered = [...bookings];
+    let sourceData = [];
 
+    // Select which bookings to filter based on view mode
     if (selectedViewMode === "Upcoming") {
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date >= now && !isNaN(date);
-      });
+      sourceData = [...activeBookings];
     } else if (selectedViewMode === "Expired") {
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date < now && !isNaN(date);
-      });
+      sourceData = [...expiredBookings];
+    } else {
+      // For "All", we'll handle this differently in the render
+      return;
     }
+
+    let filtered = sourceData;
 
     if (selectedStatus !== "All") {
       filtered = filtered.filter(
@@ -185,11 +195,11 @@ function BookingsPage() {
   };
 
   const handleResetFilters = () => {
-    setSelectedViewMode("Upcoming");
+    setSelectedViewMode("All");
     setSelectedStatus("All");
     setStartDate(null);
     setEndDate(null);
-    setSortBy("Booking Date (Asc)");
+    setSortBy("Booking Date (Desc)");
     setSearchTerm("");
   };
 
@@ -300,7 +310,57 @@ function BookingsPage() {
           </Grid>
         </Grid>
 
-        <BookingList bookings={filteredBookings} onRefresh={fetchBookings} />
+        {selectedViewMode === "All" ? (
+          <>
+            {activeBookings.length > 0 && (
+              <div className={classes.bookingsSection}>
+                <Typography
+                  variant="h5"
+                  className={classes.sectionTitle}
+                  sx={{ mt: 4, mb: 2, color: "#ffffff", fontWeight: 600 }}
+                >
+                  Active Bookings
+                </Typography>
+                <BookingList
+                  bookings={activeBookings}
+                  onRefresh={fetchBookings}
+                />
+              </div>
+            )}
+
+            {expiredBookings.length > 0 && (
+              <div className={classes.bookingsSection}>
+                <Typography
+                  variant="h5"
+                  className={classes.sectionTitle}
+                  sx={{ mt: 4, mb: 2, color: "#bdd1d4", fontWeight: 600 }}
+                >
+                  Booking History
+                </Typography>
+                <BookingList
+                  bookings={expiredBookings}
+                  onRefresh={fetchBookings}
+                />
+              </div>
+            )}
+
+            {activeBookings.length === 0 && expiredBookings.length === 0 && (
+              <Alert
+                severity="info"
+                sx={{ mt: 3, maxWidth: "1200px", width: "100%" }}
+              >
+                No bookings found.
+              </Alert>
+            )}
+          </>
+        ) : (
+          <div className={classes.bookingsSection}>
+            <BookingList
+              bookings={filteredBookings}
+              onRefresh={fetchBookings}
+            />
+          </div>
+        )}
       </Container>
     </LocalizationProvider>
   );

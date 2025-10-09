@@ -46,12 +46,29 @@ function BookingCard({ booking, onRefresh }) {
     onRefresh();
   };
 
-  const isEditable = booking.status !== "confirmed";
-  const canReview = booking.status === "confirmed" && !booking.hasReview;
+  const bookingDate = new Date(booking.bookingDate);
+  const isExpired = bookingDate < new Date();
+  const isEditable = booking.status !== "confirmed" && !isExpired;
+  const canReview =
+    booking.status === "confirmed" && !booking.hasReview && !isExpired;
 
   return (
-    <Card className={classes.card}>
+    <Card
+      className={classes.card}
+      sx={{
+        opacity: isExpired ? 0.7 : 1,
+        backgroundColor: isExpired ? "#f5f5f5" : "white",
+      }}
+    >
       <CardContent className={classes.cardContent}>
+        {isExpired && (
+          <Chip
+            label="EXPIRED"
+            color="default"
+            size="small"
+            sx={{ mb: 1, backgroundColor: "#9e9e9e", color: "white" }}
+          />
+        )}
         <Typography variant="h5" className={classes.cardTitle}>
           {booking.offerName}
         </Typography>

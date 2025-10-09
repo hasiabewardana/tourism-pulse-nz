@@ -12,12 +12,22 @@ export const getAllBookings = async () => {
 export const getBookingsByUserId = async (userId: number) => {
   const result = await query(
     `SELECT b.*, o.name as offer_name, o.description as offer_description, 
-     o.destination_id, d.name as destination_name
+     oi.destination_id, d.name as destination_name,
+     CASE 
+       WHEN b.booking_date < CURRENT_DATE THEN 'expired'
+       ELSE 'active'
+     END as booking_status
      FROM dest.bookings b
      LEFT JOIN dest.offers o ON b.offer_id = o.offer_id
-     LEFT JOIN dest.destinations d ON o.destination_id = d.destination_id
+     LEFT JOIN dest.offer_items oi ON o.offer_id = oi.offer_id
+     LEFT JOIN dest.destinations d ON oi.destination_id = d.destination_id
      WHERE b.user_id = $1 
-     ORDER BY b.created_at DESC`,
+     ORDER BY 
+       CASE 
+         WHEN b.booking_date < CURRENT_DATE THEN 1
+         ELSE 0
+       END,
+       b.booking_date DESC`,
     [userId]
   );
   return result;
