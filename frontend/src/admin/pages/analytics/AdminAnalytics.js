@@ -50,7 +50,7 @@ const AdminAnalytics = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:3000/analytics-service/api/admin/dashboard?days=${days}`,
+        `http://localhost:3000/analytics/api/admin/dashboard?days=${days}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

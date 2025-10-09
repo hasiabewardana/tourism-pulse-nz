@@ -17,7 +17,7 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
         .collection("booking_analytics")
         .find({
           operator_id: operatorIdNum,
-          date: { $gte: startDate },
+          booking_date: { $gte: startDate },
         })
         .toArray(),
 
@@ -30,7 +30,7 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
         .collection("revenue_metrics")
         .find({
           operator_id: operatorIdNum,
-          date: { $gte: startDate },
+          revenue_date: { $gte: startDate },
         })
         .toArray(),
     ]);
@@ -40,7 +40,7 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
       0
     );
     const totalBookings = bookings.reduce(
-      (sum: number, b: any) => sum + (b.booking_count || 0),
+      (sum: number, b: any) => sum + (b.total_bookings || 0),
       0
     );
     const avgRating =
@@ -53,7 +53,7 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
 
     const revenueByDate = revenue.reduce(
       (acc: Record<string, number>, r: any) => {
-        const dateKey = r.date.toISOString().split("T")[0];
+        const dateKey = r.revenue_date.toISOString().split("T")[0];
         acc[dateKey] = (acc[dateKey] || 0) + (r.total_revenue || 0);
         return acc;
       },
@@ -70,15 +70,15 @@ export const getOperatorDashboard = async (req: Request, res: Response) => {
       )
       .slice(0, 5)
       .map((d: any) => ({
-        name: d.destination_name,
+        name: d.name || d.destination_name,
         bookings: d.total_bookings || 0,
         revenue: d.total_revenue || 0,
       }));
 
     const bookingsByDate = bookings.reduce(
       (acc: Record<string, number>, b: any) => {
-        const dateKey = b.date.toISOString().split("T")[0];
-        acc[dateKey] = (acc[dateKey] || 0) + (b.booking_count || 0);
+        const dateKey = b.booking_date.toISOString().split("T")[0];
+        acc[dateKey] = (acc[dateKey] || 0) + (b.total_bookings || 0);
         return acc;
       },
       {} as Record<string, number>
@@ -123,12 +123,12 @@ export const getAdminDashboard = async (req: Request, res: Response) => {
     const [bookings, revenue, systemMetrics] = await Promise.all([
       db
         .collection("booking_analytics")
-        .find({ date: { $gte: startDate } })
+        .find({ booking_date: { $gte: startDate } })
         .toArray(),
 
       db
         .collection("revenue_metrics")
-        .find({ date: { $gte: startDate } })
+        .find({ revenue_date: { $gte: startDate } })
         .toArray(),
 
       db
@@ -144,19 +144,19 @@ export const getAdminDashboard = async (req: Request, res: Response) => {
       0
     );
     const totalBookings = bookings.reduce(
-      (sum: number, b: any) => sum + (b.booking_count || 0),
+      (sum: number, b: any) => sum + (b.total_bookings || 0),
       0
     );
 
     const metrics = systemMetrics[0] || {
       total_operators: 0,
-      total_users: 0,
-      total_destinations: 0,
+      unique_customers: 0,
+      active_destinations: 0,
     };
 
     const revenueByDate = revenue.reduce(
       (acc: Record<string, number>, r: any) => {
-        const dateKey = r.date.toISOString().split("T")[0];
+        const dateKey = r.revenue_date.toISOString().split("T")[0];
         acc[dateKey] = (acc[dateKey] || 0) + (r.total_revenue || 0);
         return acc;
       },
@@ -169,8 +169,8 @@ export const getAdminDashboard = async (req: Request, res: Response) => {
 
     const bookingsByDate = bookings.reduce(
       (acc: Record<string, number>, b: any) => {
-        const dateKey = b.date.toISOString().split("T")[0];
-        acc[dateKey] = (acc[dateKey] || 0) + (b.booking_count || 0);
+        const dateKey = b.booking_date.toISOString().split("T")[0];
+        acc[dateKey] = (acc[dateKey] || 0) + (b.total_bookings || 0);
         return acc;
       },
       {} as Record<string, number>
@@ -210,7 +210,7 @@ export const getAdminDashboard = async (req: Request, res: Response) => {
           totalRevenue: Math.round(totalRevenue * 100) / 100,
           totalBookings,
           totalOperators: metrics.total_operators || 0,
-          totalUsers: metrics.total_users || 0,
+          totalUsers: metrics.unique_customers || 0,
         },
         revenueTrend,
         bookingsTrend,

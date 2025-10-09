@@ -48,7 +48,7 @@ const ManagerAnalytics = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:3000/analytics-service/api/operator/${userId}/dashboard?days=${days}`,
+        `http://localhost:3000/analytics/api/operator/${userId}/dashboard?days=${days}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
