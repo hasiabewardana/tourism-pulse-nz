@@ -85,6 +85,7 @@ function BookingsPage() {
         visitorCount: b.visitor_count,
         status: b.status,
         offerName: b.offer_name || "",
+        offerId: b.offer_id || null,
         destinationId: b.destination_id || null,
         offer: {
           name: b.offer_name || "",
@@ -93,8 +94,14 @@ function BookingsPage() {
         hasReview: reviewedBookingIds.has(b.booking_id),
       }));
 
-      const active = allBookings.filter((b) => new Date(b.bookingDate) >= now);
-      const expired = allBookings.filter((b) => new Date(b.bookingDate) < now);
+      const active = allBookings.filter((b) => {
+        const bookingDate = new Date(b.bookingDate);
+        return bookingDate > now;
+      });
+      const expired = allBookings.filter((b) => {
+        const bookingDate = new Date(b.bookingDate);
+        return bookingDate <= now;
+      });
 
       setBookings(allBookings);
       setActiveBookings(active);

@@ -16,9 +16,19 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import classes from "./BookingForm.module.css"; // New CSS module for theme
 
 function BookingForm({ offer, booking, onSubmit, onCancel }) {
+  const getInitialDate = () => {
+    if (booking?.bookingDate) {
+      const date = new Date(booking.bookingDate);
+      return date.toISOString();
+    }
+    if (offer?.available_from) {
+      return offer.available_from;
+    }
+    return new Date().toISOString();
+  };
+
   const [formData, setFormData] = useState({
-    bookingDate:
-      booking?.bookingDate || offer?.available_from || new Date().toISOString(),
+    bookingDate: getInitialDate(),
     visitorCount: booking?.visitorCount || 1,
     status: booking?.status || "pending",
   });
@@ -66,9 +76,30 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
         <DateTimePicker
           label="Booking Date & Time"
           value={new Date(formData.bookingDate)}
-          onChange={(newValue) =>
-            handleChange("bookingDate", newValue.toISOString())
-          }
+          onChange={(newValue) => {
+            if (newValue) {
+              const year = newValue.getFullYear();
+              const month = String(newValue.getMonth() + 1).padStart(2, "0");
+              const day = String(newValue.getDate()).padStart(2, "0");
+              const hours = String(newValue.getHours()).padStart(2, "0");
+              const minutes = String(newValue.getMinutes()).padStart(2, "0");
+              const seconds = String(newValue.getSeconds()).padStart(2, "0");
+              const milliseconds = String(newValue.getMilliseconds()).padStart(
+                3,
+                "0"
+              );
+              const timezoneOffset = -newValue.getTimezoneOffset();
+              const offsetHours = String(
+                Math.floor(Math.abs(timezoneOffset) / 60)
+              ).padStart(2, "0");
+              const offsetMinutes = String(
+                Math.abs(timezoneOffset) % 60
+              ).padStart(2, "0");
+              const offsetSign = timezoneOffset >= 0 ? "+" : "-";
+              const isoString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
+              handleChange("bookingDate", isoString);
+            }
+          }}
           minDateTime={new Date(offer.available_from)}
           maxDateTime={new Date(offer.available_to)}
           slotProps={{
@@ -97,24 +128,6 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
           inputProps={{ min: 1, max: offer.max_slots }}
           className={classes.textField}
         />
-        {booking && (
-          <FormControl
-            fullWidth
-            margin="normal"
-            className={classes.formControl}
-          >
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              disabled={booking.status === "confirmed"} // Cannot change if confirmed
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-            </Select>
-          </FormControl>
-        )}
         <Box
           sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}
         >

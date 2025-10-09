@@ -61,11 +61,10 @@ export const getUserBookings = async (req: Request, res: Response) => {
       booking_date: booking.booking_date,
       visitor_count: booking.visitor_count,
       status: booking.status,
-      offer: {
-        name: booking.offer_name,
-        description: booking.offer_description,
-        destination_id: booking.destination_id,
-      },
+      offer_id: booking.offer_id,
+      offer_name: booking.offer_name,
+      offer_description: booking.offer_description,
+      destination_id: booking.destination_id,
     }));
 
     res.json(enrichedBookings);
