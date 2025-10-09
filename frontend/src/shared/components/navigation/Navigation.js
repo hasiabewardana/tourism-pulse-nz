@@ -18,6 +18,7 @@ function Navigation() {
     ],
     public: [
       { to: "/", label: "Home" },
+      { to: "/tourist", label: "Dashboard" },
       { to: "/destinations", label: "Destinations" },
       { to: "/map", label: "Map" },
       { to: "/tourist/offers", label: "Offers" },
@@ -28,6 +29,7 @@ function Navigation() {
     ],
     operator: [
       { to: "/", label: "Home" },
+      { to: "/operator", label: "Dashboard" },
       { to: "/destinations", label: "Destinations" },
       { to: "/operator/destinations", label: "My Destinations" },
       { to: "/map", label: "Map" },
@@ -38,6 +40,7 @@ function Navigation() {
     ],
     admin: [
       { to: "/", label: "Home" },
+      { to: "/admin", label: "Dashboard" },
       { to: "/destinations", label: "Destinations" },
       { to: "/admin/destination-management", label: "Destination Management" },
       { to: "/map", label: "Map" },
