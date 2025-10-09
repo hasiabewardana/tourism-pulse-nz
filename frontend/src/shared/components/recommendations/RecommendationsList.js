@@ -50,7 +50,10 @@ const RecommendationsList = ({ preferences, onDestinationClick }) => {
 
       const response = await recommendationService.getRecommendations(params);
 
+      console.log("Recommendations API Response:", response);
+
       if (response.success) {
+        console.log("First recommendation:", response.recommendations[0]);
         setRecommendations(response.recommendations);
       } else {
         setError("Failed to load recommendations");
@@ -144,10 +147,17 @@ const RecommendationsList = ({ preferences, onDestinationClick }) => {
 
       <Grid container spacing={3}>
         {recommendations.map((destination, index) => (
-          <Grid item xs={12} sm={6} md={4} key={destination.destination_id}>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            key={destination.destination_id}
+            sx={{ display: "flex" }}
+          >
             <Card
               sx={{
-                height: "100%",
+                width: "100%",
                 display: "flex",
                 flexDirection: "column",
                 position: "relative",
@@ -192,14 +202,38 @@ const RecommendationsList = ({ preferences, onDestinationClick }) => {
               <CardMedia
                 component="img"
                 height="200"
-                image={destination.photos?.[0] || "/tourism-pulse-nz-logo.png"}
+                image={
+                  Array.isArray(destination.photos) &&
+                  destination.photos.length > 0
+                    ? destination.photos[0]
+                    : "/tourism-pulse-nz-logo.png"
+                }
                 alt={destination.name}
                 sx={{ objectFit: "cover" }}
+                onError={(e) => {
+                  e.target.src = "/tourism-pulse-nz-logo.png";
+                }}
               />
 
-              <CardContent sx={{ flexGrow: 1 }}>
+              <CardContent
+                sx={{
+                  flexGrow: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  minHeight: 320,
+                }}
+              >
                 {/* Destination Name */}
-                <Typography variant="h6" component="h3" gutterBottom>
+                <Typography
+                  variant="h6"
+                  component="h3"
+                  gutterBottom
+                  sx={{
+                    minHeight: 64,
+                    display: "flex",
+                    alignItems: "flex-start",
+                  }}
+                >
                   {destination.name}
                 </Typography>
 
@@ -271,18 +305,34 @@ const RecommendationsList = ({ preferences, onDestinationClick }) => {
                   Why recommended:
                 </Typography>
                 <Box
-                  sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 0.5,
+                    minHeight: 70,
+                    mb: 1,
+                  }}
                 >
-                  {destination.reasons?.slice(0, 3).map((reason, idx) => (
+                  {destination.reasons && destination.reasons.length > 0 ? (
+                    destination.reasons.slice(0, 3).map((reason, idx) => (
+                      <Typography
+                        key={idx}
+                        variant="caption"
+                        color="primary"
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        • {reason}
+                      </Typography>
+                    ))
+                  ) : (
                     <Typography
-                      key={idx}
                       variant="caption"
-                      color="primary"
+                      color="text.secondary"
                       sx={{ display: "flex", alignItems: "center" }}
                     >
-                      • {reason}
+                      • Recommended based on your preferences
                     </Typography>
-                  ))}
+                  )}
                 </Box>
               </CardContent>
 

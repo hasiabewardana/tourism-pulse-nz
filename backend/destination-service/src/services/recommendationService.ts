@@ -93,7 +93,24 @@ export class RecommendationService {
       FROM dest.destinations d
       WHERE d.status IN ('active', 'Open')
     `;
-    return await query(sql, []);
+    const destinations = await query(sql, []);
+
+    // Parse photos field if it's a string
+    return destinations.map((dest: any) => ({
+      ...dest,
+      photos:
+        typeof dest.photos === "string"
+          ? JSON.parse(dest.photos)
+          : Array.isArray(dest.photos)
+          ? dest.photos
+          : [],
+      tags:
+        typeof dest.tags === "string"
+          ? JSON.parse(dest.tags)
+          : Array.isArray(dest.tags)
+          ? dest.tags
+          : [],
+    }));
   }
 
   /**
@@ -272,18 +289,35 @@ export class RecommendationService {
   ): string[] {
     const reasons: string[] = [];
 
+    // Rating-based reasons
     if (destination.rating >= 4.5) {
       reasons.push("Highly rated by visitors");
+    } else if (destination.rating >= 4.0) {
+      reasons.push("Well-rated destination");
+    } else if (destination.rating >= 3.5) {
+      reasons.push("Popular among tourists");
     }
 
+    // Category match
     if (request.preferences?.categories?.includes(destination.category)) {
       reasons.push(`Matches your interest in ${destination.category}`);
+    } else if (destination.category) {
+      reasons.push(`Great ${destination.category} experience`);
     }
 
+    // Region match
+    const destRegion =
+      destination.region || extractRegion(destination.location_name || "");
+    if (request.preferences?.regions?.includes(destRegion)) {
+      reasons.push(`In your preferred region: ${destRegion}`);
+    }
+
+    // Trending
     if (destination.trending_score > 50) {
       reasons.push("Trending destination");
     }
 
+    // Weather context
     if (
       request.context?.weatherCondition === "rainy" &&
       destination.is_indoor
@@ -291,14 +325,39 @@ export class RecommendationService {
       reasons.push("Perfect for rainy weather");
     }
 
+    // Price-related reasons
     if (
       destination.price_range === "free" ||
       destination.estimated_cost === 0
     ) {
       reasons.push("Free admission");
+    } else if (destination.price_range === "budget") {
+      reasons.push("Budget-friendly option");
     }
 
-    return reasons;
+    // Review count
+    if (destination.review_count > 100) {
+      reasons.push("Extensively reviewed by visitors");
+    }
+
+    // Family/accessibility features
+    if (destination.family_friendly) {
+      reasons.push("Family-friendly");
+    }
+    if (destination.accessibility_features) {
+      reasons.push("Accessible facilities");
+    }
+
+    // Ensure at least one reason
+    if (reasons.length === 0) {
+      reasons.push("Recommended based on your preferences");
+      if (destination.description) {
+        reasons.push("Unique experience worth exploring");
+      }
+    }
+
+    // Return top 3-4 reasons
+    return reasons.slice(0, 4);
   }
 
   /**
@@ -320,7 +379,24 @@ export class RecommendationService {
       LIMIT $2
     `;
 
-    return await query(sql, [destinationId, limit]);
+    const destinations = await query(sql, [destinationId, limit]);
+
+    // Parse JSON fields
+    return destinations.map((dest: any) => ({
+      ...dest,
+      photos:
+        typeof dest.photos === "string"
+          ? JSON.parse(dest.photos)
+          : Array.isArray(dest.photos)
+          ? dest.photos
+          : [],
+      tags:
+        typeof dest.tags === "string"
+          ? JSON.parse(dest.tags)
+          : Array.isArray(dest.tags)
+          ? dest.tags
+          : [],
+    }));
   }
 
   /**
@@ -347,6 +423,23 @@ export class RecommendationService {
     params.push(limit);
     sql += ` ORDER BY d.trending_score DESC, d.rating DESC LIMIT $${params.length}`;
 
-    return await query(sql, params);
+    const destinations = await query(sql, params);
+
+    // Parse JSON fields
+    return destinations.map((dest: any) => ({
+      ...dest,
+      photos:
+        typeof dest.photos === "string"
+          ? JSON.parse(dest.photos)
+          : Array.isArray(dest.photos)
+          ? dest.photos
+          : [],
+      tags:
+        typeof dest.tags === "string"
+          ? JSON.parse(dest.tags)
+          : Array.isArray(dest.tags)
+          ? dest.tags
+          : [],
+    }));
   }
 }
