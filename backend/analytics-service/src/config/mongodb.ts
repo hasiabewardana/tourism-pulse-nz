@@ -36,6 +36,13 @@ export const connectMongoDB = async () => {
   }
 };
 
+export const getMongoDb = () => {
+  if (!mongoose.connection.db) {
+    throw new Error("MongoDB not connected");
+  }
+  return mongoose.connection.db;
+};
+
 /**
  * Close MongoDB connection gracefully
  */

@@ -5,11 +5,9 @@ import { Server } from "ws";
 import http from "http";
 import dotenv from "dotenv";
 import { query } from "./services/db";
-import analyticsRoutes from "./routes/analyticsRoutes";
-import realAnalyticsRoutes from "./routes/realAnalyticsRoutes";
 import subscribeRoutes from "./routes/subscribeRoutes";
 import healthRoutes from "./routes/healthRoutes";
-import statsnzRoutes from "./routes/statsnzRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { URL } from "url";
 import { connectMongoDB } from "./config/mongodb";
 import { initializeScheduledJobs } from "./jobs/scheduledJobs";
@@ -143,10 +141,8 @@ wss.on("connection", (ws, req) => {
 
 // Mount routes
 app.use("/analytics-service/api", healthRoutes);
-app.use("/analytics-service/api", analyticsRoutes);
-app.use("/analytics-service/api", realAnalyticsRoutes);
+app.use("/analytics-service/api", dashboardRoutes);
 app.use("/analytics-service/api", subscribeRoutes);
-app.use("/analytics-service/api/statsnz", statsnzRoutes);
 
 // Global error handler
 app.use(

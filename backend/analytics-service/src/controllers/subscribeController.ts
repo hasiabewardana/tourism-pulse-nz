@@ -14,6 +14,7 @@ export const toggleSubscription = async (req: Request, res: Response) => {
     await toggleSubscriptionModel(operatorId, destinationId, subscribed);
     res.json({ success: true });
   } catch (err) {
+    console.error("Failed to update subscription:", err);
     res.status(500).json({ error: "Failed to update subscription" });
   }
 };
@@ -34,6 +35,7 @@ export const checkSubscription = async (req: Request, res: Response) => {
     );
     res.json({ subscribed });
   } catch (err) {
+    console.error("Failed to check subscription:", err);
     res.status(500).json({ error: "Failed to check subscription" });
   }
 };
