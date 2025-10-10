@@ -15,6 +15,7 @@ import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
 import OffersPage from "./tourist/pages/offers/OffersPage";
 import BookingsPage from "./tourist/pages/bookings/BookingsPage";
+import PendingPaymentsPage from "./tourist/pages/bookings/PendingPaymentsPage";
 import CheckoutPage from "./tourist/pages/CheckoutPage";
 import PaymentConfirmationPage from "./tourist/pages/PaymentConfirmationPage";
 import ManagerLayout from "./manager/pages/common/ManagerLayout";
@@ -79,17 +80,27 @@ const router = createBrowserRouter([
             loader: checkAuthLoader, // Protect the route
           },
           {
-            path: "bookings", // Added bookings route
+            path: "bookings",
             element: <BookingsPage />,
             loader: checkAuthLoader,
           },
           {
-            path: "bookings/:bookingId/checkout", // Checkout page
+            path: "pending-payments",
+            element: <PendingPaymentsPage />,
+            loader: checkAuthLoader,
+          },
+          {
+            path: "checkout/:bookingId",
             element: <CheckoutPage />,
             loader: checkAuthLoader,
           },
           {
-            path: "bookings/:bookingId/confirmation", // Payment confirmation
+            path: "bookings/:bookingId/checkout",
+            element: <CheckoutPage />,
+            loader: checkAuthLoader,
+          },
+          {
+            path: "bookings/:bookingId/confirmation",
             element: <PaymentConfirmationPage />,
             loader: checkAuthLoader,
           },

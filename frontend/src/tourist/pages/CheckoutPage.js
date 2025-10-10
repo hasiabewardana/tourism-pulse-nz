@@ -73,26 +73,61 @@ const CheckoutPage = () => {
 
         // Fetch booking
         const bookingResponse = await axios.get(
-          `${API_GATEWAY_URL}/destination/api/bookings/${bookingId}`,
+          `${API_GATEWAY_URL}/dest/api/v1/bookings/${bookingId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
+        console.log("Booking response:", bookingResponse.data);
         setBooking(bookingResponse.data);
 
-        // Fetch destination details
-        const destResponse = await axios.get(
-          `${API_GATEWAY_URL}/destination/api/destinations/${bookingResponse.data.destination_id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
+        // Try to load destination details for display, but it's optional
+        const destinationId = bookingResponse.data.destination_id;
+
+        if (destinationId) {
+          try {
+            const destResponse = await axios.get(
+              `${API_GATEWAY_URL}/dest/api/v1/destinations/${destinationId}`,
+              {
+                headers: { Authorization: `Bearer ${token}` },
+              }
+            );
+            setDestination(destResponse.data);
+          } catch (destErr) {
+            console.warn(
+              "Could not fetch destination details, proceeding with booking info only"
+            );
           }
-        );
-        setDestination(destResponse.data);
+        }
+
+        // Use booking's destination name as fallback if available
+        if (!destination && bookingResponse.data.destination_name) {
+          setDestination({
+            name: bookingResponse.data.destination_name,
+            region: "New Zealand",
+            image_url: null,
+          });
+        }
+
+        // Get price from either total_price or price field
+        const bookingPrice =
+          bookingResponse.data.total_price || bookingResponse.data.price;
+
+        // Check if booking has a valid price
+        if (!bookingPrice || parseFloat(bookingPrice) <= 0) {
+          setError(
+            "Booking does not have a valid price. Please contact support."
+          );
+          setLoading(false);
+          return;
+        }
 
         // Check if payment already exists
         if (bookingResponse.data.payment_status === "paid") {
           setPaymentStatus("completed");
           setError("This booking has already been paid.");
+          setLoading(false);
           return;
         }
 
@@ -102,10 +137,13 @@ const CheckoutPage = () => {
             `${PAYMENT_SERVICE_URL}/api/payments/create-intent`,
             {
               bookingId: parseInt(bookingId),
-              amount: parseFloat(bookingResponse.data.total_price),
+              amount: parseFloat(bookingPrice),
               currency: "nzd",
               metadata: {
-                destinationName: destResponse.data.name,
+                destinationName:
+                  destination?.name ||
+                  bookingResponse.data.destination_name ||
+                  "Unknown Destination",
                 bookingDate: bookingResponse.data.booking_date,
               },
             }
@@ -128,7 +166,7 @@ const CheckoutPage = () => {
                 `${PAYMENT_SERVICE_URL}/api/payments/create-intent`,
                 {
                   bookingId: parseInt(bookingId),
-                  amount: parseFloat(bookingResponse.data.total_price),
+                  amount: parseFloat(bookingPrice),
                   currency: "nzd",
                 }
               );
@@ -141,7 +179,7 @@ const CheckoutPage = () => {
               `${PAYMENT_SERVICE_URL}/api/payments/create-intent`,
               {
                 bookingId: parseInt(bookingId),
-                amount: parseFloat(bookingResponse.data.total_price),
+                amount: parseFloat(bookingPrice),
                 currency: "nzd",
               }
             );
@@ -165,7 +203,7 @@ const CheckoutPage = () => {
   const handlePaymentSuccess = () => {
     setPaymentStatus("completed");
     setTimeout(() => {
-      navigate(`/bookings/${bookingId}/confirmation`);
+      navigate(`/tourist/bookings/${bookingId}/confirmation`);
     }, 2000);
   };
 
@@ -195,7 +233,7 @@ const CheckoutPage = () => {
         </Alert>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate("/bookings")}
+          onClick={() => navigate("/tourist/bookings")}
           variant="outlined"
         >
           Back to Bookings
@@ -218,7 +256,7 @@ const CheckoutPage = () => {
           <Button
             variant="contained"
             size="large"
-            onClick={() => navigate("/bookings")}
+            onClick={() => navigate("/tourist/bookings")}
             sx={{ mt: 2 }}
           >
             View My Bookings
@@ -252,10 +290,10 @@ const CheckoutPage = () => {
       <Box mb={4}>
         <Button
           startIcon={<ArrowBack />}
-          onClick={() => navigate(`/bookings/${bookingId}`)}
+          onClick={() => navigate(`/tourist/bookings`)}
           sx={{ mb: 2 }}
         >
-          Back to Booking Details
+          Back to Bookings
         </Button>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Complete Your Payment
@@ -298,10 +336,18 @@ const CheckoutPage = () => {
                       {destination.region}, New Zealand
                     </Typography>
                   </Box>
+                  <Divider sx={{ my: 2 }} />
                 </>
               )}
 
-              <Divider sx={{ my: 2 }} />
+              {!destination && booking?.offer_name && (
+                <>
+                  <Typography variant="h6" gutterBottom>
+                    {booking.offer_name}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                </>
+              )}
 
               {booking && (
                 <>
@@ -324,8 +370,11 @@ const CheckoutPage = () => {
                   <Box display="flex" alignItems="center" gap={1} mb={2}>
                     <People fontSize="small" color="action" />
                     <Typography variant="body2">
-                      <strong>Guests:</strong> {booking.number_of_people}{" "}
-                      {booking.number_of_people === 1 ? "person" : "people"}
+                      <strong>Guests:</strong>{" "}
+                      {booking.visitor_count || booking.number_of_people}{" "}
+                      {(booking.visitor_count || booking.number_of_people) === 1
+                        ? "person"
+                        : "people"}
                     </Typography>
                   </Box>
 
@@ -345,10 +394,16 @@ const CheckoutPage = () => {
                   <Box>
                     <Box display="flex" justifyContent="space-between" mb={1}>
                       <Typography variant="body2" color="text.secondary">
-                        Base Price ({booking.number_of_people} guests)
+                        Base Price (
+                        {booking.visitor_count || booking.number_of_people}{" "}
+                        guests)
                       </Typography>
                       <Typography variant="body2">
-                        ${(booking.total_price * 0.9).toFixed(2)} NZD
+                        $
+                        {((booking.total_price || booking.price) * 0.9).toFixed(
+                          2
+                        )}{" "}
+                        NZD
                       </Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mb={1}>
@@ -356,7 +411,11 @@ const CheckoutPage = () => {
                         Service Fee
                       </Typography>
                       <Typography variant="body2">
-                        ${(booking.total_price * 0.05).toFixed(2)} NZD
+                        $
+                        {(
+                          (booking.total_price || booking.price) * 0.05
+                        ).toFixed(2)}{" "}
+                        NZD
                       </Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mb={2}>
@@ -364,7 +423,11 @@ const CheckoutPage = () => {
                         GST (15%)
                       </Typography>
                       <Typography variant="body2">
-                        ${(booking.total_price * 0.05).toFixed(2)} NZD
+                        $
+                        {(
+                          (booking.total_price || booking.price) * 0.05
+                        ).toFixed(2)}{" "}
+                        NZD
                       </Typography>
                     </Box>
 
@@ -384,7 +447,10 @@ const CheckoutPage = () => {
                           fontWeight="bold"
                           color="primary"
                         >
-                          ${parseFloat(booking.total_price).toFixed(2)}
+                          $
+                          {parseFloat(
+                            booking.total_price || booking.price
+                          ).toFixed(2)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           NZD
@@ -422,7 +488,7 @@ const CheckoutPage = () => {
               <Elements stripe={stripePromise} options={options}>
                 <PaymentForm
                   bookingId={bookingId}
-                  amount={booking?.total_price}
+                  amount={parseFloat(booking?.total_price || booking?.price)}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}
                 />

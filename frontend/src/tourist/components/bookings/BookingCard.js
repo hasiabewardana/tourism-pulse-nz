@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -11,18 +12,21 @@ import {
 } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
 import PeopleIcon from "@mui/icons-material/People";
+import PaymentIcon from "@mui/icons-material/Payment";
 import axios from "axios";
 import classes from "./BookingCard.module.css";
 import BookingForm from "./BookingForm";
 import ReviewDialog from "./ReviewDialog";
 
 function BookingCard({ booking, onRefresh }) {
+  const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [offerDetails, setOfferDetails] = useState(null);
   const [loadingOffer, setLoadingOffer] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const handleEditClick = () => {
     if (booking.status.toLowerCase() !== "pending") {
@@ -122,6 +126,33 @@ function BookingCard({ booking, onRefresh }) {
     onRefresh();
   };
 
+  const handlePayNow = async () => {
+    setPaymentLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const bookingResponse = await axios.get(
+        `http://localhost:3000/dest/api/v1/bookings/${booking.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (bookingResponse.data.payment_status === "paid") {
+        setAlertMessage("This booking has already been paid.");
+        setShowAlert(true);
+        setPaymentLoading(false);
+        return;
+      }
+
+      navigate(`/tourist/checkout/${booking.id}`);
+    } catch (err) {
+      console.error("Failed to initiate payment:", err);
+      setAlertMessage("Failed to initiate payment. Please try again.");
+      setShowAlert(true);
+      setPaymentLoading(false);
+    }
+  };
+
   const bookingDate = new Date(booking.bookingDate);
   const isExpired = bookingDate <= new Date();
   const isPending = booking.status.toLowerCase() === "pending";
@@ -130,6 +161,10 @@ function BookingCard({ booking, onRefresh }) {
   const canEdit = isPending && !isExpired;
   const canCancel = isPending && !isExpired;
   const canReview = isConfirmed && !booking.hasReview && !isExpired;
+  const needsPayment =
+    isPending &&
+    !isExpired &&
+    (!booking.paymentStatus || booking.paymentStatus === "unpaid");
 
   const statusLabel = isPending
     ? "Pending"
@@ -182,6 +217,19 @@ function BookingCard({ booking, onRefresh }) {
           </Box>
 
           <Box className={classes.actionButtons}>
+            {needsPayment && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handlePayNow}
+                className={classes.payButton}
+                disabled={paymentLoading}
+                size="small"
+                startIcon={<PaymentIcon />}
+              >
+                {paymentLoading ? "Loading..." : "Pay Now"}
+              </Button>
+            )}
             {canEdit && (
               <Button
                 variant="contained"

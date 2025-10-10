@@ -45,7 +45,18 @@ export const getBookingsByOperatorId = async (operatorId: number) => {
 // Find a booking by ID
 export const findBookingById = async (bookingId: number) => {
   const result = await query(
-    "SELECT * FROM dest.bookings WHERE booking_id = $1",
+    `SELECT b.*, 
+     COALESCE(b.destination_id, oi.destination_id) as destination_id,
+     o.name as offer_name,
+     o.price as offer_price,
+     d.name as destination_name,
+     COALESCE(b.price, o.price * b.visitor_count) as total_price
+     FROM dest.bookings b
+     LEFT JOIN dest.offers o ON b.offer_id = o.offer_id
+     LEFT JOIN dest.offer_items oi ON o.offer_id = oi.offer_id
+     LEFT JOIN dest.destinations d ON COALESCE(b.destination_id, oi.destination_id) = d.destination_id
+     WHERE b.booking_id = $1
+     LIMIT 1`,
     [bookingId]
   );
   return result[0] || null;

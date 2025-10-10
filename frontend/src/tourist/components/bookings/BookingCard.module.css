@@ -144,6 +144,19 @@
   background-color: #ab47bc !important;
 }
 
+.payButton {
+  background-color: #66bb6a !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  flex: 1;
+  min-width: 100px;
+}
+
+.payButton:hover {
+  background-color: #4caf50 !important;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;

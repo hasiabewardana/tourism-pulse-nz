@@ -47,17 +47,39 @@ const PaymentConfirmationPage = () => {
 
         // Fetch booking details
         const bookingResponse = await axios.get(
-          `${API_GATEWAY_URL}/destination/api/bookings/${bookingId}`,
+          `${API_GATEWAY_URL}/dest/api/v1/bookings/${bookingId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setBooking(bookingResponse.data);
 
-        // Fetch destination details
-        const destResponse = await axios.get(
-          `${API_GATEWAY_URL}/destination/api/destinations/${bookingResponse.data.destination_id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setDestination(destResponse.data);
+        // Try to fetch destination details if available
+        const destinationId = bookingResponse.data.destination_id;
+        if (destinationId) {
+          try {
+            const destResponse = await axios.get(
+              `${API_GATEWAY_URL}/dest/api/v1/destinations/${destinationId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setDestination(destResponse.data);
+          } catch (destErr) {
+            console.warn("Could not fetch destination details");
+            // Use fallback destination info from booking
+            if (bookingResponse.data.destination_name) {
+              setDestination({
+                name: bookingResponse.data.destination_name,
+                region: "New Zealand",
+                image_url: null,
+              });
+            }
+          }
+        } else if (bookingResponse.data.destination_name) {
+          // Use destination name from booking as fallback
+          setDestination({
+            name: bookingResponse.data.destination_name,
+            region: "New Zealand",
+            image_url: null,
+          });
+        }
 
         // Fetch payment details
         try {
@@ -272,7 +294,10 @@ const PaymentConfirmationPage = () => {
                       Subtotal
                     </Typography>
                     <Typography variant="body2">
-                      ${(parseFloat(booking.total_price) * 0.9).toFixed(2)}
+                      $
+                      {(
+                        parseFloat(booking.total_price || booking.price) * 0.9
+                      ).toFixed(2)}
                     </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" mb={1}>
@@ -280,7 +305,10 @@ const PaymentConfirmationPage = () => {
                       Service Fee
                     </Typography>
                     <Typography variant="body2">
-                      ${(parseFloat(booking.total_price) * 0.05).toFixed(2)}
+                      $
+                      {(
+                        parseFloat(booking.total_price || booking.price) * 0.05
+                      ).toFixed(2)}
                     </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" mb={2}>
@@ -288,7 +316,10 @@ const PaymentConfirmationPage = () => {
                       GST (15%)
                     </Typography>
                     <Typography variant="body2">
-                      ${(parseFloat(booking.total_price) * 0.05).toFixed(2)}
+                      $
+                      {(
+                        parseFloat(booking.total_price || booking.price) * 0.05
+                      ).toFixed(2)}
                     </Typography>
                   </Box>
 
@@ -303,7 +334,11 @@ const PaymentConfirmationPage = () => {
                       fontWeight="bold"
                       color="success.main"
                     >
-                      ${parseFloat(booking.total_price).toFixed(2)} NZD
+                      $
+                      {parseFloat(booking.total_price || booking.price).toFixed(
+                        2
+                      )}{" "}
+                      NZD
                     </Typography>
                   </Box>
 
@@ -367,7 +402,7 @@ const PaymentConfirmationPage = () => {
                 variant="contained"
                 fullWidth
                 startIcon={<Home />}
-                onClick={() => navigate("/bookings")}
+                onClick={() => navigate("/tourist/bookings")}
               >
                 View My Bookings
               </Button>

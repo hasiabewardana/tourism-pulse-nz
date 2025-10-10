@@ -141,6 +141,7 @@ export const updateBookingPaymentStatus = async (
 
   if (paymentStatus === "paid") {
     updates.push("paid_at = CURRENT_TIMESTAMP");
+    updates.push("status = 'confirmed'");
   }
 
   await query(

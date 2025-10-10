@@ -8,14 +8,17 @@ import {
   Card,
   CardContent,
   Avatar,
+  Badge,
 } from "@mui/material";
 import {
   LocationOn,
   Map as MapIcon,
   LocalOffer,
   BookOnline,
+  Payment,
 } from "@mui/icons-material";
 import { useAuth } from "../../../shared/context/AuthContext";
+import { usePendingPayments } from "../../hooks/usePendingPayments";
 import classes from "./TouristHome.module.css";
 
 const navigationCards = [
@@ -47,11 +50,19 @@ const navigationCards = [
     path: "/tourist/bookings",
     color: "#7b1fa2",
   },
+  {
+    title: "Pending Payments",
+    description: "Complete payment for your pending bookings",
+    icon: Payment,
+    path: "/tourist/pending-payments",
+    color: "#d32f2f",
+  },
 ];
 
 function TouristHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { count: pendingPaymentCount } = usePendingPayments();
 
   return (
     <Container maxWidth="lg" className={classes.touristContainer}>
@@ -108,9 +119,28 @@ function TouristHome() {
                       className={classes.iconWrapper}
                       sx={{ backgroundColor: card.color }}
                     >
-                      <IconComponent
-                        sx={{ fontSize: "3rem", color: "#ffffff" }}
-                      />
+                      {card.title === "Pending Payments" &&
+                      pendingPaymentCount > 0 ? (
+                        <Badge
+                          badgeContent={pendingPaymentCount}
+                          color="error"
+                          sx={{
+                            "& .MuiBadge-badge": {
+                              fontSize: "1rem",
+                              height: "24px",
+                              minWidth: "24px",
+                            },
+                          }}
+                        >
+                          <IconComponent
+                            sx={{ fontSize: "3rem", color: "#ffffff" }}
+                          />
+                        </Badge>
+                      ) : (
+                        <IconComponent
+                          sx={{ fontSize: "3rem", color: "#ffffff" }}
+                        />
+                      )}
                     </Box>
                     <Typography variant="h6" className={classes.navCardTitle}>
                       {card.title}

@@ -1,0 +1,126 @@
+.container {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  color: #bdc3c7;
+  margin-bottom: 1rem;
+}
+
+.emptyText {
+  color: #7f8c8d;
+  margin-bottom: 0.5rem;
+}
+
+.emptySubtext {
+  color: #95a5a6;
+}
+
+.grid {
+  margin-top: 1rem;
+}
+
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+  padding: 1rem;
+  display: flex;
+  justify-content: flex-end;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.statusChip {
+  font-weight: 600;
+}
+
+.offerName {
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.description {
+  margin-bottom: 1rem;
+  min-height: 40px;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.icon {
+  color: #4dd0e1;
+  font-size: 1.2rem;
+}
+
+.price {
+  font-weight: 700;
+  color: #27ae60;
+  font-size: 1.1rem;
+}
+
+.payButton {
+  margin-top: 1rem;
+  background-color: #27ae60;
+  text-transform: none;
+  font-weight: 600;
+  padding: 0.75rem;
+}
+
+.payButton:hover {
+  background-color: #229954;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}

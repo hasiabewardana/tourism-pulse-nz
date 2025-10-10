@@ -13,7 +13,9 @@ import {
   Select,
   MenuItem,
   Box,
+  Chip,
 } from "@mui/material";
+import { Payment as PaymentIcon } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -98,6 +100,7 @@ function BookingsPage() {
         offerName: b.offer_name || "",
         offerId: b.offer_id || null,
         destinationId: b.destination_id || null,
+        paymentStatus: b.payment_status || "unpaid",
         offer: {
           name: b.offer_name || "",
           description: b.offer_description || "No description",
@@ -260,12 +263,33 @@ function BookingsPage() {
       </Alert>
     );
 
+  const pendingPaymentCount = bookings.filter(
+    (b) =>
+      b.status === "pending" &&
+      (!b.paymentStatus || b.paymentStatus === "unpaid") &&
+      new Date(b.bookingDate) > new Date()
+  ).length;
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container className={classes.container}>
-        <Typography variant="h4" className={classes.title}>
-          My Bookings
-        </Typography>
+        <Box className={classes.headerContainer}>
+          <Typography variant="h4" className={classes.title}>
+            My Bookings
+          </Typography>
+          {pendingPaymentCount > 0 && (
+            <Chip
+              icon={<PaymentIcon />}
+              label={`${pendingPaymentCount} Pending Payment${
+                pendingPaymentCount > 1 ? "s" : ""
+              }`}
+              color="warning"
+              onClick={() => navigate("/tourist/pending-payments")}
+              className={classes.pendingChip}
+              clickable
+            />
+          )}
+        </Box>
 
         <Box className={classes.filterPanel}>
           <Box className={classes.topRow}>
