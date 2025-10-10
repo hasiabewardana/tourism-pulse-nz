@@ -59,13 +59,18 @@ function BookingCard({ booking, onRefresh }) {
 
   const handleEditSubmit = async (updatedData) => {
     const token = localStorage.getItem("token");
+    const bookingDate = new Date(updatedData.bookingDate).toISOString();
+
     const payload = {
-      booking_date: updatedData.bookingDate,
-      visitor_count: updatedData.visitorCount,
+      bookingDate: bookingDate,
+      visitorCount: updatedData.visitorCount,
       status: updatedData.status,
     };
+
+    console.log("Edit booking payload:", payload);
+
     try {
-      await axios.put(
+      const response = await axios.put(
         `http://localhost:3000/dest/api/v1/bookings/${booking.id}`,
         payload,
         {
@@ -75,18 +80,25 @@ function BookingCard({ booking, onRefresh }) {
           },
         }
       );
+      console.log("Booking updated successfully:", response.data);
       setShowEditModal(false);
       onRefresh();
     } catch (err) {
-      console.error("Failed to update booking:", err);
-      setAlertMessage("Failed to update booking. Please try again.");
+      console.error(
+        "Failed to update booking:",
+        err.response?.data || err.message
+      );
+      const errorMsg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Failed to update booking. Please try again.";
+      setAlertMessage(errorMsg);
       setShowAlert(true);
       setShowEditModal(false);
     }
   };
 
   const handleCancel = async () => {
-    // Only allow cancellation if status is pending
     if (booking.status.toLowerCase() !== "pending") {
       setAlertMessage(
         `This booking cannot be cancelled because it is already ${booking.status}.`
@@ -97,13 +109,16 @@ function BookingCard({ booking, onRefresh }) {
 
     if (window.confirm("Are you sure you want to cancel this booking?")) {
       const token = localStorage.getItem("token");
+
       const payload = {
-        booking_date: booking.bookingDate,
-        visitor_count: booking.visitorCount,
         status: "cancelled",
       };
+
+      console.log("Cancel booking payload:", payload);
+      console.log("Booking ID:", booking.id);
+
       try {
-        await axios.put(
+        const response = await axios.put(
           `http://localhost:3000/dest/api/v1/bookings/${booking.id}`,
           payload,
           {
@@ -113,10 +128,19 @@ function BookingCard({ booking, onRefresh }) {
             },
           }
         );
+        console.log("Booking cancelled successfully:", response.data);
         onRefresh();
       } catch (err) {
-        console.error("Failed to cancel booking:", err);
-        setAlertMessage("Failed to cancel booking. Please try again.");
+        console.error(
+          "Failed to cancel booking:",
+          err.response?.data || err.message
+        );
+        const errorMsg =
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.response?.data?.details ||
+          "Failed to cancel booking. Please try again.";
+        setAlertMessage(errorMsg);
         setShowAlert(true);
       }
     }
@@ -128,29 +152,25 @@ function BookingCard({ booking, onRefresh }) {
 
   const handlePayNow = async () => {
     setPaymentLoading(true);
-    try {
-      const token = localStorage.getItem("token");
-      const bookingResponse = await axios.get(
-        `http://localhost:3000/dest/api/v1/bookings/${booking.id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
 
-      if (bookingResponse.data.payment_status === "paid") {
-        setAlertMessage("This booking has already been paid.");
-        setShowAlert(true);
-        setPaymentLoading(false);
-        return;
-      }
+    const token = localStorage.getItem("token");
 
-      navigate(`/tourist/checkout/${booking.id}`);
-    } catch (err) {
-      console.error("Failed to initiate payment:", err);
-      setAlertMessage("Failed to initiate payment. Please try again.");
+    if (!token) {
+      setAlertMessage("Please log in to proceed with payment.");
       setShowAlert(true);
       setPaymentLoading(false);
+      return;
     }
+
+    if (!booking.id) {
+      console.error("Booking ID is missing:", booking);
+      setAlertMessage("Invalid booking. Please try again.");
+      setShowAlert(true);
+      setPaymentLoading(false);
+      return;
+    }
+
+    navigate(`/tourist/checkout/${booking.id}`);
   };
 
   const bookingDate = new Date(booking.bookingDate);

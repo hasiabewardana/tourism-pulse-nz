@@ -51,14 +51,19 @@ const CheckoutPage = () => {
   useEffect(() => {
     const initializeStripe = async () => {
       try {
+        console.log("Initializing Stripe...");
         const response = await axios.get(
           `${PAYMENT_SERVICE_URL}/api/payments/config`
         );
         const { publishableKey } = response.data;
+        console.log("Stripe initialized successfully");
         stripePromise = loadStripe(publishableKey);
       } catch (err) {
         console.error("Failed to load Stripe config:", err);
-        setError("Failed to initialize payment system");
+        console.error("Payment service may be unavailable");
+        setError(
+          "Payment system is currently unavailable. Please try again later."
+        );
       }
     };
     initializeStripe();
@@ -67,9 +72,23 @@ const CheckoutPage = () => {
   // Fetch booking details
   useEffect(() => {
     const fetchBookingDetails = async () => {
+      if (!bookingId) {
+        setError("No booking ID provided");
+        setLoading(false);
+        return;
+      }
+
+      console.log("CheckoutPage: Loading booking details for ID:", bookingId);
+
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
+
+        if (!token) {
+          setError("Authentication required. Please log in.");
+          setLoading(false);
+          return;
+        }
 
         // Fetch booking
         const bookingResponse = await axios.get(
@@ -189,7 +208,12 @@ const CheckoutPage = () => {
         }
       } catch (err) {
         console.error("Error fetching booking details:", err);
-        setError(err.response?.data?.error || "Failed to load booking details");
+        console.error("Error response:", err.response?.data);
+        const errorMessage =
+          err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Failed to load booking details";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -315,18 +339,6 @@ const CheckoutPage = () => {
 
               {destination && (
                 <>
-                  <Box mb={2}>
-                    <img
-                      src={destination.image_url || "/images/placeholder.jpg"}
-                      alt={destination.name}
-                      style={{
-                        width: "100%",
-                        height: "180px",
-                        objectFit: "cover",
-                        borderRadius: "8px",
-                      }}
-                    />
-                  </Box>
                   <Typography variant="h6" gutterBottom>
                     {destination.name}
                   </Typography>

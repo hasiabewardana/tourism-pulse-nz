@@ -90,12 +90,24 @@ export const getOperatorBookings = async (req: Request, res: Response) => {
 export const getBookingById = async (req: Request, res: Response) => {
   try {
     const bookingId = parseInt(req.params.id, 10);
+    console.log(`[getBookingById] Fetching booking ID: ${bookingId}`);
     const booking = await findBookingById(bookingId);
-    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (!booking) {
+      console.log(`[getBookingById] Booking not found: ${bookingId}`);
+      return res.status(404).json({ error: "Booking not found" });
+    }
+    console.log(`[getBookingById] Booking found:`, booking);
     res.json(booking);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("[getBookingById] Error:", error);
+    console.error(
+      "[getBookingById] Stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
@@ -193,12 +205,16 @@ export const modifyBooking = async (req: Request, res: Response) => {
       ? calculatedPrice
       : data.price ?? existingBooking.price;
 
-    // Use existing values for unspecified fields
+    const existingBookingDate =
+      existingBooking.booking_date instanceof Date
+        ? existingBooking.booking_date.toISOString()
+        : existingBooking.booking_date;
+
     const updatedId = await updateBooking(
       bookingId,
       data.offerId ?? existingBooking.offer_id,
       data.userId ?? existingBooking.user_id,
-      data.bookingDate ?? existingBooking.booking_date.toISOString(),
+      data.bookingDate ?? existingBookingDate,
       data.visitorCount ?? existingBooking.visitor_count,
       data.status ?? existingBooking.status,
       finalPrice,

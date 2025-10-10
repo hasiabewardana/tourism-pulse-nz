@@ -207,13 +207,24 @@ function OffersPage() {
         },
       });
       const data = res.data;
+      console.log("Raw offer data:", data);
       // Map to include destinationNames for display
-      const mappedData = data.map((offer) => ({
-        ...offer,
-        id: offer.offer_id,
-        destinationNames:
-          offer.destinations?.map((d) => d.name).filter(Boolean) || [],
-      }));
+      const mappedData = data.map((offer) => {
+        const destNames =
+          offer.destinations?.map((d) => d.name).filter(Boolean) || [];
+        console.log(
+          `Offer ${offer.name} destinations:`,
+          offer.destinations,
+          "mapped to:",
+          destNames
+        );
+        return {
+          ...offer,
+          id: offer.offer_id,
+          destinationNames: destNames,
+        };
+      });
+      console.log("Mapped offer data:", mappedData);
       setOffers(mappedData);
     } catch (err) {
       setError(
@@ -238,14 +249,22 @@ function OffersPage() {
 
   const handleBookingSubmit = async (bookingData) => {
     const token = localStorage.getItem("token");
+    const userId = parseInt(localStorage.getItem("userId"));
+
+    const payload = {
+      offerId: bookingData.offerId,
+      userId: userId,
+      bookingDate: bookingData.bookingDate,
+      visitorCount: bookingData.visitorCount,
+      status: "pending",
+    };
+
+    console.log("Booking payload:", payload);
+
     try {
       const res = await axios.post(
         "http://localhost:3000/dest/api/v1/bookings",
-        {
-          ...bookingData,
-          userId: parseInt(localStorage.getItem("userId")),
-          status: "pending",
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -253,11 +272,16 @@ function OffersPage() {
           },
         }
       );
+      console.log("Booking created successfully:", res.data);
       setShowBookingModal(false);
       navigate("/tourist/bookings");
     } catch (err) {
+      console.error("Booking error:", err.response?.data || err.message);
       setError(
-        err.response?.data?.message || err.message || "Failed to create booking"
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to create booking"
       );
     }
   };

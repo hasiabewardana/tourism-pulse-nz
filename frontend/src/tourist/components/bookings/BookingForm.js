@@ -58,9 +58,8 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
       setErrors(validationErrors);
       return;
     }
-    // Map to snake_case for backend
     onSubmit({
-      offerId: offer.offer_id || offer.id, // Use offer_id from database
+      offerId: offer.offer_id || offer.id,
       bookingDate: formData.bookingDate,
       visitorCount: formData.visitorCount,
       status: formData.status,
@@ -78,26 +77,7 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
           value={new Date(formData.bookingDate)}
           onChange={(newValue) => {
             if (newValue) {
-              const year = newValue.getFullYear();
-              const month = String(newValue.getMonth() + 1).padStart(2, "0");
-              const day = String(newValue.getDate()).padStart(2, "0");
-              const hours = String(newValue.getHours()).padStart(2, "0");
-              const minutes = String(newValue.getMinutes()).padStart(2, "0");
-              const seconds = String(newValue.getSeconds()).padStart(2, "0");
-              const milliseconds = String(newValue.getMilliseconds()).padStart(
-                3,
-                "0"
-              );
-              const timezoneOffset = -newValue.getTimezoneOffset();
-              const offsetHours = String(
-                Math.floor(Math.abs(timezoneOffset) / 60)
-              ).padStart(2, "0");
-              const offsetMinutes = String(
-                Math.abs(timezoneOffset) % 60
-              ).padStart(2, "0");
-              const offsetSign = timezoneOffset >= 0 ? "+" : "-";
-              const isoString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
-              handleChange("bookingDate", isoString);
+              handleChange("bookingDate", newValue.toISOString());
             }
           }}
           minDateTime={new Date(offer.available_from)}
@@ -136,7 +116,7 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
             variant="contained"
             className={classes.submitButton}
           >
-            Save
+            {booking ? "Save" : "Book Now"}
           </Button>
           <Button
             variant="outlined"

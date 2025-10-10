@@ -9,6 +9,28 @@ function OfferCard({ offer, onBookNow }) {
   const statusLabel = isActive ? "Open" : "Closed";
   const statusClass = isActive ? classes.statusOpen : classes.statusClosed;
 
+  console.log("OfferCard received offer:", offer);
+  console.log("OfferCard destinationNames:", offer.destinationNames);
+
+  const getDestinationDisplay = () => {
+    if (offer.destinationNames && offer.destinationNames.length > 0) {
+      return offer.destinationNames.join(", ");
+    }
+
+    if (
+      offer.destinations &&
+      Array.isArray(offer.destinations) &&
+      offer.destinations.length > 0
+    ) {
+      const names = offer.destinations.map((d) => d.name || d).filter(Boolean);
+      if (names.length > 0) {
+        return names.join(", ");
+      }
+    }
+
+    return "No destination assigned";
+  };
+
   const truncateDescription = (text, maxLength = 120) => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + "...";
@@ -57,9 +79,7 @@ function OfferCard({ offer, onBookNow }) {
         <Box className={classes.footerItem}>
           <LocationOnIcon className={classes.icon} />
           <Typography variant="body2" className={classes.footerText}>
-            {offer.destinationNames.length > 0
-              ? offer.destinationNames[0]
-              : "Multiple Destinations"}
+            {getDestinationDisplay()}
           </Typography>
         </Box>
         <Box className={classes.footerItem}>

@@ -74,6 +74,12 @@ function PendingPaymentsPage() {
   };
 
   const handlePayNow = (bookingId) => {
+    if (!bookingId) {
+      console.error("Invalid booking ID:", bookingId);
+      setError("Invalid booking. Please refresh and try again.");
+      return;
+    }
+    console.log("Navigating to checkout for booking:", bookingId);
     navigate(`/tourist/checkout/${bookingId}`);
   };
 
