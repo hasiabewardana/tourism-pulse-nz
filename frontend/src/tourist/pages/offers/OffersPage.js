@@ -70,10 +70,112 @@ function OffersPage() {
       return;
     }
     fetchOffers();
+    // eslint-disable-next-line
   }, [destinationId, token]);
 
   useEffect(() => {
-    applyFiltersAndSort();
+    console.log("useEffect triggered - sortBy:", sortBy);
+    const applyFiltersAndSortInner = () => {
+      let filtered = [...offers];
+
+      // View mode filter
+      if (selectedViewMode !== "All") {
+        filtered = filtered.filter(
+          (offer) => offer.status === selectedViewMode.toLowerCase()
+        );
+      }
+
+      // Date filter
+      if (selectedDate) {
+        const dateStr = selectedDate.toISOString().split("T")[0];
+        filtered = filtered.filter((offer) => {
+          const from = new Date(offer.available_from)
+            .toISOString()
+            .split("T")[0];
+          const to = new Date(offer.available_to).toISOString().split("T")[0];
+          return from <= dateStr && to >= dateStr;
+        });
+      }
+
+      // Search filter
+      if (searchTerm.trim()) {
+        const lowerSearch = searchTerm.toLowerCase();
+        filtered = filtered.filter(
+          (offer) =>
+            offer.name.toLowerCase().includes(lowerSearch) ||
+            offer.description.toLowerCase().includes(lowerSearch) ||
+            offer.destinationNames.some((name) =>
+              name.toLowerCase().includes(lowerSearch)
+            )
+        );
+      }
+
+      // Sort
+      let sorted = [...filtered];
+      console.log("Sorting by:", sortBy);
+      console.log(
+        "Before sort:",
+        sorted.map((o) => ({ name: o.name, price: o.price }))
+      );
+
+      switch (sortBy) {
+        case "Destination":
+          sorted.sort((a, b) => {
+            const aHasDest = a.destinations && a.destinations.length > 0;
+            const bHasDest = b.destinations && b.destinations.length > 0;
+
+            if (!aHasDest && !bHasDest) return 0;
+            if (!aHasDest) return 1;
+            if (!bHasDest) return -1;
+
+            const aName = a.destinations[0].name || "";
+            const bName = b.destinations[0].name || "";
+            return aName.localeCompare(bName);
+          });
+          break;
+        case "Offer Name (A-Z)":
+        case "Name (A-Z)":
+          sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+          break;
+        case "Offer Name (Z-A)":
+        case "Name (Z-A)":
+          sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+          break;
+        case "Price (Low to High)":
+          sorted.sort(
+            (a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0)
+          );
+          break;
+        case "Price (High to Low)":
+          sorted.sort(
+            (a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0)
+          );
+          break;
+        case "Available From (Earliest)":
+          sorted.sort((a, b) => {
+            const dateA = a.available_from
+              ? new Date(a.available_from)
+              : new Date(0);
+            const dateB = b.available_from
+              ? new Date(b.available_from)
+              : new Date(0);
+            return dateA - dateB;
+          });
+          break;
+        default:
+          console.log("No matching sort case for:", sortBy);
+          break;
+      }
+
+      console.log(
+        "After sort:",
+        sorted.map((o) => ({ name: o.name, price: o.price }))
+      );
+      setFilteredOffers(sorted);
+    };
+
+    applyFiltersAndSortInner();
+    // eslint-disable-next-line
   }, [offers, selectedViewMode, selectedDate, sortBy, searchTerm]);
 
   const fetchOffers = async () => {
@@ -107,79 +209,6 @@ function OffersPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const applyFiltersAndSort = () => {
-    let filtered = [...offers];
-
-    // View mode filter
-    if (selectedViewMode !== "All") {
-      filtered = filtered.filter(
-        (offer) => offer.status === selectedViewMode.toLowerCase()
-      );
-    }
-
-    // Date filter
-    if (selectedDate) {
-      const dateStr = selectedDate.toISOString().split("T")[0];
-      filtered = filtered.filter((offer) => {
-        const from = new Date(offer.available_from).toISOString().split("T")[0];
-        const to = new Date(offer.available_to).toISOString().split("T")[0];
-        return from <= dateStr && to >= dateStr;
-      });
-    }
-
-    // Search filter
-    if (searchTerm.trim()) {
-      const lowerSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (offer) =>
-          offer.name.toLowerCase().includes(lowerSearch) ||
-          offer.description.toLowerCase().includes(lowerSearch) ||
-          offer.destinationNames.some((name) =>
-            name.toLowerCase().includes(lowerSearch)
-          )
-      );
-    }
-
-    // Sort
-    let sorted = [...filtered];
-    switch (sortBy) {
-      case "Destination":
-        // Single destination first, sorted by dest name; then multi by first dest
-        const single = sorted
-          .filter((o) => o.destinations.length === 1)
-          .sort((a, b) =>
-            a.destinations[0].name.localeCompare(b.destinations[0].name)
-          );
-        const multi = sorted
-          .filter((o) => o.destinations.length > 1)
-          .sort((a, b) =>
-            a.destinations[0].name.localeCompare(b.destinations[0].name)
-          );
-        sorted = [...single, ...multi];
-        break;
-      case "Offer Name (A-Z)":
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "Offer Name (Z-A)":
-        sorted.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "Price (Low to High)":
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case "Price (High to Low)":
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case "Available From (Earliest)":
-        sorted.sort(
-          (a, b) => new Date(a.available_from) - new Date(b.available_from)
-        );
-        break;
-      default:
-        break;
-    }
-    setFilteredOffers(sorted);
   };
 
   const handleResetFilters = () => {
