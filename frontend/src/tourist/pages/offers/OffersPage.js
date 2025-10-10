@@ -250,113 +250,104 @@ function OffersPage() {
           </Box>
         )}
 
-        <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>View Mode</InputLabel>
-              <Select
-                value={selectedViewMode}
-                label="View Mode"
-                onChange={(e) => setSelectedViewMode(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="Filter by Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
-              slotProps={{ textField: { fullWidth: true } }}
-              clearable
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                {destinationId ? (
-                  <>
-                    <MenuItem value="Price (Low to High)">
-                      Price (Low to High)
-                    </MenuItem>
-                    <MenuItem value="Price (High to Low)">
-                      Price (High to Low)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (A-Z)">
-                      Offer Name (A-Z)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (Z-A)">
-                      Offer Name (Z-A)
-                    </MenuItem>
-                    <MenuItem value="Available From (Earliest)">
-                      Available From (Earliest)
-                    </MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem value="Destination">
-                      Destination (Singles First)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (A-Z)">
-                      Offer Name (A-Z)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (Z-A)">
-                      Offer Name (Z-A)
-                    </MenuItem>
-                    <MenuItem value="Price (Low to High)">
-                      Price (Low to High)
-                    </MenuItem>
-                    <MenuItem value="Price (High to Low)">
-                      Price (High to Low)
-                    </MenuItem>
-                    <MenuItem value="Available From (Earliest)">
-                      Available From (Earliest)
-                    </MenuItem>
-                  </>
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button
-              variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
-            >
-              Reset Filters
-            </Button>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12} md={8}>
+        <Box className={classes.filterPanel}>
+          <Box className={classes.topRow}>
             <TextField
               fullWidth
               variant="outlined"
-              label="Search by Offer Name, Description, or Destination"
+              placeholder="Search by Offer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={classes.searchInput}
+              sx={{ flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12} md={4}>
+            <Box className={classes.sortByContainer}>
+              <Typography className={classes.sortByLabel}>Sort By</Typography>
+              <FormControl className={classes.sortBySelect}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  {destinationId ? (
+                    <>
+                      <MenuItem value="Price (Low to High)">
+                        Price (Low to High)
+                      </MenuItem>
+                      <MenuItem value="Price (High to Low)">
+                        Price (High to Low)
+                      </MenuItem>
+                      <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                      <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                      <MenuItem value="Available From (Earliest)">
+                        Available From (Earliest)
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem value="Destination">Destination</MenuItem>
+                      <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                      <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                      <MenuItem value="Price (Low to High)">
+                        Price (Low to High)
+                      </MenuItem>
+                      <MenuItem value="Price (High to Low)">
+                        Price (High to Low)
+                      </MenuItem>
+                      <MenuItem value="Available From (Earliest)">
+                        Available From (Earliest)
+                      </MenuItem>
+                    </>
+                  )}
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          <Box className={classes.bottomRow}>
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>Status</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedViewMode}
+                  onChange={(e) => setSelectedViewMode(e.target.value)}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Active">Active</MenuItem>
+                  <MenuItem value="Inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>
+                Select Date
+              </Typography>
+              <DatePicker
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    placeholder: "10/10/2025",
+                    className: classes.datePicker,
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
             >
-              Reset Search
+              RESET
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {filteredOffers.length === 0 ? (
           <Typography
