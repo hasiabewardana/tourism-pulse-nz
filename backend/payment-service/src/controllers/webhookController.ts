@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
+import axios from "axios";
 import { constructWebhookEvent } from "../services/stripeService";
 import {
   updatePaymentStatus,
@@ -100,8 +101,23 @@ async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
         paymentMethod
       );
 
-      // You could also trigger notifications here
       console.log(`Booking ${payment.booking_id} payment confirmed`);
+
+      // Trigger analytics sync immediately
+      try {
+        const analyticsUrl =
+          process.env.ANALYTICS_SERVICE_URL || "http://localhost:3003";
+        await axios.post(
+          `${analyticsUrl}/api/analytics/sync`,
+          {},
+          {
+            timeout: 5000,
+          }
+        );
+        console.log("Analytics sync triggered successfully");
+      } catch (syncError) {
+        console.error("Failed to trigger analytics sync:", syncError);
+      }
     }
   } catch (error) {
     console.error("Error handling payment success:", error);

@@ -18,22 +18,23 @@
   "author": "TourismPulseNZ",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "stripe": "^14.11.0",
-    "pg": "^8.11.3",
-    "dotenv": "^16.3.1",
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
-    "zod": "^3.22.4",
-    "winston": "^3.11.0"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "pg": "^8.11.3",
+    "stripe": "^14.11.0",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.10.5",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.5",
     "@types/pg": "^8.10.9",
-    "typescript": "^5.3.3",
-    "ts-node-dev": "^2.0.0",
     "jest": "^29.7.0",
-    "@types/jest": "^29.5.11"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
   }
 }

@@ -1,5 +1,17 @@
 import { Request, Response } from "express";
 import { getMongoDb } from "../config/mongodb";
+import { performFullSync } from "../jobs/dataSync";
+
+export const triggerDataSync = async (req: Request, res: Response) => {
+  try {
+    console.log("Manual data sync triggered");
+    await performFullSync();
+    res.json({ success: true, message: "Data sync completed successfully" });
+  } catch (error) {
+    console.error("Manual data sync failed:", error);
+    res.status(500).json({ success: false, error: "Data sync failed" });
+  }
+};
 
 export const getOperatorDashboard = async (req: Request, res: Response) => {
   try {
