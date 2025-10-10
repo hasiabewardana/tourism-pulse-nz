@@ -17,11 +17,14 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import OperatorDestinationForm from "./OperatorDestinationForm";
 import OperatorDestination from "./OperatorDestination";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./OperatorDestination.module.css";
 
 function OperatorDestinationList() {
   const [assignments, setAssignments] = useState([]);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
+  const [paginatedAssignments, setPaginatedAssignments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -34,6 +37,8 @@ function OperatorDestinationList() {
     message: "",
     severity: "info",
   });
+
+  const ITEMS_PER_PAGE = 12;
 
   const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
@@ -207,6 +212,16 @@ function OperatorDestinationList() {
   useEffect(() => {
     applySearchAndSort(assignments);
   }, [searchTerm, sortBy, assignments]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedAssignments(filteredAssignments.slice(startIndex, endIndex));
+  }, [filteredAssignments, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, selectedViewMode, selectedDate]);
 
   const handleSubmit = async (formData) => {
     if (!token) {
@@ -456,17 +471,26 @@ function OperatorDestinationList() {
             </Typography>
           </div>
         ) : (
-          <div className={classes.destinationsGrid}>
-            {filteredAssignments.map((assignment) => (
-              <OperatorDestination
-                key={`${assignment.userId}-${assignment.destinationId}`}
-                assignment={assignment}
-                userName={userName}
-                onDelete={handleDelete}
-                onSubscribe={handleSubscribe}
-              />
-            ))}
-          </div>
+          <>
+            <div className={classes.destinationsGrid}>
+              {paginatedAssignments.map((assignment) => (
+                <OperatorDestination
+                  key={`${assignment.userId}-${assignment.destinationId}`}
+                  assignment={assignment}
+                  userName={userName}
+                  onDelete={handleDelete}
+                  onSubscribe={handleSubscribe}
+                />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(
+                filteredAssignments.length / ITEMS_PER_PAGE
+              )}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         {showModal && (

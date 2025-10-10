@@ -1,16 +1,21 @@
 // content/admin-panel/src/components/booking-management/BookingList.js
 import { useState, useEffect } from "react";
-import Booking from "./Booking"; // Import Booking component
-import BookingForm from "./BookingForm"; // Import BookingForm for create/edit
-import classes from "./Booking.module.css"; // Import CSS module for styling
+import Booking from "./Booking";
+import BookingForm from "./BookingForm";
+import Pagination from "../../../shared/components/common/Pagination";
+import classes from "./Booking.module.css";
 
 // Component to list all bookings, handle CRUD operations
 function BookingList() {
-  const [bookings, setBookings] = useState([]); // State for booking list
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [showModal, setShowModal] = useState(false); // Modal visibility
-  const [selectedBooking, setSelectedBooking] = useState(null); // Selected booking for edit
+  const [bookings, setBookings] = useState([]);
+  const [paginatedBookings, setPaginatedBookings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+
+  const ITEMS_PER_PAGE = 12;
 
   // Fetch bookings on component mount
   useEffect(() => {
@@ -47,6 +52,12 @@ function BookingList() {
 
     fetchBookings();
   }, []);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedBookings(bookings.slice(startIndex, endIndex));
+  }, [bookings, currentPage]);
 
   // Handle booking creation or update
   const handleSubmit = async (bookingData) => {
@@ -139,7 +150,7 @@ function BookingList() {
         Create New Booking
       </button>
       <div className={classes.grid}>
-        {bookings.map((booking) => (
+        {paginatedBookings.map((booking) => (
           <Booking
             key={booking.booking_id}
             booking={booking}
@@ -148,6 +159,11 @@ function BookingList() {
           />
         ))}
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={Math.ceil(bookings.length / ITEMS_PER_PAGE)}
+        onPageChange={setCurrentPage}
+      />
       {showModal && (
         <div className={classes.modal}>
           <div className={classes.modalContent}>

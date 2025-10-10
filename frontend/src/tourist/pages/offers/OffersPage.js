@@ -20,9 +20,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
-import axios from "axios"; // New import for API calls
+import axios from "axios";
 import OfferCard from "../../components/offers/OfferCard";
 import BookingForm from "../../components/bookings/BookingForm";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./OffersPage.module.css";
 
 function OffersPage() {
@@ -31,6 +32,8 @@ function OffersPage() {
   const { isAuthenticated } = useAuth();
   const [offers, setOffers] = useState([]);
   const [filteredOffers, setFilteredOffers] = useState([]);
+  const [paginatedOffers, setPaginatedOffers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedViewMode, setSelectedViewMode] = useState("Active");
@@ -43,6 +46,7 @@ function OffersPage() {
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [destinationName, setDestinationName] = useState("");
 
+  const ITEMS_PER_PAGE = 12;
   const token = isAuthenticated ? localStorage.getItem("token") : null;
 
   // Fetch destination name if destinationId is provided
@@ -175,8 +179,17 @@ function OffersPage() {
     };
 
     applyFiltersAndSortInner();
-    // eslint-disable-next-line
   }, [offers, selectedViewMode, selectedDate, sortBy, searchTerm]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedOffers(filteredOffers.slice(startIndex, endIndex));
+  }, [filteredOffers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedViewMode, selectedDate, sortBy, searchTerm]);
 
   const fetchOffers = async () => {
     if (!token) return;
@@ -388,16 +401,24 @@ function OffersPage() {
             No offers found matching your criteria.
           </Typography>
         ) : (
-          <Grid container spacing={3} className={classes.grid}>
-            {filteredOffers.map((offer) => (
-              <Grid item xs={12} sm={6} md={4} key={offer.id}>
-                <OfferCard
-                  offer={offer}
-                  onBookNow={() => handleOpenBookingModal(offer)}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <Grid container spacing={3} className={classes.grid}>
+              {paginatedOffers.map((offer) => (
+                <Grid item xs={12} sm={6} md={4} key={offer.id}>
+                  <OfferCard
+                    offer={offer}
+                    onBookNow={() => handleOpenBookingModal(offer)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredOffers.length / ITEMS_PER_PAGE)}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         {showBookingModal && selectedOffer && (

@@ -21,6 +21,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { format } from "date-fns";
 import DestinationCard from "./DestinationCard";
 import DestinationModal from "./DestinationModal";
+import Pagination from "../common/Pagination";
 import classes from "./DestinationList.module.css";
 
 function DestinationList() {
@@ -28,9 +29,13 @@ function DestinationList() {
   const navigate = useNavigate();
   const [destinations, setDestinations] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]);
+  const [paginatedDestinations, setPaginatedDestinations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  const ITEMS_PER_PAGE = 12;
 
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
@@ -131,6 +136,23 @@ function DestinationList() {
 
     setFilteredDestinations(filtered);
   };
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedDestinations(filteredDestinations.slice(startIndex, endIndex));
+  }, [filteredDestinations, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    sortBy,
+    selectedStatus,
+    selectedAvailability,
+    selectedRegion,
+    selectedDate,
+  ]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
@@ -331,17 +353,27 @@ function DestinationList() {
             </Typography>
           </div>
         ) : (
-          <div className={classes.destinationsGrid}>
-            {filteredDestinations.map((dest) => (
-              <DestinationCard
-                key={dest.destination_id}
-                destination={dest}
-                onViewDetails={handleViewDetails}
-                onBookNow={handleBookNow}
-                isAuthenticated={isAuthenticated}
-              />
-            ))}
-          </div>
+          <>
+            <div className={classes.destinationsGrid}>
+              {paginatedDestinations.map((dest) => (
+                <DestinationCard
+                  key={dest.destination_id}
+                  destination={dest}
+                  onViewDetails={handleViewDetails}
+                  onBookNow={handleBookNow}
+                  isAuthenticated={isAuthenticated}
+                />
+              ))}
+            </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(
+                filteredDestinations.length / ITEMS_PER_PAGE
+              )}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <DestinationModal

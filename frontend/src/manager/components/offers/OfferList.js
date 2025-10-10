@@ -16,18 +16,23 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import OfferForm from "./OfferForm";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./OfferManagement.module.css";
 import Offer from "./Offer";
 
 function OfferList() {
   const [offers, setOffers] = useState([]);
   const [filteredOffers, setFilteredOffers] = useState([]);
+  const [paginatedOffers, setPaginatedOffers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
   const [userName, setUserName] = useState("");
   const [operatorDestinations, setOperatorDestinations] = useState([]);
+
+  const ITEMS_PER_PAGE = 12;
 
   // Filter states
   const [selectedViewMode, setSelectedViewMode] = useState("All");
@@ -193,6 +198,16 @@ function OfferList() {
   useEffect(() => {
     applySearchAndSort(offers);
   }, [searchTerm, sortBy, offers, selectedViewMode]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedOffers(filteredOffers.slice(startIndex, endIndex));
+  }, [filteredOffers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, selectedViewMode, selectedDate]);
 
   const handleSubmit = async (formData) => {
     if (!token) {
@@ -407,17 +422,24 @@ function OfferList() {
             </Typography>
           </div>
         ) : (
-          <div className={classes.offersGrid}>
-            {filteredOffers.map((offer) => (
-              <Offer
-                key={offer.id}
-                offer={offer}
-                operatorName={userName}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-              />
-            ))}
-          </div>
+          <>
+            <div className={classes.offersGrid}>
+              {paginatedOffers.map((offer) => (
+                <Offer
+                  key={offer.id}
+                  offer={offer}
+                  operatorName={userName}
+                  onDelete={handleDelete}
+                  onEdit={handleEdit}
+                />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredOffers.length / ITEMS_PER_PAGE)}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         {/* Modal */}

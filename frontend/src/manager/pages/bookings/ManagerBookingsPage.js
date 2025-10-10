@@ -19,19 +19,24 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
 import ManagerBookingList from "../../components/bookings/ManagerBookingList";
-import classes from "./ManagerBookingsPage.module.css"; // New CSS, can mirror tourist's
+import Pagination from "../../../shared/components/common/Pagination";
+import classes from "./ManagerBookingsPage.module.css";
 
 function ManagerBookingsPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [paginatedBookings, setPaginatedBookings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [sortBy, setSortBy] = useState("Booking Date (Asc)");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const ITEMS_PER_PAGE = 12;
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
   const operatorId = localStorage.getItem("userId"); // Assuming userId is operatorId for managers
@@ -144,8 +149,18 @@ function ManagerBookingsPage() {
       }
     });
 
-    setFilteredBookings(filtered);
+    setFilteredBookings(sorted);
   };
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedBookings(filteredBookings.slice(startIndex, endIndex));
+  }, [filteredBookings, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedViewMode, startDate, sortBy, searchTerm]);
 
   const handleResetFilters = () => {
     setSelectedViewMode("All");
@@ -254,9 +269,16 @@ function ManagerBookingsPage() {
         </Grid>
 
         <ManagerBookingList
-          bookings={filteredBookings}
+          bookings={paginatedBookings}
           onRefresh={fetchBookings}
         />
+        {filteredBookings.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </Container>
     </LocalizationProvider>
   );

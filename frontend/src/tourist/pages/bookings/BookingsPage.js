@@ -20,6 +20,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
 import axios from "axios";
 import BookingList from "../../components/bookings/BookingList";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./BookingsPage.module.css";
 
 function BookingsPage() {
@@ -29,6 +30,14 @@ function BookingsPage() {
   const [activeBookings, setActiveBookings] = useState([]);
   const [expiredBookings, setExpiredBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [paginatedActiveBookings, setPaginatedActiveBookings] = useState([]);
+  const [paginatedExpiredBookings, setPaginatedExpiredBookings] = useState([]);
+  const [paginatedFilteredBookings, setPaginatedFilteredBookings] = useState(
+    []
+  );
+  const [currentActivePage, setCurrentActivePage] = useState(1);
+  const [currentExpiredPage, setCurrentExpiredPage] = useState(1);
+  const [currentFilteredPage, setCurrentFilteredPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedViewMode, setSelectedViewMode] = useState("All");
@@ -37,6 +46,8 @@ function BookingsPage() {
   const [endDate, setEndDate] = useState(null);
   const [sortBy, setSortBy] = useState("Booking Date (Desc)");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const ITEMS_PER_PAGE = 12;
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
   const userId = localStorage.getItem("userId");
@@ -201,6 +212,37 @@ function BookingsPage() {
     setFilteredBookings(sorted);
   };
 
+  useEffect(() => {
+    const startIndex = (currentActivePage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedActiveBookings(activeBookings.slice(startIndex, endIndex));
+  }, [activeBookings, currentActivePage]);
+
+  useEffect(() => {
+    const startIndex = (currentExpiredPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedExpiredBookings(expiredBookings.slice(startIndex, endIndex));
+  }, [expiredBookings, currentExpiredPage]);
+
+  useEffect(() => {
+    const startIndex = (currentFilteredPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedFilteredBookings(filteredBookings.slice(startIndex, endIndex));
+  }, [filteredBookings, currentFilteredPage]);
+
+  useEffect(() => {
+    setCurrentActivePage(1);
+    setCurrentExpiredPage(1);
+    setCurrentFilteredPage(1);
+  }, [
+    selectedViewMode,
+    selectedStatus,
+    startDate,
+    endDate,
+    sortBy,
+    searchTerm,
+  ]);
+
   const handleResetFilters = () => {
     setSelectedViewMode("All");
     setSelectedStatus("All");
@@ -343,8 +385,13 @@ function BookingsPage() {
                   Upcoming Bookings
                 </Typography>
                 <BookingList
-                  bookings={activeBookings}
+                  bookings={paginatedActiveBookings}
                   onRefresh={fetchBookings}
+                />
+                <Pagination
+                  currentPage={currentActivePage}
+                  totalPages={Math.ceil(activeBookings.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentActivePage}
                 />
               </div>
             )}
@@ -355,8 +402,15 @@ function BookingsPage() {
                   Past Bookings
                 </Typography>
                 <BookingList
-                  bookings={expiredBookings}
+                  bookings={paginatedExpiredBookings}
                   onRefresh={fetchBookings}
+                />
+                <Pagination
+                  currentPage={currentExpiredPage}
+                  totalPages={Math.ceil(
+                    expiredBookings.length / ITEMS_PER_PAGE
+                  )}
+                  onPageChange={setCurrentExpiredPage}
                 />
               </div>
             )}
@@ -370,9 +424,16 @@ function BookingsPage() {
         ) : (
           <div className={classes.bookingsSection}>
             <BookingList
-              bookings={filteredBookings}
+              bookings={paginatedFilteredBookings}
               onRefresh={fetchBookings}
             />
+            {filteredBookings.length > 0 && (
+              <Pagination
+                currentPage={currentFilteredPage}
+                totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
+                onPageChange={setCurrentFilteredPage}
+              />
+            )}
           </div>
         )}
       </Container>

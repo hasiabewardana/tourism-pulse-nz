@@ -23,16 +23,21 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import DestinationCard from "./DestinationCard";
 import DestinationForm from "./DestinationForm";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./DestinationList.module.css";
 import { NZ_REGIONS } from "../../../util/regionParser";
 
 function DestinationList() {
   const [destinations, setDestinations] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]);
+  const [paginatedDestinations, setPaginatedDestinations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState(null);
+
+  const ITEMS_PER_PAGE = 12;
 
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState("All");
@@ -127,6 +132,23 @@ function DestinationList() {
   useEffect(() => {
     applySearchAndSort(destinations);
   }, [searchTerm, sortBy, destinations]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedDestinations(filteredDestinations.slice(startIndex, endIndex));
+  }, [filteredDestinations, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    sortBy,
+    selectedStatus,
+    selectedAvailability,
+    selectedRegion,
+    selectedDate,
+  ]);
 
   const handleSubmit = async (destData) => {
     const token = localStorage.getItem("token");
@@ -363,17 +385,26 @@ function DestinationList() {
             </Typography>
           </div>
         ) : (
-          <div className={classes.destinationsGrid}>
-            {filteredDestinations.map((destination) => (
-              <DestinationCard
-                key={destination.destination_id}
-                destination={destination}
-                selectedDate={selectedDate}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          <>
+            <div className={classes.destinationsGrid}>
+              {paginatedDestinations.map((destination) => (
+                <DestinationCard
+                  key={destination.destination_id}
+                  destination={destination}
+                  selectedDate={selectedDate}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(
+                filteredDestinations.length / ITEMS_PER_PAGE
+              )}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <Dialog
