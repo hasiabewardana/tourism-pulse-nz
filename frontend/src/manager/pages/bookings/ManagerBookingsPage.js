@@ -149,7 +149,7 @@ function ManagerBookingsPage() {
       }
     });
 
-    setFilteredBookings(sorted);
+    setFilteredBookings(filtered);
   };
 
   useEffect(() => {
