@@ -147,10 +147,17 @@
   color: var(--tp-primary-accent);
 }
 
+.noResultsContainer {
+  background-color: var(--tp-surface-medium);
+  padding: var(--tp-space-xl);
+  border-radius: var(--tp-radius-md);
+  text-align: center;
+  margin-top: var(--tp-space-lg);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+}
+
 .noResults {
   color: var(--tp-muted-text);
-  margin-top: 2rem;
-  text-align: center;
   font-size: 1.125rem;
   font-weight: 500;
 }

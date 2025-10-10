@@ -180,61 +180,7 @@ function ManagerBookingsPage() {
         </Typography>
 
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={5}>
-              <TextField
-                fullWidth
-                variant="outlined"
-                label="Search by Destination or User Name"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={classes.searchInput}
-                aria-label="Search bookings"
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel>Sort By</InputLabel>
-                <Select
-                  value={sortBy}
-                  label="Sort By"
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <MenuItem value="Booking Date (Asc)">
-                    Booking Date (Asc)
-                  </MenuItem>
-                  <MenuItem value="Booking Date (Desc)">
-                    Booking Date (Desc)
-                  </MenuItem>
-                  <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
-                  <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
-                  <MenuItem value="Visitor Count (Low-High)">
-                    Visitor Count (Low-High)
-                  </MenuItem>
-                  <MenuItem value="Visitor Count (High-Low)">
-                    Visitor Count (High-Low)
-                  </MenuItem>
-                  <MenuItem value="Tourist Name (A-Z)">
-                    User Name (A-Z)
-                  </MenuItem>
-                  <MenuItem value="Tourist Name (Z-A)">
-                    User Name (Z-A)
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <Button
-                variant="contained"
-                onClick={() => navigate("/operator/offers")}
-                className={classes.createButton}
-                fullWidth
-              >
-                Add Destination
-              </Button>
-            </Grid>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={3}>
             <FormControl fullWidth>
               <InputLabel>View Mode</InputLabel>
               <Select
@@ -248,36 +194,97 @@ function ManagerBookingsPage() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={3}>
             <DatePicker
-              label="Select Date"
+              label="Filter by Date"
               value={startDate}
               onChange={setStartDate}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid item xs={12} sm={3}>
+            <FormControl fullWidth>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                label="Sort By"
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <MenuItem value="Booking Date (Asc)">
+                  Booking Date (Asc)
+                </MenuItem>
+                <MenuItem value="Booking Date (Desc)">
+                  Booking Date (Desc)
+                </MenuItem>
+                <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
+                <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
+                <MenuItem value="Visitor Count (Low-High)">
+                  Visitor Count (Low-High)
+                </MenuItem>
+                <MenuItem value="Visitor Count (High-Low)">
+                  Visitor Count (High-Low)
+                </MenuItem>
+                <MenuItem value="Tourist Name (A-Z)">User Name (A-Z)</MenuItem>
+                <MenuItem value="Tourist Name (Z-A)">User Name (Z-A)</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={3}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
               fullWidth
             >
-              Reset
+              Reset Filters
             </Button>
           </Grid>
         </Grid>
 
-        <ManagerBookingList
-          bookings={paginatedBookings}
-          onRefresh={fetchBookings}
-        />
-        {filteredBookings.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
-            onPageChange={setCurrentPage}
-          />
+        <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
+          <Grid item xs={12} md={8}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              label="Search by Offer, User Name, or Email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={classes.searchInput}
+              aria-label="Search bookings"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/operator/offers")}
+              className={classes.createButton}
+              fullWidth
+              size="large"
+            >
+              Manage Offers
+            </Button>
+          </Grid>
+        </Grid>
+
+        {filteredBookings.length === 0 ? (
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No bookings found yet. Bookings will appear here once customers
+              book your offers!
+            </Typography>
+          </div>
+        ) : (
+          <>
+            <ManagerBookingList
+              bookings={paginatedBookings}
+              onRefresh={fetchBookings}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </Container>
     </LocalizationProvider>
