@@ -1,4 +1,3 @@
-// src/tourist/pages/bookings/BookingsPage.js
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,12 +12,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Box,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
-import axios from "axios"; // New import for API calls
+import axios from "axios";
 import BookingList from "../../components/bookings/BookingList";
 import classes from "./BookingsPage.module.css";
 
@@ -225,108 +225,122 @@ function BookingsPage() {
           My Bookings
         </Typography>
 
-        <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>View Mode</InputLabel>
-              <Select
-                value={selectedViewMode}
-                onChange={(e) => setSelectedViewMode(e.target.value)}
-              >
-                <MenuItem value="Upcoming">Upcoming</MenuItem>
-                <MenuItem value="Expired">Expired</MenuItem>
-                <MenuItem value="All">All</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Confirmed">Confirmed</MenuItem>
-                <MenuItem value="Cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="Start Date"
-              value={startDate}
-              onChange={setStartDate}
-              slotProps={{ textField: { fullWidth: true } }}
+        <Box className={classes.filterPanel}>
+          <Box className={classes.topRow}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search by Offer Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={classes.searchInput}
             />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={setEndDate}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="Booking Date (Asc)">
-                  Booking Date (Asc)
-                </MenuItem>
-                <MenuItem value="Booking Date (Desc)">
-                  Booking Date (Desc)
-                </MenuItem>
-                <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
-                <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
-                <MenuItem value="Visitor Count (Low-High)">
-                  Visitor Count (Low-High)
-                </MenuItem>
-                <MenuItem value="Visitor Count (High-Low)">
-                  Visitor Count (High-Low)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+
+            <Box className={classes.sortByContainer}>
+              <Typography className={classes.sortByLabel}>Sort By</Typography>
+              <FormControl className={classes.sortBySelect}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="Booking Date (Desc)">
+                    Booking Date (Newest)
+                  </MenuItem>
+                  <MenuItem value="Booking Date (Asc)">
+                    Booking Date (Oldest)
+                  </MenuItem>
+                  <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                  <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                  <MenuItem value="Visitor Count (Low-High)">
+                    Visitors (Low-High)
+                  </MenuItem>
+                  <MenuItem value="Visitor Count (High-Low)">
+                    Visitors (High-Low)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          <Box className={classes.bottomRow}>
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>Status</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Confirmed">Confirmed</MenuItem>
+                  <MenuItem value="Cancelled">Cancelled</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>View Mode</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedViewMode}
+                  onChange={(e) => setSelectedViewMode(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Upcoming">Upcoming</MenuItem>
+                  <MenuItem value="Expired">Past</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>
+                Start Date
+              </Typography>
+              <DatePicker
+                value={startDate}
+                onChange={setStartDate}
+                slotProps={{
+                  textField: {
+                    className: classes.datePicker,
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>End Date</Typography>
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                slotProps={{
+                  textField: {
+                    className: classes.datePicker,
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
             >
-              Reset Filters
+              RESET
             </Button>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Offer Name or Description"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-            />
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {selectedViewMode === "All" ? (
           <>
             {activeBookings.length > 0 && (
               <div className={classes.bookingsSection}>
-                <Typography
-                  variant="h5"
-                  className={classes.sectionTitle}
-                  sx={{ mt: 4, mb: 2, color: "#ffffff", fontWeight: 600 }}
-                >
-                  Active Bookings
+                <Typography variant="h5" className={classes.sectionTitle}>
+                  Upcoming Bookings
                 </Typography>
                 <BookingList
                   bookings={activeBookings}
@@ -337,12 +351,8 @@ function BookingsPage() {
 
             {expiredBookings.length > 0 && (
               <div className={classes.bookingsSection}>
-                <Typography
-                  variant="h5"
-                  className={classes.sectionTitle}
-                  sx={{ mt: 4, mb: 2, color: "#bdd1d4", fontWeight: 600 }}
-                >
-                  Booking History
+                <Typography variant="h5" className={classes.sectionTitle}>
+                  Past Bookings
                 </Typography>
                 <BookingList
                   bookings={expiredBookings}
@@ -352,10 +362,7 @@ function BookingsPage() {
             )}
 
             {activeBookings.length === 0 && expiredBookings.length === 0 && (
-              <Alert
-                severity="info"
-                sx={{ mt: 3, maxWidth: "1200px", width: "100%" }}
-              >
+              <Alert severity="info" className={classes.noResults}>
                 No bookings found.
               </Alert>
             )}

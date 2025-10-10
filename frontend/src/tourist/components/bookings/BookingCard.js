@@ -1,4 +1,3 @@
-// src/tourist/components/bookings/BookingCard.js
 import { useState } from "react";
 import {
   Card,
@@ -8,7 +7,10 @@ import {
   Chip,
   Alert,
   Snackbar,
+  Box,
 } from "@mui/material";
+import EventIcon from "@mui/icons-material/Event";
+import PeopleIcon from "@mui/icons-material/People";
 import axios from "axios";
 import classes from "./BookingCard.module.css";
 import BookingForm from "./BookingForm";
@@ -124,95 +126,111 @@ function BookingCard({ booking, onRefresh }) {
   const isExpired = bookingDate <= new Date();
   const isPending = booking.status.toLowerCase() === "pending";
   const isConfirmed = booking.status.toLowerCase() === "confirmed";
+  const isCancelled = booking.status.toLowerCase() === "cancelled";
   const canEdit = isPending && !isExpired;
   const canCancel = isPending && !isExpired;
   const canReview = isConfirmed && !booking.hasReview && !isExpired;
 
+  const statusLabel = isPending
+    ? "Pending"
+    : isConfirmed
+    ? "Confirmed"
+    : isCancelled
+    ? "Cancelled"
+    : booking.status;
+
+  const statusClass = isConfirmed
+    ? classes.statusOpen
+    : isCancelled
+    ? classes.statusClosed
+    : classes.statusPending;
+
+  const truncateDescription = (text, maxLength = 120) => {
+    if (!text) return "No description available";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   return (
     <>
-      <Card
-        className={classes.card}
-        sx={{
-          opacity: isExpired ? 0.7 : 1,
-          backgroundColor: isExpired ? "#f5f5f5" : "white",
-        }}
-      >
+      <Card className={classes.card}>
+        <Box className={classes.imageContainer}>
+          <Box className={classes.imagePlaceholder}>
+            <Typography variant="h6" className={classes.placeholderText}>
+              {booking.offerName}
+            </Typography>
+          </Box>
+          <Chip
+            label={statusLabel}
+            className={`${classes.statusBadge} ${statusClass}`}
+          />
+        </Box>
+
         <CardContent className={classes.cardContent}>
-          {isExpired && (
-            <Chip
-              label="EXPIRED"
-              color="default"
-              size="small"
-              sx={{ mb: 1, backgroundColor: "#9e9e9e", color: "white" }}
-            />
-          )}
-          <Typography variant="h5" className={classes.cardTitle}>
+          <Typography variant="h6" className={classes.cardTitle}>
             {booking.offerName}
           </Typography>
           <Typography variant="body2" className={classes.cardDescription}>
-            {booking.offer?.description || "No description available"}
-          </Typography>
-          <Typography variant="body1" className={classes.cardInfo}>
-            Booking Date: {new Date(booking.bookingDate).toLocaleString()}
-          </Typography>
-          <Typography variant="body1" className={classes.cardInfo}>
-            Visitors: {booking.visitorCount}
-          </Typography>
-          <Typography variant="body1" className={classes.cardInfo}>
-            Status:{" "}
-            <Chip
-              label={booking.status.toUpperCase()}
-              color={
-                isConfirmed
-                  ? "success"
-                  : isPending
-                  ? "warning"
-                  : booking.status.toLowerCase() === "cancelled"
-                  ? "error"
-                  : "default"
-              }
-              className={classes.statusChip}
-            />
+            {truncateDescription(booking.offer?.description)}
           </Typography>
 
-          {!isExpired && (
-            <>
-              {canEdit && (
-                <Button
-                  variant="contained"
-                  onClick={handleEditClick}
-                  className={classes.actionButton}
-                  sx={{ mr: 1 }}
-                  disabled={loadingOffer}
-                >
-                  {loadingOffer ? "Loading..." : "Edit"}
-                </Button>
-              )}
-              {canCancel && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={handleCancel}
-                  className={classes.actionButton}
-                >
-                  Cancel Booking
-                </Button>
-              )}
-            </>
-          )}
+          <Box className={classes.dateInfo}>
+            <Typography variant="caption" className={classes.dateText}>
+              Booking Date: {bookingDate.toLocaleDateString()} at{" "}
+              {bookingDate.toLocaleTimeString()}
+            </Typography>
+          </Box>
 
-          {canReview && (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => setShowReviewDialog(true)}
-              className={classes.actionButton}
-              sx={{ mt: 1 }}
-            >
-              Write Review
-            </Button>
-          )}
+          <Box className={classes.actionButtons}>
+            {canEdit && (
+              <Button
+                variant="contained"
+                onClick={handleEditClick}
+                className={classes.actionButton}
+                disabled={loadingOffer}
+                size="small"
+              >
+                {loadingOffer ? "Loading..." : "Edit"}
+              </Button>
+            )}
+            {canCancel && (
+              <Button
+                variant="outlined"
+                onClick={handleCancel}
+                className={classes.cancelButton}
+                size="small"
+              >
+                Cancel
+              </Button>
+            )}
+            {canReview && (
+              <Button
+                variant="contained"
+                onClick={() => setShowReviewDialog(true)}
+                className={classes.reviewButton}
+                size="small"
+              >
+                Review
+              </Button>
+            )}
+          </Box>
         </CardContent>
+
+        <Box className={classes.footer}>
+          <Box className={classes.footerItem}>
+            <EventIcon className={classes.icon} />
+            <Typography variant="body2" className={classes.footerText}>
+              {bookingDate.toLocaleDateString()}
+            </Typography>
+          </Box>
+          <Box className={classes.footerItem}>
+            <PeopleIcon className={classes.icon} />
+            <Typography variant="body2" className={classes.footerText}>
+              {booking.visitorCount}{" "}
+              {booking.visitorCount === 1 ? "visitor" : "visitors"}
+            </Typography>
+          </Box>
+        </Box>
       </Card>
 
       {showEditModal && offerDetails && (
