@@ -12,12 +12,6 @@ body {
   color: #bdd1d4; /* Main text color */
 }
 
-/* Tabs Component */
-#tabs {
-  margin: 0;
-  overflow: hidden;
-}
-
 /* Tab Menu Styles */
 #tabs menu {
   margin: 0;

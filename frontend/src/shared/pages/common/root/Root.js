@@ -1,9 +1,8 @@
-// src/shared/pages/common/RootLayout.js
 import { Outlet } from "react-router-dom";
 import Navigation from "../../../components/navigation/Navigation";
 import Header from "../../../components/common/header/Header";
 import Footer from "../../../components/common/footer/Footer";
-import classes from "./RootLayout.module.css"; // Import CSS module
+import classes from "./RootLayout.module.css";
 
 function RootLayout() {
   return (

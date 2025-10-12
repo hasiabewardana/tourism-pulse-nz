@@ -39,9 +39,12 @@ function Home() {
   const [openModal, setOpenModal] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch destinations from API and limit to 5
+  // Fetch destinations from API
   useEffect(() => {
     const fetchDestinations = async () => {
+      // Get current date in YYYY-MM-DD format
+      const currentDate = new Date().toISOString().split("T")[0];
+
       try {
         const response = await axios.get(
           "http://localhost:3000/dest/api/v1/destinations/public",
@@ -49,7 +52,7 @@ function Home() {
             params: {
               status: "Open",
               availability: "Available",
-              date: "2025-09-07",
+              date: currentDate,
             },
             headers: {
               "Content-Type": "application/json",
@@ -68,7 +71,7 @@ function Home() {
     };
 
     fetchDestinations();
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
 
   // Fetch featured reviews
   useEffect(() => {
@@ -302,7 +305,12 @@ function Home() {
         Explore Destinations
       </Typography>
 
-      <Grid container spacing={3} className={classes.destinationGrid}>
+      <Grid
+        container
+        spacing={3}
+        className={classes.destinationGrid}
+        sx={{ marginBottom: "2rem" }}
+      >
         {filteredDestinations.map((dest, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
             <Card
@@ -331,7 +339,11 @@ function Home() {
       </Grid>
 
       {/* Testimonials Section */}
-      <Typography variant="h4" className={classes.sectionTitle}>
+      <Typography
+        variant="h4"
+        className={classes.sectionTitle}
+        sx={{ marginTop: "2rem" }}
+      >
         What Our Users Say
       </Typography>
       <Grid container spacing={3} className={classes.testimonialGrid}>
