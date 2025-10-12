@@ -1,4 +1,3 @@
-// src/shared/pages/common/Contact.js
 import React, { useState } from "react";
 import {
   Typography,
@@ -42,7 +41,7 @@ function Contact() {
     {
       icon: "📧",
       title: "Project Email",
-      value: "tourism.pulse.nz@gmail.com",
+      value: "info@tourismpulsenz.com",
       description: "General inquiries and project information",
       available: "24/7 (Response within 24-48 hours)",
     },
@@ -143,7 +142,7 @@ function Contact() {
       setSubmitStatus({
         type: "error",
         message:
-          "Sorry, there was an error sending your message. Please try again or contact us directly via email at tourism.pulse.nz@gmail.com",
+          "Sorry, there was an error sending your message. Please try again or contact us directly via email at info@tourismpulsenz.com",
       });
     } finally {
       setIsSubmitting(false);

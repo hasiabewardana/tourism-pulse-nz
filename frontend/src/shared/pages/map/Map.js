@@ -1101,7 +1101,7 @@ function Map() {
           </Grid>
         </Grid>
         {/* Map Display */}
-        <Box className={classes.mapContainer}>
+        <Box className={classes.mapContainer} sx={{ marginTop: "2rem" }}>
           {geocodedDestinations.length === 0 && !loading ? (
             <Box
               display="flex"

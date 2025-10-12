@@ -12,9 +12,9 @@ function Footer() {
           Email:{" "}
           <a
             className={classes.anchor}
-            href="mailto:support@tourismpulsenz.com"
+            href="mailto:hah15@students.waikato.ac.nz"
           >
-            support@tourismpulsenz.com
+            info@tourismpulsenz.com
           </a>{" "}
           | Hours: 9:00 AM - 5:00 PM NZST
         </p>
