@@ -31,8 +31,8 @@ export async function syncBookingsAnalytics() {
       od.user_id as operator_id,
       DATE(b.created_at) as booking_date,
       COUNT(DISTINCT b.booking_id) as total_bookings,
-      COALESCE(SUM(p.amount), 0) as total_revenue,
-      COALESCE(AVG(p.amount), 0) as avg_booking_value,
+      COALESCE(SUM(CASE WHEN b.payment_status IN ('paid', 'processing') THEN b.amount_paid ELSE 0 END), 0) as total_revenue,
+      COALESCE(AVG(CASE WHEN b.payment_status IN ('paid', 'processing') THEN b.amount_paid END), 0) as avg_booking_value,
       COUNT(CASE WHEN b.status = 'confirmed' THEN 1 END) as confirmed_bookings,
       COUNT(CASE WHEN b.status = 'cancelled' THEN 1 END) as cancelled_bookings
     FROM dest.bookings b
@@ -40,7 +40,6 @@ export async function syncBookingsAnalytics() {
     JOIN dest.offer_items oi ON o.offer_id = oi.offer_id
     JOIN dest.destinations d ON oi.destination_id = d.destination_id
     LEFT JOIN dest.operator_destinations od ON d.destination_id = od.destination_id
-    LEFT JOIN dest.payments p ON b.booking_id = p.booking_id AND p.status = 'succeeded'
     WHERE b.created_at >= CURRENT_DATE - INTERVAL '90 days'
     GROUP BY oi.destination_id, d.name, od.user_id, DATE(b.created_at)
   `);
@@ -139,16 +138,16 @@ export async function syncRevenueMetrics() {
       od.user_id as operator_id,
       DATE(b.created_at) as revenue_date,
       COUNT(DISTINCT b.booking_id) as booking_count,
-      COALESCE(SUM(p.amount), 0) as total_revenue,
-      COALESCE(AVG(p.amount), 0) as avg_revenue,
+      COALESCE(SUM(CASE WHEN b.payment_status IN ('paid', 'processing') THEN b.amount_paid ELSE 0 END), 0) as total_revenue,
+      COALESCE(AVG(CASE WHEN b.payment_status IN ('paid', 'processing') THEN b.amount_paid END), 0) as avg_revenue,
       COUNT(DISTINCT oi.destination_id) as destinations_with_bookings
     FROM dest.bookings b
     JOIN dest.offers o ON b.offer_id = o.offer_id
     JOIN dest.offer_items oi ON o.offer_id = oi.offer_id
     JOIN dest.operator_destinations od ON oi.destination_id = od.destination_id
-    LEFT JOIN dest.payments p ON b.booking_id = p.booking_id AND p.status = 'succeeded'
     WHERE b.created_at >= CURRENT_DATE - INTERVAL '90 days'
     AND b.status = 'confirmed'
+    AND b.payment_status IN ('paid', 'processing')
     GROUP BY od.user_id, DATE(b.created_at)
   `);
 
@@ -188,9 +187,8 @@ export async function syncSystemMetrics() {
       (SELECT COUNT(*) FROM dest.destinations WHERE status = 'Open') as active_destinations,
       (SELECT COUNT(*) FROM dest.bookings WHERE created_at >= CURRENT_DATE) as bookings_today,
       (SELECT COUNT(*) FROM dest.bookings WHERE status = 'confirmed') as total_confirmed_bookings,
-      (SELECT COALESCE(SUM(p.amount), 0) FROM dest.payments p 
-       JOIN dest.bookings b ON p.booking_id = b.booking_id 
-       WHERE b.status = 'confirmed' AND p.status = 'succeeded') as total_revenue,
+      (SELECT COALESCE(SUM(amount_paid), 0) FROM dest.bookings 
+       WHERE status = 'confirmed' AND payment_status IN ('paid', 'processing')) as total_revenue,
       (SELECT COUNT(DISTINCT user_id) FROM dest.bookings) as unique_customers,
       (SELECT COUNT(DISTINCT user_id) FROM dest.operator_destinations) as total_operators,
       (SELECT AVG(rating) FROM dest.reviews) as platform_avg_rating
