@@ -51,7 +51,7 @@ app.post("/save-image", upload.single("file"), (req, res) => {
 });
 
 // Serve React index.html for all other routes (SPA fallback)
-app.get("*", (req, res) => {
+app.get("/*catchAll", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
