@@ -28,6 +28,7 @@
   padding: var(--tp-space-lg);
   background-color: var(--tp-primary-bg);
   color: var(--tp-secondary-text);
+  border-radius: 8px;
 }
 
 .loadingContainer {

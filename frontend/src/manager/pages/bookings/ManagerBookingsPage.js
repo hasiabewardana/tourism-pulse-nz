@@ -239,30 +239,29 @@ function ManagerBookingsPage() {
               Reset Filters
             </Button>
           </Grid>
-        </Grid>
-
-        <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Offer, User Name, or Email"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-              aria-label="Search bookings"
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Button
-              variant="contained"
-              onClick={() => navigate("/operator/offers")}
-              className={classes.createButton}
-              fullWidth
-              size="large"
-            >
-              Manage Offers
-            </Button>
+          <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Offer, User Name, or Email"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search bookings"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/operator/offers")}
+                className={classes.createButton}
+                fullWidth
+                size="large"
+              >
+                Manage Offers
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
 

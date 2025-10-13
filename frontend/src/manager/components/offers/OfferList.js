@@ -276,7 +276,7 @@ function OfferList() {
       const offerName = offers.find((o) => o.id === offerId)?.name || "Offer";
       setNotification({
         open: true,
-        message: `✅ Successfully deleted ${offerName}`,
+        message: `Successfully deleted ${offerName}`,
         severity: "success",
       });
     } catch (err) {
@@ -386,31 +386,30 @@ function OfferList() {
               Reset Filters
             </Button>
           </Grid>
-        </Grid>
-
-        {/* Search Input */}
-        <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Offer or Destination Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-              aria-label="Search offers"
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Button
-              variant="contained"
-              onClick={handleCreate}
-              className={classes.createButton}
-              fullWidth
-              size="large"
-            >
-              Create New Offer
-            </Button>
+          {/* Search Input */}
+          <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Offer or Destination Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search offers"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                onClick={handleCreate}
+                className={classes.createButton}
+                fullWidth
+                size="large"
+              >
+                Create New Offer
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
 

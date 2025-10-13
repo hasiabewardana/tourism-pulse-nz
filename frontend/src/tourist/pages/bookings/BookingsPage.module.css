@@ -1,9 +1,9 @@
 .container {
   padding: 2rem;
   min-height: calc(100vh - 4rem);
-  background: linear-gradient(135deg, #5dade2 0%, #48c9b0 100%);
+  background: #0fa4af;
   color: #2c3e50;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .headerContainer {

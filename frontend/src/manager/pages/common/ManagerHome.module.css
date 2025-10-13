@@ -5,7 +5,7 @@
   background: linear-gradient(135deg, #0c8a94 0%, #0a6f7a 100%);
   color: #ffffff;
   min-height: calc(100vh - 4rem);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 /* Welcome Header */
