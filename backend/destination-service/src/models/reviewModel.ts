@@ -2,9 +2,8 @@ import { query } from "../services/db";
 
 export const getAllReviews = async () => {
   const result = await query(
-    `SELECT r.*, u.username, u.email, d.name as destination_name 
+    `SELECT r.*, d.name as destination_name 
      FROM dest.reviews r
-     LEFT JOIN auth.users u ON r.user_id = u.user_id
      LEFT JOIN dest.destinations d ON r.destination_id = d.destination_id
      ORDER BY r.created_at DESC`
   );
@@ -13,9 +12,8 @@ export const getAllReviews = async () => {
 
 export const getFeaturedReviews = async (limit: number = 6) => {
   const result = await query(
-    `SELECT r.*, u.username, d.name as destination_name 
+    `SELECT r.*, d.name as destination_name 
      FROM dest.reviews r
-     LEFT JOIN auth.users u ON r.user_id = u.user_id
      LEFT JOIN dest.destinations d ON r.destination_id = d.destination_id
      WHERE r.is_featured = TRUE
      ORDER BY r.created_at DESC
@@ -27,9 +25,8 @@ export const getFeaturedReviews = async (limit: number = 6) => {
 
 export const getReviewsByDestination = async (destinationId: number) => {
   const result = await query(
-    `SELECT r.*, u.username 
+    `SELECT r.* 
      FROM dest.reviews r
-     LEFT JOIN auth.users u ON r.user_id = u.user_id
      WHERE r.destination_id = $1
      ORDER BY r.created_at DESC`,
     [destinationId]
@@ -51,9 +48,8 @@ export const getReviewsByUserId = async (userId: number) => {
 
 export const getReviewById = async (reviewId: number) => {
   const result = await query(
-    `SELECT r.*, u.username, d.name as destination_name 
+    `SELECT r.*, d.name as destination_name 
      FROM dest.reviews r
-     LEFT JOIN auth.users u ON r.user_id = u.user_id
      LEFT JOIN dest.destinations d ON r.destination_id = d.destination_id
      WHERE r.review_id = $1`,
     [reviewId]
@@ -71,10 +67,10 @@ export const createReview = async (
   const result = await query(
     `INSERT INTO dest.reviews (booking_id, user_id, destination_id, rating, comment)
      VALUES ($1, $2, $3, $4, $5)
-     RETURNING review_id`,
+     RETURNING *`,
     [bookingId, userId, destinationId, rating, comment]
   );
-  return result[0].review_id;
+  return result[0];
 };
 
 export const updateReview = async (

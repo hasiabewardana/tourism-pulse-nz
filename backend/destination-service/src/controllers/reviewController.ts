@@ -61,7 +61,7 @@ export const createReview = async (req: Request, res: Response) => {
         .json({ error: "Review already exists for this booking" });
     }
 
-    const reviewId = await reviewModel.createReview(
+    const newReview = await reviewModel.createReview(
       bookingId,
       userId,
       destinationId,
@@ -69,7 +69,6 @@ export const createReview = async (req: Request, res: Response) => {
       comment
     );
 
-    const newReview = await reviewModel.getReviewById(reviewId);
     res.status(201).json(newReview);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
