@@ -1,15 +1,15 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom"; // Importing RouterProvider and createBrowserRouter for routing functionality
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AnalyticsProvider } from "./shared/context/AnalyticsContext";
-import RootLayout from "./shared/pages/common/root/Root"; // Importing the RootLayout component for shared layout structure
-import Home from "./shared/pages/common/home/Home"; // Importing the Home component for the main content
+import RootLayout from "./shared/pages/common/root/Root";
+import Home from "./shared/pages/common/home/Home";
 import Destinations from "./shared/pages/destinations/Destinations";
 import Map from "./shared/pages/map/Map";
 import About from "./shared/pages/common/about/About";
 import Contact from "./shared/pages/common/contact/Contact";
-import Authentication from "./shared/pages/authentication/Authentication"; // Importing the Authentication page for user login/signup
+import Authentication from "./shared/pages/authentication/Authentication";
 import { authAction } from "./shared/components/authentication/AuthAction";
 import { action as logoutAction } from "./shared/components/authentication/Logout";
-import "./styles.css"; // Importing global styles
+import "./styles.css";
 import { checkAuthLoader } from "./util/auth";
 import TouristLayout from "./tourist/pages/common/TouristLayout";
 import TouristHome from "./tourist/pages/common/TouristHome";
@@ -36,10 +36,10 @@ import AdminAnalytics from "./admin/pages/analytics/AdminAnalytics";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <RootLayout />, // layout with header/footer
+    element: <RootLayout />,
     children: [
       {
-        index: true, // default child route for "/"
+        index: true,
         element: <Home />,
       },
       {
@@ -60,24 +60,24 @@ const router = createBrowserRouter([
       },
       {
         path: "auth",
-        element: <Authentication />, // route for authentication page
+        element: <Authentication />,
         action: authAction,
       },
       { path: "logout", element: <Home />, action: logoutAction },
       {
         path: "tourist",
-        element: <TouristLayout />, // route for tourist page
-        loader: checkAuthLoader, // Protect the route
+        element: <TouristLayout />,
+        loader: checkAuthLoader,
         children: [
           {
             index: true,
             element: <TouristHome />,
-            loader: checkAuthLoader, // Protect the route
+            loader: checkAuthLoader,
           },
           {
             path: "offers/:destinationId?",
             element: <OffersPage />,
-            loader: checkAuthLoader, // Protect the route
+            loader: checkAuthLoader,
           },
           {
             path: "bookings",

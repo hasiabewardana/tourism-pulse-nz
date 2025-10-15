@@ -4,6 +4,10 @@ const API_BASE_URL =
   process.env.REACT_APP_ANALYTICS_API_URL ||
   "http://localhost:3003/analytics-service/api";
 
+/**
+ * Service for managing analytics and forecasting operations.
+ * Handles demand forecasting, staffing optimization, and user behavior tracking.
+ */
 class AnalyticsService {
   constructor() {
     this.api = axios.create({
@@ -13,7 +17,7 @@ class AnalyticsService {
       },
     });
 
-    // Add auth token to requests if available
+    // Attach JWT token to all requests if available
     this.api.interceptors.request.use((config) => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -23,7 +27,9 @@ class AnalyticsService {
     });
   }
 
-  // Demand Forecasting APIs
+  /**
+   * Generate a demand forecast for a destination or region.
+   */
   async generateDemandForecast(data) {
     try {
       const response = await this.api.post("/v1/forecast/demand", data);
@@ -34,6 +40,9 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Get peak season predictions for a region and year.
+   */
   async getPeakSeasonForecast(region, year) {
     try {
       const response = await this.api.get(
@@ -46,6 +55,9 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Retrieve historical demand trends with optional filtering.
+   */
   async getDemandTrends(params = {}) {
     try {
       const response = await this.api.get("/v1/forecast/trends", { params });
@@ -56,6 +68,9 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Check the accuracy of previous forecasts.
+   */
   async getForecastAccuracy(params = {}) {
     try {
       const response = await this.api.get("/v1/forecast/accuracy", { params });
@@ -66,7 +81,9 @@ class AnalyticsService {
     }
   }
 
-  // Staffing Analytics APIs
+  /**
+   * Generate optimal staffing recommendations based on expected demand.
+   */
   async generateStaffingRecommendations(data) {
     try {
       const response = await this.api.post(
@@ -80,6 +97,9 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Get staffing optimization suggestions for a business.
+   */
   async getStaffingOptimization(businessId, timeframe = "monthly") {
     try {
       const response = await this.api.get(
@@ -95,6 +115,9 @@ class AnalyticsService {
     }
   }
 
+  /**
+   * Retrieve historical staffing data for analysis.
+   */
   async getStaffingHistory(businessId, params = {}) {
     try {
       const response = await this.api.get(

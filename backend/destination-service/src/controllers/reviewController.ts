@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import * as reviewModel from "../models/reviewModel";
 
+/**
+ * Retrieve all reviews from the database.
+ */
 export const getAllReviews = async (req: Request, res: Response) => {
   try {
     const reviews = await reviewModel.getAllReviews();
@@ -10,6 +13,9 @@ export const getAllReviews = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Get featured reviews for display on the homepage.
+ */
 export const getFeaturedReviews = async (req: Request, res: Response) => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;
@@ -20,6 +26,9 @@ export const getFeaturedReviews = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Get all reviews for a specific destination.
+ */
 export const getReviewsByDestination = async (req: Request, res: Response) => {
   try {
     const { destinationId } = req.params;

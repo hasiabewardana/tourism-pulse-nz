@@ -15,6 +15,10 @@ import {
 } from "@mui/material";
 import classes from "./Contact.module.css";
 
+/**
+ * Contact page for TourismPulseNZ.
+ * Provides contact information and a form for inquiries.
+ */
 function Contact() {
   const [formData, setFormData] = useState({
     name: "",

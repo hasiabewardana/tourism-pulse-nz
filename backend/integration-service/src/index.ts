@@ -18,7 +18,7 @@ app.use("/integration-service/api", openWeatherMapRoutes);
 app.use("/integration-service/api/statsnz", statsnzRoutes);
 app.use("/integration-service/api", contactRoutes);
 
-// Global error handler
+// Centralized error handling for external API integrations
 app.use(
   (
     err: any,

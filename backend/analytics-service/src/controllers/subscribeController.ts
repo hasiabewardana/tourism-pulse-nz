@@ -4,6 +4,10 @@ import {
   checkSubscription as checkSubscriptionModel,
 } from "../models/subscriptionModel";
 
+/**
+ * Toggle notification subscription for an operator-destination pair.
+ * Operators can subscribe or unsubscribe from capacity alerts.
+ */
 export const toggleSubscription = async (req: Request, res: Response) => {
   const { operatorId, destinationId, subscribed } = req.body;
   if (!operatorId || !destinationId || subscribed === undefined) {
@@ -19,6 +23,9 @@ export const toggleSubscription = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * Check if an operator is subscribed to a destination's alerts.
+ */
 export const checkSubscription = async (req: Request, res: Response) => {
   const { operatorId, destinationId } = req.query as {
     operatorId?: string;

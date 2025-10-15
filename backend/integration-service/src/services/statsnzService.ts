@@ -7,13 +7,19 @@ const redisClient = createClient({
 
 redisClient.on("error", (err) => console.error("Redis Client Error", err));
 
-// Stats NZ API base URL
 const STATS_NZ_BASE_URL = "https://api.stats.govt.nz/opendata/v1";
-const CACHE_TTL = 86400; // 24 hours cache for Stats NZ data
+const CACHE_TTL = 86400; // Cache Stats NZ data for 24 hours
 
+/**
+ * Service for integrating with Statistics New Zealand API.
+ * Provides tourism and accommodation statistics with Redis caching.
+ */
 export class StatsNZService {
   private redisConnected = false;
 
+  /**
+   * Initialize the Redis connection for caching.
+   */
   async initialize() {
     if (!this.redisConnected) {
       try {
@@ -26,7 +32,10 @@ export class StatsNZService {
     }
   }
 
-  // Get tourism arrival statistics by region
+  /**
+   * Get tourism arrival statistics for a region.
+   * Data is cached to reduce API calls.
+   */
   async getTourismArrivals(region: string) {
     const cacheKey = `statsnz:arrivals:${region}`;
 
@@ -39,8 +48,6 @@ export class StatsNZService {
         }
       }
 
-      // Mock data for Stats NZ tourism arrivals
-      // In production, replace with actual API call
       const data = await this.fetchTourismArrivals(region);
 
       if (this.redisConnected) {
@@ -55,7 +62,9 @@ export class StatsNZService {
     }
   }
 
-  // Get accommodation statistics
+  /**
+   * Get accommodation occupancy statistics for a region.
+   */
   async getAccommodationStats(region: string) {
     const cacheKey = `statsnz:accommodation:${region}`;
 
@@ -83,7 +92,9 @@ export class StatsNZService {
     }
   }
 
-  // Get regional tourism trends
+  /**
+   * Get tourism trends over a specified time period.
+   */
   async getRegionalTrends(region: string, months: number = 12) {
     const cacheKey = `statsnz:trends:${region}:${months}`;
 

@@ -16,7 +16,6 @@ class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    // Validate environment variables
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
       console.error("⚠️  EMAIL CONFIGURATION ERROR:");
       console.error("EMAIL_USER:", process.env.EMAIL_USER ? "Set" : "MISSING");
@@ -34,16 +33,14 @@ class EmailService {
     console.log("   User:", process.env.EMAIL_USER);
     console.log("   Password Length:", process.env.EMAIL_PASSWORD.length);
 
-    // Create transporter with Gmail or other SMTP service
     this.transporter = nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE || "gmail",
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD, // Use app-specific password for Gmail
+        pass: process.env.EMAIL_PASSWORD,
       },
     });
 
-    // Verify connection
     this.transporter.verify((error, success) => {
       if (error) {
         console.error("❌ Email Service Connection Error:", error.message);
@@ -53,6 +50,10 @@ class EmailService {
     });
   }
 
+  /**
+   * Send a contact form submission via email.
+   * Creates a formatted HTML email with the contact details and message.
+   */
   async sendContactEmail(formData: ContactFormData): Promise<boolean> {
     try {
       const contactTypeLabels: { [key: string]: string } = {

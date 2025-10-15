@@ -3,10 +3,11 @@ import { statsNZService } from "../services/statsnzService";
 
 const router = Router();
 
-// Initialize Stats NZ service
 statsNZService.initialize();
 
-// Get tourism arrival statistics
+/**
+ * Get tourism arrival statistics for a region
+ */
 router.get("/tourism/arrivals/:region", async (req, res) => {
   try {
     const { region } = req.params;
@@ -21,7 +22,9 @@ router.get("/tourism/arrivals/:region", async (req, res) => {
   }
 });
 
-// Get accommodation statistics
+/**
+ * Get accommodation statistics for a region
+ */
 router.get("/tourism/accommodation/:region", async (req, res) => {
   try {
     const { region } = req.params;
@@ -36,7 +39,9 @@ router.get("/tourism/accommodation/:region", async (req, res) => {
   }
 });
 
-// Get regional tourism trends
+/**
+ * Get regional tourism trends over time
+ */
 router.get("/tourism/trends/:region", async (req, res) => {
   try {
     const { region } = req.params;

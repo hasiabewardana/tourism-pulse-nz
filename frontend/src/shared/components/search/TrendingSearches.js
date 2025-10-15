@@ -11,8 +11,8 @@ import { TrendingUp, Search } from "@mui/icons-material";
 import analyticsService from "../../../util/analyticsService";
 
 /**
- * Trending Searches Component
- * Displays popular search queries
+ * Display popular search queries to help users discover destinations.
+ * Shows trending searches as clickable chips.
  */
 const TrendingSearches = ({ onSearchClick }) => {
   const [trendingSearches, setTrendingSearches] = useState([]);

@@ -1,18 +1,18 @@
 import express from "express";
-import { setupLogging } from "./logging"; // Importing logging setup for request tracking
-import { setupProxies } from "./proxy"; // Importing proxy setup for routing to microservices
-import { setupRateLimit } from "./ratelimit"; // Importing rate limiting setup for load control
-import { setupCreditCheck } from "./creditcheck"; // Importing credit check setup for premium access
-import { ROUTES } from "./routes/routes"; // Importing route configurations for the API gateway
+import { setupLogging } from "./logging";
+import { setupProxies } from "./proxy";
+import { setupRateLimit } from "./ratelimit";
+import { setupCreditCheck } from "./creditcheck";
+import { ROUTES } from "./routes/routes";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import path from "path";
 
-const app = express(); // Initializing Express application as the API gateway
-const port = process.env.PORT || 3000; // Setting port from environment variable or default to 3000
+const app = express();
+const port = process.env.PORT || 3000;
 
-// Load OpenAPI specification
+// Load OpenAPI specification for API documentation
 let swaggerDocument;
 try {
   swaggerDocument = YAML.load(path.join(__dirname, "../../docs/openapi.yaml"));
@@ -22,16 +22,16 @@ try {
   swaggerDocument = null;
 }
 
-// Allow frontend origin
+// Enable CORS for frontend communication
 app.use(
   cors({
-    origin: "http://localhost:3006", // allow frontend on port 3006
+    origin: "http://localhost:3006",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
 
-// Swagger UI setup
+// Configure Swagger UI for interactive API documentation
 if (swaggerDocument) {
   app.use(
     "/api-docs",
@@ -45,7 +45,7 @@ if (swaggerDocument) {
   console.log("✓ Swagger UI configured at /api-docs");
 }
 
-// API documentation redirect
+// Redirect root path to API documentation
 app.get("/", (req, res) => {
   if (swaggerDocument) {
     res.redirect("/api-docs");
@@ -54,11 +54,11 @@ app.get("/", (req, res) => {
   }
 });
 
-// Applying middleware in sequence for request processing
-setupLogging(app); // Configuring logging to track all incoming requests
-setupRateLimit(app, ROUTES); // Applying rate limiting based on route configurations
-setupCreditCheck(app, ROUTES); // Implementing credit checks for premium routes
-setupProxies(app, ROUTES); // Setting up proxy rules to route requests to backend services
+// Apply middleware layers in the correct order
+setupLogging(app);
+setupRateLimit(app, ROUTES);
+setupCreditCheck(app, ROUTES);
+setupProxies(app, ROUTES);
 
 // Global error handler
 app.use(

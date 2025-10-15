@@ -1,7 +1,10 @@
-import morgan from "morgan"; // Importing morgan for HTTP request logging
-import express from "express"; // Importing express for type definitions
+import morgan from "morgan";
+import express from "express";
 
+/**
+ * Configure HTTP request logging using Morgan.
+ * Uses the combined format for detailed logging of all requests.
+ */
 export const setupLogging = (app: express.Application) => {
-  // Function to configure logging middleware
-  app.use(morgan("combined")); // Applying 'combined' format logging to capture detailed request info
+  app.use(morgan("combined"));
 };

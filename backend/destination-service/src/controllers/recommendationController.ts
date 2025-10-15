@@ -4,11 +4,13 @@ import { RecommendationService } from "../services/recommendationService";
 const recommendationService = new RecommendationService();
 
 /**
- * Get personalized recommendations based on user preferences and context
+ * Generate personalized destination recommendations.
+ * Takes into account user preferences, constraints (rating, price),
+ * and contextual factors (weather, season).
  */
 export const getRecommendations = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id; // From auth middleware
+    const userId = (req as any).user?.id;
     const {
       topN = 10,
       categories,
@@ -21,7 +23,6 @@ export const getRecommendations = async (req: Request, res: Response) => {
       preferredRegions,
     } = req.query;
 
-    // Build recommendation request
     const request: any = {
       topN: parseInt(topN as string),
       userId: userId ? parseInt(userId) : undefined,
@@ -30,7 +31,6 @@ export const getRecommendations = async (req: Request, res: Response) => {
       context: {},
     };
 
-    // Add preferences if provided
     if (categories) {
       request.preferences.categories = Array.isArray(categories)
         ? categories
@@ -45,7 +45,6 @@ export const getRecommendations = async (req: Request, res: Response) => {
         : [preferredRegions];
     }
 
-    // Add constraints if provided
     if (minRating) {
       request.constraints.minRating = parseFloat(minRating as string);
     }
@@ -53,7 +52,6 @@ export const getRecommendations = async (req: Request, res: Response) => {
       request.constraints.maxPrice = parseFloat(maxPrice as string);
     }
 
-    // Add context
     if (weatherCondition) {
       request.context.weatherCondition = weatherCondition as string;
     }
@@ -63,7 +61,6 @@ export const getRecommendations = async (req: Request, res: Response) => {
 
     request.context.currentTime = new Date();
 
-    // Get recommendations
     const recommendations = await recommendationService.recommend(request);
 
     res.json({
@@ -81,7 +78,8 @@ export const getRecommendations = async (req: Request, res: Response) => {
 };
 
 /**
- * Get similar destinations to a specific destination
+ * Find destinations similar to a given destination.
+ * Uses content-based filtering to match destination attributes.
  */
 export const getSimilarDestinations = async (req: Request, res: Response) => {
   try {

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import emailService from "../services/emailService";
 import { z } from "zod";
 
-// Validation schema for contact form
+// Input validation schema for contact form submissions
 const contactFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   email: z.string().email("Invalid email address"),
@@ -22,12 +22,15 @@ const contactFormSchema = z.object({
     .max(5000),
 });
 
+/**
+ * Process and send contact form submissions.
+ * Validates input, sends email to admin, and confirms to user.
+ */
 export const submitContactForm = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   try {
-    // Validate request body
     const validationResult = contactFormSchema.safeParse(req.body);
 
     if (!validationResult.success) {
@@ -48,10 +51,8 @@ export const submitContactForm = async (
       subject: formData.subject,
     });
 
-    // Send email to admin
     await emailService.sendContactEmail(formData);
 
-    // Send confirmation email to user (non-blocking)
     emailService
       .sendConfirmationEmail(formData.email, formData.name)
       .catch((err) => {
@@ -76,6 +77,9 @@ export const submitContactForm = async (
   }
 };
 
+/**
+ * Health check endpoint for contact service.
+ */
 export const healthCheck = async (
   req: Request,
   res: Response

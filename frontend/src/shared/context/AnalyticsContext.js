@@ -4,7 +4,6 @@ import analyticsService from "../../util/analyticsService";
 const AnalyticsContext = createContext();
 
 export function AnalyticsProvider({ children }) {
-  // State for different analytics data
   const [demandForecast, setDemandForecast] = useState(null);
   const [staffingRecommendations, setStaffingRecommendations] = useState(null);
   const [peakSeasons, setPeakSeasons] = useState(null);
@@ -12,11 +11,13 @@ export function AnalyticsProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Business data
   const [currentBusiness, setCurrentBusiness] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState("Auckland");
 
-  // Fetch demand forecast
+  /**
+   * Fetch visitor demand forecast for a region and date range.
+   * Returns predicted visitor numbers with confidence scores.
+   */
   const fetchDemandForecast = async (
     region,
     startDate,
@@ -36,7 +37,6 @@ export function AnalyticsProvider({ children }) {
       return data;
     } catch (err) {
       setError(err);
-      // Instead of sample data, use real data structure based on our seeded database
       const realDataStructure = {
         success: true,
         forecast: {

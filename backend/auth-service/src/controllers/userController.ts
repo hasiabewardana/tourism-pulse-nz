@@ -1,6 +1,6 @@
-import { Request, Response } from "express"; // Import Express types
-import bcrypt from "bcrypt"; // For password hashing
-import z from "zod"; // For input validation
+import { Request, Response } from "express";
+import bcrypt from "bcrypt";
+import z from "zod";
 import {
   getAllUsers,
   findUserById,
@@ -9,9 +9,9 @@ import {
   getSessionsByUserId,
   revokeSession,
   revokeAllSessionsForUser,
-} from "../models/authModel"; // Import models
+} from "../models/authModel";
 
-// Schema for updating user
+// Input validation schema for updating user information
 const updateUserSchema = z.object({
   email: z.string().email().optional(),
   password: z.string().min(8).optional(),
@@ -20,7 +20,9 @@ const updateUserSchema = z.object({
   role: z.enum(["admin", "operator", "public"]).optional(),
 });
 
-// Get all users
+/**
+ * Retrieve all users from the database.
+ */
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await getAllUsers();
@@ -30,10 +32,12 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-// Get user by ID
+/**
+ * Retrieve a specific user by their ID.
+ */
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.id, 10); // Extract user ID from params
+    const userId = parseInt(req.params.id, 10);
     const user = await findUserById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
@@ -42,15 +46,16 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
-// Update user by ID
+/**
+ * Update user information including password if provided.
+ */
 export const updateUserById = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.id, 10); // Extract user ID from params
-    const data = updateUserSchema.parse(req.body); // Validate input
-    let passwordHash: string | undefined; // Optional password hash
-    if (data.password) passwordHash = await bcrypt.hash(data.password, 10); // Hash if provided
+    const userId = parseInt(req.params.id, 10);
+    const data = updateUserSchema.parse(req.body);
+    let passwordHash: string | undefined;
+    if (data.password) passwordHash = await bcrypt.hash(data.password, 10);
 
-    // Update user in DB
     const updatedId = await updateUser(
       userId,
       data.email!,
@@ -67,10 +72,12 @@ export const updateUserById = async (req: Request, res: Response) => {
   }
 };
 
-// Delete user by ID
+/**
+ * Permanently delete a user account from the database.
+ */
 export const deleteUserById = async (req: Request, res: Response) => {
   try {
-    const userId = parseInt(req.params.id, 10); // Extract user ID from params
+    const userId = parseInt(req.params.id, 10);
     await deleteUser(userId);
     res.status(204).send();
   } catch (error) {
@@ -78,14 +85,17 @@ export const deleteUserById = async (req: Request, res: Response) => {
   }
 };
 
-// Logout user (revoke session)
+/**
+ * Log out a user by revoking their session(s).
+ * Can revoke a specific session or all sessions for the user.
+ */
 export const logout = async (req: Request, res: Response) => {
   try {
-    const sessionId = req.body.sessionId; // Or extract from token if single session
+    const sessionId = req.body.sessionId;
     if (sessionId) {
-      await revokeSession(sessionId); // Revoke specific session
+      await revokeSession(sessionId);
     } else {
-      await revokeAllSessionsForUser(req.user!.userId); // Revoke all sessions for user
+      await revokeAllSessionsForUser(req.user!.userId);
     }
     res.json({ message: "Logged out successfully" });
   } catch (error) {
@@ -93,13 +103,15 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
-// Get sessions for user
+/**
+ * Retrieve all active sessions for a user.
+ */
 export const getSessions = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(
       req.params.userId || req.user!.userId.toString(),
       10
-    ); // Admin can specify, else self
+    );
     const sessions = await getSessionsByUserId(userId);
     res.json(sessions);
   } catch (error) {
@@ -107,7 +119,9 @@ export const getSessions = async (req: Request, res: Response) => {
   }
 };
 
-// Revoke session by ID
+/**
+ * Revoke a specific session, effectively logging out that device/browser.
+ */
 export const revokeSessionById = async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId;

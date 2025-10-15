@@ -1,6 +1,9 @@
-// src/admin-panel/pages/common/AdminLayout.js
 import { Outlet } from "react-router-dom";
 
+/**
+ * Layout wrapper for admin pages.
+ * Provides a consistent structure for all admin routes.
+ */
 function AdminLayout() {
   return (
     <main>

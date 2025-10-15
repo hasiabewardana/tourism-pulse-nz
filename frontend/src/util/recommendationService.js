@@ -5,8 +5,8 @@ const DEST_API_BASE_URL =
   "http://localhost:3002/dest-service/api";
 
 /**
- * Recommendation and Filtering Service
- * Handles recommendations and advanced filtering operations
+ * Service for destination recommendations and filtering.
+ * Provides personalized suggestions and similarity matching.
  */
 class RecommendationService {
   constructor() {
@@ -17,7 +17,6 @@ class RecommendationService {
       },
     });
 
-    // Add auth token to requests if available
     this.api.interceptors.request.use((config) => {
       const token = localStorage.getItem("token");
       if (token) {
@@ -28,7 +27,8 @@ class RecommendationService {
   }
 
   /**
-   * Get personalized recommendations
+   * Get personalized destination recommendations based on preferences.
+   * Supports filtering by categories, tags, ratings, price, and weather.
    */
   async getRecommendations(params = {}) {
     try {

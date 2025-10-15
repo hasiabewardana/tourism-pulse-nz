@@ -3,7 +3,6 @@ import { getWeather } from "../controllers/openWeatherMapController";
 
 const router = Router();
 
-// Public access
-router.get("/v1/weather", getWeather); // Get weather data for a location
+router.get("/v1/weather", getWeather);
 
 export default router;

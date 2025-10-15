@@ -18,13 +18,12 @@ const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
 
 const app = express();
 
-// Enable CORS for development
 app.use(
   cors({
     origin: [
-      "http://localhost:3006", // Frontend
-      "http://localhost:3001", // Auth service
-      "http://localhost:3000", // API Gateway
+      "http://localhost:3006",
+      "http://localhost:3001",
+      "http://localhost:3000",
     ],
     credentials: true,
   })
@@ -32,7 +31,7 @@ app.use(
 
 app.use(express.json());
 
-// Connect to MongoDB (with better error handling)
+// Establish MongoDB connection and initialize data synchronization
 connectMongoDB()
   .then(() => {
     console.log("✓ MongoDB connected successfully");
@@ -45,15 +44,14 @@ connectMongoDB()
     process.exit(1);
   });
 
-// Initialize scheduled jobs for analytics optimization
 initializeScheduledJobs();
 console.log("✓ Scheduled jobs initialized");
 
-// WebSocket setup
+// Configure WebSocket server for real-time analytics updates
 const server = http.createServer(app);
 const wss = new Server({ server });
 
-// Store WebSocket connections by operator_id
+// Track active WebSocket connections per operator
 const operatorConnections = new Map();
 
 wss.on("connection", (ws, req) => {
@@ -71,9 +69,9 @@ wss.on("connection", (ws, req) => {
   operatorConnections.get(operatorId).add(ws);
   console.log(`Client connected for operator ${operatorId}`);
 
+  // Send real-time capacity updates every few seconds
   const interval = setInterval(async () => {
     try {
-      // Fetch capacity data
       const result = await query(
         `SELECT d.destination_id, d.name, d.capacity, 
                 COALESCE(SUM(b.visitor_count), 0) as current_visitors,
@@ -91,7 +89,6 @@ wss.on("connection", (ws, req) => {
       );
       const data = result;
 
-      // Send capacity data to all connected clients for this operator
       operatorConnections
         .get(operatorId)
         ?.forEach((client: import("ws").WebSocket) => {

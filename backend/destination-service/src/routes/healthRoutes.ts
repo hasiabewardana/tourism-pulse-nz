@@ -1,8 +1,8 @@
-import { Router } from "express"; // Import Express Router
-import { healthCheck } from "../controllers/healthController"; // Import controller
+import { Router } from "express";
+import { healthCheck } from "../controllers/healthController";
 
-const router = Router(); // Create router instance
+const router = Router();
 
-router.get("/v1/health", healthCheck); // Define health check route
+router.get("/v1/health", healthCheck);
 
-export default router; // Export router for use in index.ts
+export default router;
