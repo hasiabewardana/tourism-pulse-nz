@@ -16,9 +16,19 @@ import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import classes from "./BookingForm.module.css"; // New CSS module for theme
 
 function BookingForm({ offer, booking, onSubmit, onCancel }) {
+  const getInitialDate = () => {
+    if (booking?.bookingDate) {
+      const date = new Date(booking.bookingDate);
+      return date.toISOString();
+    }
+    if (offer?.available_from) {
+      return offer.available_from;
+    }
+    return new Date().toISOString();
+  };
+
   const [formData, setFormData] = useState({
-    bookingDate:
-      booking?.bookingDate || offer?.available_from || new Date().toISOString(),
+    bookingDate: getInitialDate(),
     visitorCount: booking?.visitorCount || 1,
     status: booking?.status || "pending",
   });
@@ -48,9 +58,8 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
       setErrors(validationErrors);
       return;
     }
-    // Map to snake_case for backend
     onSubmit({
-      offerId: offer.id,
+      offerId: offer.offer_id || offer.id,
       bookingDate: formData.bookingDate,
       visitorCount: formData.visitorCount,
       status: formData.status,
@@ -66,9 +75,11 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
         <DateTimePicker
           label="Booking Date & Time"
           value={new Date(formData.bookingDate)}
-          onChange={(newValue) =>
-            handleChange("bookingDate", newValue.toISOString())
-          }
+          onChange={(newValue) => {
+            if (newValue) {
+              handleChange("bookingDate", newValue.toISOString());
+            }
+          }}
           minDateTime={new Date(offer.available_from)}
           maxDateTime={new Date(offer.available_to)}
           slotProps={{
@@ -97,24 +108,6 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
           inputProps={{ min: 1, max: offer.max_slots }}
           className={classes.textField}
         />
-        {booking && (
-          <FormControl
-            fullWidth
-            margin="normal"
-            className={classes.formControl}
-          >
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              disabled={booking.status === "confirmed"} // Cannot change if confirmed
-            >
-              <MenuItem value="pending">Pending</MenuItem>
-              <MenuItem value="cancelled">Cancelled</MenuItem>
-            </Select>
-          </FormControl>
-        )}
         <Box
           sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}
         >
@@ -123,7 +116,7 @@ function BookingForm({ offer, booking, onSubmit, onCancel }) {
             variant="contained"
             className={classes.submitButton}
           >
-            Save
+            {booking ? "Save" : "Book Now"}
           </Button>
           <Button
             variant="outlined"

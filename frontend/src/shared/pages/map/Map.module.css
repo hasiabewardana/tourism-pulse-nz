@@ -1,4 +1,3 @@
-/* src/shared/pages/map/Map.module.css */
 /* Tourism Pulse Design System - Map Page */
 
 /* CSS Variables - Tourism Pulse Design System */
@@ -50,6 +49,7 @@
   background-color: var(--tp-primary-bg);
   color: var(--tp-secondary-text);
   position: relative;
+  border-radius: 8px;
 }
 
 .title {
@@ -64,81 +64,69 @@
 /* Filter Controls */
 .filtersContainer {
   margin-bottom: var(--tp-space-lg);
-  padding: var(--tp-space-md);
   background-color: var(--tp-surface-medium);
-  border-radius: var(--tp-radius-lg);
-  box-shadow: var(--tp-shadow-md);
-  border: 1px solid var(--tp-surface-light);
+  padding: var(--tp-space-sm);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
 }
 
 .filtersContainer :global(.MuiFormControl-root) {
   background-color: var(--tp-surface-dark);
-  border-radius: var(--tp-radius-md);
-  transition: var(--tp-transition-smooth);
+  border-radius: var(--tp-radius-sm);
 }
 
-.filtersContainer :global(.MuiFormControl-root:hover) {
-  background-color: var(--tp-surface-medium);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+.filtersContainer :global(.MuiOutlinedInput-root) {
+  border-color: rgba(72, 217, 243, 0.3);
+}
+
+.filtersContainer :global(.MuiOutlinedInput-root:hover) {
+  border-color: var(--tp-primary-accent);
+}
+
+.filtersContainer :global(.MuiOutlinedInput-root.Mui-focused) {
+  border-color: var(--tp-primary-accent);
 }
 
 .filtersContainer :global(.MuiInputLabel-root) {
   color: var(--tp-secondary-text);
-  font-weight: 500;
+}
+
+.filtersContainer :global(.MuiInputLabel-root.Mui-focused) {
+  color: var(--tp-primary-accent);
 }
 
 .filtersContainer :global(.MuiSelect-select) {
   color: var(--tp-primary-text);
 }
 
-.filtersContainer :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-surface-light);
-}
-
-.filtersContainer
-  :global(.MuiFormControl-root:hover .MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-primary-accent);
-}
-
-/* Search and Reset Section */
-.searchResetContainer {
-  margin-bottom: calc(var(--tp-space-xl) + var(--tp-space-lg));
-  padding: var(--tp-space-md);
-  background-color: var(--tp-surface-medium);
-  border-radius: var(--tp-radius-lg);
-  box-shadow: var(--tp-shadow-md);
-  border: 1px solid var(--tp-surface-light);
-}
-
-.searchInput {
+.searchInput :global(.MuiOutlinedInput-root) {
   background-color: var(--tp-surface-dark);
-  border-radius: var(--tp-radius-md);
-  transition: var(--tp-transition-smooth);
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
 }
 
-.searchInput:hover {
-  background-color: var(--tp-surface-medium);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+.searchInput :global(.MuiOutlinedInput-root:hover) {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.1);
 }
 
-.searchInput :global(.MuiInputBase-input) {
+.searchInput :global(.MuiOutlinedInput-root.Mui-focused) {
+  border-color: var(--tp-primary-accent);
+  box-shadow: 0 0 0 2px rgba(72, 217, 243, 0.2);
+}
+
+.searchInput :global(input) {
   color: var(--tp-primary-text);
+  font-weight: 400;
 }
 
 .searchInput :global(.MuiInputLabel-root) {
   color: var(--tp-secondary-text);
-  font-weight: 500;
 }
 
-.searchInput :global(.MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-surface-light);
-}
-
-.searchInput
-  :global(.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline) {
-  border-color: var(--tp-primary-accent);
+.searchInput :global(.MuiInputLabel-root.Mui-focused) {
+  color: var(--tp-primary-accent);
 }
 
 /* Autocomplete Dropdown Styling */
@@ -172,21 +160,20 @@
 /* Reset Button */
 .resetButton {
   height: 56px;
-  border: 2px solid var(--tp-primary-accent);
-  color: var(--tp-primary-accent);
-  background: transparent;
-  border-radius: var(--tp-radius-md);
-  font-weight: 600;
-  transition: var(--tp-transition-smooth);
+  border-color: var(--tp-status-warning);
+  color: var(--tp-status-warning);
+  border-radius: var(--tp-radius-sm);
+  transition: var(--tp-transition-fast);
+  font-weight: 500;
   text-transform: none;
 }
 
 .resetButton:hover {
-  border-color: var(--tp-surface-light);
-  background-color: var(--tp-surface-light);
-  color: var(--tp-surface-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--tp-shadow-md);
+  border-color: var(--tp-status-warning);
+  background-color: var(--tp-status-warning);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--tp-shadow-sm);
 }
 
 /* Loading State */
@@ -212,6 +199,37 @@
   box-shadow: var(--tp-shadow-lg);
   border: 2px solid var(--tp-surface-light);
   position: relative;
+}
+
+/* Action Buttons */
+.actionButton {
+  background-color: var(--tp-surface-medium);
+  color: var(--tp-primary-accent);
+  border: 1px solid var(--tp-primary-accent);
+  transition: var(--tp-transition-smooth);
+}
+
+.actionButton:hover {
+  background-color: var(--tp-primary-accent);
+  color: var(--tp-surface-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--tp-shadow-md);
+}
+
+/* Enhanced Popup Styling */
+.mapContainer :global(.leaflet-popup-content-wrapper) {
+  padding: 0;
+  border-radius: var(--tp-radius-md);
+  box-shadow: var(--tp-shadow-lg);
+  background-color: white;
+  color: var(--tp-surface-dark);
+  min-width: 300px;
+}
+
+.mapContainer :global(.leaflet-popup-content) {
+  margin: 0;
+  padding: 0;
+  color: var(--tp-surface-dark);
 }
 
 /* Map Controls Enhancement */
@@ -373,8 +391,223 @@
   background-color: var(--tp-surface-medium);
   padding: var(--tp-space-lg);
   border-radius: var(--tp-radius-md);
-  margin: var(--tp-space-lg) 0;
-  border: 1px solid var(--tp-surface-light);
+  margin-bottom: var(--tp-space-lg);
+  color: var(--tp-primary-text);
+}
+
+/* Enhanced Features Styles */
+.enhancedFilters {
+  background: linear-gradient(
+    135deg,
+    var(--tp-surface-medium),
+    var(--tp-surface-dark)
+  );
+  border: 1px solid var(--tp-primary-accent);
+  box-shadow: var(--tp-shadow-lg);
+}
+
+.sliderContainer {
+  padding: var(--tp-space-sm);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: var(--tp-radius-sm);
+  margin: var(--tp-space-xs) 0;
+}
+
+/* Floating Action Buttons */
+.fabContainer {
+  position: fixed;
+  bottom: var(--tp-space-lg);
+  right: var(--tp-space-lg);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tp-space-sm);
+}
+
+/* User Location Marker Pulse Animation */
+@keyframes locationPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.mapContainer :global(.user-location-marker) {
+  animation: locationPulse 2s infinite;
+}
+
+/* Enhanced Drawer Styles */
+.drawerContent {
+  background: linear-gradient(
+    180deg,
+    var(--tp-surface-dark),
+    var(--tp-surface-medium)
+  );
+  min-height: 100vh;
+  padding: var(--tp-space-lg) var(--tp-space-md);
+  color: var(--tp-primary-text);
+}
+
+/* Drawer specific overrides */
+.mapContainer :global(.MuiDrawer-paper) {
+  background: linear-gradient(
+    135deg,
+    var(--tp-surface-dark),
+    var(--tp-surface-medium)
+  ) !important;
+  color: var(--tp-primary-text) !important;
+  border-left: 2px solid var(--tp-primary-accent);
+}
+
+.mapContainer :global(.MuiDrawer-paper .MuiTypography-root) {
+  color: var(--tp-primary-text) !important;
+}
+
+.mapContainer :global(.MuiDrawer-paper .MuiListItemText-primary) {
+  color: var(--tp-primary-text) !important;
+}
+
+.mapContainer :global(.MuiDrawer-paper .MuiDivider-root) {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Favorites indicator */
+.favoriteIndicator {
+  color: var(--tp-status-error);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Route Instructions Styling */
+.routeInstructions {
+  background: linear-gradient(
+    135deg,
+    rgba(72, 217, 243, 0.05),
+    rgba(72, 217, 243, 0.1)
+  );
+  border: 1px solid rgba(72, 217, 243, 0.2);
+  border-radius: var(--tp-radius-md);
+  padding: var(--tp-space-sm);
+  margin-bottom: var(--tp-space-sm);
+}
+
+.routeSummary {
+  background: linear-gradient(
+    135deg,
+    rgba(72, 217, 243, 0.1),
+    rgba(72, 217, 243, 0.15)
+  );
+  border: 1px solid rgba(72, 217, 243, 0.3);
+  border-radius: var(--tp-radius-sm);
+  padding: var(--tp-space-sm);
+  margin-bottom: var(--tp-space-md);
+}
+
+/* Enhanced Route line animations */
+@keyframes routeFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -15;
+  }
+}
+
+@keyframes routePulse {
+  0%,
+  100% {
+    stroke-width: 5;
+    opacity: 1;
+  }
+  50% {
+    stroke-width: 6;
+    opacity: 0.8;
+  }
+}
+
+/* Apply animations to route lines */
+.mapContainer :global(.leaflet-interactive[stroke="#48d9f3"]) {
+  animation: routeFlow 3s linear infinite, routePulse 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(72, 217, 243, 0.5));
+}
+
+/* Route markers styling */
+.mapContainer :global(.route-waypoint-marker) {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-waypoint-marker:hover) {
+  transform: scale(1.2);
+  transition: transform 0.2s ease;
+}
+
+.mapContainer :global(.route-start-marker) {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-end-marker) {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.mapContainer :global(.route-start-marker:hover),
+.mapContainer :global(.route-end-marker:hover) {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Route tooltip styling */
+.mapContainer :global(.leaflet-tooltip) {
+  background: linear-gradient(135deg, #0fa4af, #48d9f3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 6px !important;
+  color: white !important;
+  font-weight: 500 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+.mapContainer :global(.leaflet-tooltip::before) {
+  border-top-color: #0fa4af !important;
+}
+
+/* Instructions scroll styling */
+.instructionsScroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(72, 217, 243, 0.5) rgba(255, 255, 255, 0.1);
+}
+
+.instructionsScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.instructionsScroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.instructionsScroll::-webkit-scrollbar-thumb {
+  background: rgba(72, 217, 243, 0.5);
+  border-radius: 2px;
+}
+
+.instructionsScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(72, 217, 243, 0.7);
 }
 
 .statItem {

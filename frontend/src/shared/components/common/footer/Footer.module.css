@@ -1,7 +1,7 @@
 /* Footer Styles */
 .footer {
   background-color: #003135;
-  padding: 1rem 2rem;
+  padding: 5rem 2rem; /* Apply 5rem to top/bottom, 2rem to left/right */
   color: #bdd1d4; /* Light text */
   text-align: center;
   margin-top: auto; /* Push to bottom in flex layout */
@@ -20,6 +20,10 @@
 .contact {
   margin: 0.5rem 0;
   font-size: 0.9rem;
+}
+
+.anchor {
+  color: #403eb5;
 }
 
 .links {

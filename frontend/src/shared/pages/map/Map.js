@@ -20,7 +20,36 @@ import {
   List,
   ListItem,
   ListItemText,
+  Chip,
+  Card,
+  CardContent,
+  CardMedia,
+  Rating,
+  IconButton,
+  Tooltip,
+  Switch,
+  FormControlLabel,
+  Drawer,
+  Divider,
+  Slider,
 } from "@mui/material";
+import {
+  MyLocation as MyLocationIcon,
+  Layers as LayersIcon,
+  FilterList as FilterIcon,
+  Favorite as FavoriteIcon,
+  Share as ShareIcon,
+  Directions as DirectionsIcon,
+  PhotoCamera as PhotoIcon,
+  Star as StarIcon,
+  People as PeopleIcon,
+  Schedule as ScheduleIcon,
+  LocationOn as LocationIcon,
+  Clear as ClearIcon,
+  Navigation as NavigationIcon,
+  AccessTime as AccessTimeIcon,
+  Straighten as StraightenIcon,
+} from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -31,6 +60,9 @@ import {
   Marker,
   Popup,
   useMapEvents,
+  Circle,
+  Polyline,
+  Tooltip as LeafletTooltip,
 } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-markercluster";
 import L from "leaflet";
@@ -46,6 +78,28 @@ const GEOCODING_CACHE_EXPIRY = 30 * 24 * 60 * 60 * 1000; // 30 days
 const GEOCODING_BATCH_SIZE = 5;
 const GEOCODING_BATCH_DELAY = 100; // ms
 const SEARCH_DEBOUNCE_DELAY = 300; // ms
+
+// Map layer configurations
+const MAP_LAYERS = {
+  street: {
+    name: "Street View",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    attribution:
+      "&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors",
+  },
+  satellite: {
+    name: "Satellite",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+  },
+  terrain: {
+    name: "Terrain",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution:
+      "Map data: &copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors, <a href='http://viewfinderpanoramas.org'>SRTM</a> | Map style: &copy; <a href='https://opentopomap.org'>OpenTopoMap</a> (<a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC-BY-SA</a>)",
+  },
+};
 
 // Utility functions
 const isValidCoordinate = (lat, lon) => {
@@ -94,14 +148,19 @@ const fixLeafletIcons = () => {
 };
 
 /**
- * Create custom marker icons based on capacity percentage
+ * Create custom marker icons based on capacity percentage and category
  * Green: < 50%, Orange: 50-80%, Red: > 80%
  */
-const createCustomIcon = (capacityPercentage) => {
+const createCustomIcon = (
+  capacityPercentage,
+  category = null,
+  rating = null
+) => {
   let color = "green";
   if (capacityPercentage > 80) color = "red";
   else if (capacityPercentage > 50) color = "orange";
 
+  // Enhanced icons with category and rating indicators
   return new L.Icon({
     iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
     shadowUrl:
@@ -111,6 +170,112 @@ const createCustomIcon = (capacityPercentage) => {
     popupAnchor: [1, -34],
     shadowSize: [41, 41],
   });
+};
+
+/**
+ * Create special markers for user location
+ */
+const createUserLocationIcon = () => {
+  return new L.Icon({
+    iconUrl:
+      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png",
+    shadowUrl:
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+    iconSize: [30, 48],
+    iconAnchor: [15, 48],
+    popupAnchor: [1, -42],
+    shadowSize: [48, 48],
+  });
+};
+
+/**
+ * Create route waypoint markers for distance indicators
+ */
+const createRouteWaypointIcon = (distanceKm) => {
+  // Create a custom div icon for distance markers
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #0fa4af, #48d9f3);
+      color: white;
+      border: 2px solid white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    ">${distanceKm}km</div>`,
+    className: "route-waypoint-marker",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
+
+/**
+ * Create start/end route markers
+ */
+const createRouteStartIcon = () => {
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #4caf50, #66bb6a);
+      color: white;
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    ">START</div>`,
+    className: "route-start-marker",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
+
+const createRouteEndIcon = () => {
+  return new L.DivIcon({
+    html: `<div style="
+      background: linear-gradient(135deg, #f44336, #ef5350);
+      color: white;
+      border: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+    ">END</div>`,
+    className: "route-end-marker",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
+
+/**
+ * Calculate distance between two coordinates (Haversine formula)
+ */
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
 };
 
 /**
@@ -169,6 +334,28 @@ function Map() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [sortBy, setSortBy] = useState("Name (A-Z)");
 
+  // Map display state
+  const [currentLayer, setCurrentLayer] = useState("street");
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedDestination, setSelectedDestination] = useState(null);
+
+  // User location state
+  const [userLocation, setUserLocation] = useState(null);
+  const [trackingLocation, setTrackingLocation] = useState(false);
+
+  // Favorites and sharing
+  const [favorites, setFavorites] = useState([]);
+
+  // Routing state
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const [routeInstructions, setRouteInstructions] = useState([]);
+  const [showRouteInstructions, setShowRouteInstructions] = useState(false);
+  const [routeDistance, setRouteDistance] = useState(null);
+  const [routeDuration, setRouteDuration] = useState(null);
+  const [isCalculatingRoute, setIsCalculatingRoute] = useState(false);
+  const [routeWaypoints, setRouteWaypoints] = useState([]);
+
   // Autocompletion state
   const [autocompleteOptions, setAutocompleteOptions] = useState([]);
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -179,6 +366,221 @@ function Map() {
 
   // Debounced search term to prevent excessive filtering
   const debouncedSearchTerm = useDebounce(searchTerm, SEARCH_DEBOUNCE_DELAY);
+
+  /**
+   * Get user's current location
+   */
+  const getUserLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser.");
+      return;
+    }
+
+    setTrackingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lon: longitude });
+        setTrackingLocation(false);
+
+        // Center map on user location
+        if (mapInstance) {
+          mapInstance.flyTo([latitude, longitude], 12);
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        setTrackingLocation(false);
+        setError(`Location error: ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    );
+  }, [mapInstance]);
+
+  /**
+   * Toggle favorite destination
+   */
+  const toggleFavorite = useCallback((destinationId) => {
+    setFavorites((prev) => {
+      const newFavorites = prev.includes(destinationId)
+        ? prev.filter((id) => id !== destinationId)
+        : [...prev, destinationId];
+
+      // Save to localStorage
+      localStorage.setItem("favorites", JSON.stringify(newFavorites));
+      return newFavorites;
+    });
+  }, []);
+
+  /**
+   * Share destination functionality
+   */
+  const shareDestination = useCallback(async (destination) => {
+    const shareData = {
+      title: `${destination.name} - TourismPulseNZ`,
+      text: `Check out ${destination.name}: ${destination.description}`,
+      url: `${window.location.origin}/destinations?highlight=${destination.destination_id}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(shareData.url);
+        // You could show a toast notification here
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  }, []);
+
+  /**
+   * Calculate route using OpenStreetMap routing service
+   */
+  const calculateRoute = useCallback(
+    async (destination) => {
+      if (!userLocation) {
+        getUserLocation();
+        return;
+      }
+
+      setIsCalculatingRoute(true);
+      setRouteCoordinates([]);
+      setRouteInstructions([]);
+      setRouteWaypoints([]);
+
+      try {
+        // Using OSRM (Open Source Routing Machine) - free routing service
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${userLocation.lon},${userLocation.lat};${destination.lon},${destination.lat}?overview=full&geometries=geojson&steps=true`
+        );
+
+        if (!response.ok) {
+          throw new Error("Routing service unavailable");
+        }
+
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+
+          // Extract route coordinates
+          const coordinates = route.geometry.coordinates.map((coord) => [
+            coord[1],
+            coord[0],
+          ]); // Reverse lon,lat to lat,lon
+          setRouteCoordinates(coordinates);
+
+          // Create waypoint markers every 5km for distance reference
+          const waypoints = [];
+          const totalDistance = route.distance; // in meters
+          let accumulatedDistance = 0;
+          let waypointDistance = 5000; // 5km intervals
+
+          for (let i = 1; i < coordinates.length; i++) {
+            const segmentDistance =
+              calculateDistance(
+                coordinates[i - 1][0],
+                coordinates[i - 1][1],
+                coordinates[i][0],
+                coordinates[i][1]
+              ) * 1000; // Convert to meters
+
+            accumulatedDistance += segmentDistance;
+
+            // Add waypoint every 5km
+            if (accumulatedDistance >= waypointDistance) {
+              waypoints.push({
+                position: coordinates[i],
+                distance: Math.round(waypointDistance / 1000),
+                totalDistance: Math.round(accumulatedDistance / 1000),
+              });
+              waypointDistance += 5000; // Next 5km mark
+            }
+          }
+          setRouteWaypoints(waypoints);
+
+          // Extract route instructions
+          const instructions = [];
+          route.legs.forEach((leg) => {
+            leg.steps.forEach((step, index) => {
+              instructions.push({
+                instruction:
+                  step.maneuver.instruction ||
+                  `Continue for ${(step.distance / 1000).toFixed(1)} km`,
+                distance: step.distance,
+                duration: step.duration,
+                type: step.maneuver.type,
+              });
+            });
+          });
+          setRouteInstructions(instructions);
+
+          // Set route summary
+          setRouteDistance((route.distance / 1000).toFixed(1)); // Convert to km
+          setRouteDuration(Math.round(route.duration / 60)); // Convert to minutes
+
+          // Show route instructions panel
+          setShowRouteInstructions(true);
+
+          // Fit map to show the entire route
+          if (mapInstance && coordinates.length > 0) {
+            const bounds = L.latLngBounds(coordinates);
+            mapInstance.fitBounds(bounds, { padding: [20, 20] });
+          }
+        }
+      } catch (error) {
+        console.error("Error calculating route:", error);
+
+        // Fallback to Google Maps if routing service fails
+        const userConfirm = window.confirm(
+          "Our internal routing service is temporarily unavailable. Would you like to open directions in Google Maps instead?"
+        );
+
+        if (userConfirm) {
+          const directionsUrl = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lon}/${destination.lat},${destination.lon}`;
+          window.open(directionsUrl, "_blank");
+        }
+      } finally {
+        setIsCalculatingRoute(false);
+      }
+    },
+    [userLocation, getUserLocation, mapInstance]
+  );
+
+  /**
+   * Clear current route
+   */
+  const clearRoute = useCallback(() => {
+    setRouteCoordinates([]);
+    setRouteInstructions([]);
+    setShowRouteInstructions(false);
+    setRouteDistance(null);
+    setRouteDuration(null);
+    setRouteWaypoints([]);
+  }, []);
+
+  /**
+   * Get directions to destination (updated to use internal routing)
+   */
+  const getDirections = useCallback(
+    (destination) => {
+      if (!userLocation) {
+        alert("Please enable location access first");
+        getUserLocation();
+        return;
+      }
+
+      calculateRoute(destination);
+    },
+    [userLocation, getUserLocation, calculateRoute]
+  );
 
   /**
    * Fetch destinations from API based on current filters
@@ -429,6 +831,10 @@ function Map() {
     setSearchInputValue("");
   }, []);
 
+  const handleLayerChange = useCallback((layerType) => {
+    setCurrentLayer(layerType);
+  }, []);
+
   // Map ready handler
   const handleMapReady = useCallback((map) => {
     setMapInstance(map);
@@ -447,6 +853,16 @@ function Map() {
   useEffect(() => {
     fixLeafletIcons();
     cleanCacheExpiredEntries(); // Clean up expired geocoding cache
+
+    // Load favorites from localStorage
+    const savedFavorites = localStorage.getItem("favorites");
+    if (savedFavorites) {
+      try {
+        setFavorites(JSON.parse(savedFavorites));
+      } catch (error) {
+        console.error("Error loading favorites:", error);
+      }
+    }
   }, []);
 
   // Fetch destinations when filters change
@@ -482,118 +898,210 @@ function Map() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          Destination Map
-        </Typography>
-        {/* Filters/Search mirror Destinations.js */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={3}
+        >
+          <Typography variant="h3" className={classes.title}>
+            Destination Map
+          </Typography>
+          <Box display="flex" gap={1}>
+            <Tooltip title="My Location">
+              <IconButton
+                onClick={getUserLocation}
+                disabled={trackingLocation}
+                className={classes.actionButton}
+                sx={{
+                  bgcolor: "#374549",
+                  color: "#48d9f3",
+                  border: "1px solid #48d9f3",
+                  "&:hover": {
+                    bgcolor: "#48d9f3",
+                    color: "#282f33",
+                  },
+                  "&:disabled": {
+                    bgcolor: "#282f33",
+                    color: "#82c2ce",
+                  },
+                }}
+              >
+                {trackingLocation ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <MyLocationIcon />
+                )}
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Map Layers">
+              <IconButton
+                onClick={() => setDrawerOpen(true)}
+                className={classes.actionButton}
+                sx={{
+                  bgcolor: "#374549",
+                  color: "#48d9f3",
+                  border: "1px solid #48d9f3",
+                  "&:hover": {
+                    bgcolor: "#48d9f3",
+                    color: "#282f33",
+                  },
+                }}
+              >
+                <LayersIcon />
+              </IconButton>
+            </Tooltip>
+            {routeCoordinates.length > 0 && (
+              <Tooltip title="Clear Route">
+                <IconButton
+                  onClick={clearRoute}
+                  className={classes.actionButton}
+                  sx={{
+                    bgcolor: "#ff9800",
+                    color: "#ffffff",
+                    border: "1px solid #ff9800",
+                    "&:hover": {
+                      bgcolor: "#e68900",
+                      color: "#ffffff",
+                    },
+                  }}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+        </Box>
+
+        {/* Basic Filters/Search mirror Destinations.js */}
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} md={9} lg={10}>
-            <Autocomplete
-              freeSolo
-              fullWidth
-              options={autocompleteOptions}
-              getOptionLabel={(option) =>
-                typeof option === "string" ? option : option.label
-              }
-              value={searchTerm}
-              inputValue={searchInputValue}
-              onChange={handleSearchChange}
-              onInputChange={handleSearchInputChange}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Destinations"
-                  placeholder="Type to search destinations..."
-                  className={classes.searchInput}
-                  variant="outlined"
-                />
-              )}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} key={option.id || option.label}>
-                  <Box>
-                    <Typography variant="body1" fontWeight="bold">
-                      {option.label}
-                    </Typography>
-                    {option.description && (
-                      <Typography variant="body2" color="text.secondary" noWrap>
-                        {option.description.length > 60
-                          ? `${option.description.substring(0, 60)}...`
-                          : option.description}
+          {/* Primary Row: Search and Sort */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={8}>
+              <Autocomplete
+                freeSolo
+                fullWidth
+                options={autocompleteOptions}
+                getOptionLabel={(option) =>
+                  typeof option === "string" ? option : option.label
+                }
+                value={searchTerm}
+                inputValue={searchInputValue}
+                onChange={handleSearchChange}
+                onInputChange={handleSearchInputChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Search by Destination Name"
+                    placeholder="Type to search destinations..."
+                    className={classes.searchInput}
+                    variant="outlined"
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    {...props}
+                    key={option.id || option.label}
+                  >
+                    <Box>
+                      <Typography variant="body1" fontWeight="bold">
+                        {option.label}
                       </Typography>
-                    )}
+                      {option.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          noWrap
+                        >
+                          {option.description.length > 60
+                            ? `${option.description.substring(0, 60)}...`
+                            : option.description}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
-                </Box>
-              )}
-              PaperComponent={({ children, ...other }) => (
-                <Paper {...other} elevation={3}>
-                  {children}
-                </Paper>
-              )}
-              noOptionsText="No destinations found"
-              loadingText="Loading destinations..."
-            />
+                )}
+                PaperComponent={({ children, ...other }) => (
+                  <Paper {...other} elevation={3}>
+                    {children}
+                  </Paper>
+                )}
+                noOptionsText="No destinations found"
+                loadingText="Loading destinations..."
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  label="Sort By"
+                >
+                  <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
+                  <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
+                  <MenuItem value="Capacity (Low to High)">
+                    Capacity (Low to High)
+                  </MenuItem>
+                  <MenuItem value="Capacity (High to Low)">
+                    Capacity (High to Low)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+
+          {/* Secondary Row: Filters */}
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select value={sortBy} onChange={handleSortChange}>
-                <MenuItem value="Name (A-Z)">Name (A-Z)</MenuItem>
-                <MenuItem value="Name (Z-A)">Name (Z-A)</MenuItem>
-                <MenuItem value="Capacity (Low to High)">
-                  Capacity (Low to High)
-                </MenuItem>
-                <MenuItem value="Capacity (High to Low)">
-                  Capacity (High to Low)
-                </MenuItem>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={selectedStatus}
+                onChange={handleStatusChange}
+                label="Status"
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select value={selectedStatus} onChange={handleStatusChange}>
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={4}>
-              <FormControl fullWidth>
-                <InputLabel>Availability</InputLabel>
-                <Select
-                  value={selectedAvailability}
-                  onChange={handleAvailabilityChange}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="available">Available</MenuItem>
-                  <MenuItem value="full">Full</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6} md={2}>
-              <DatePicker
-                label="Select Date"
-                value={selectedDate}
-                onChange={handleDateChange}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </Grid>
-            <Grid item xs={12} md={3} lg={2}>
-              <Button
-                variant="outlined"
-                onClick={handleResetFilters}
-                className={classes.resetButton}
-                fullWidth
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Availability</InputLabel>
+              <Select
+                value={selectedAvailability}
+                onChange={handleAvailabilityChange}
+                label="Availability"
               >
-                Reset Filters
-              </Button>
-            </Grid>
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="available">Available</MenuItem>
+                <MenuItem value="full">Full</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <DatePicker
+              label="Select Date"
+              value={selectedDate}
+              onChange={handleDateChange}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Button
+              variant="outlined"
+              onClick={handleResetFilters}
+              className={classes.resetButton}
+              fullWidth
+            >
+              RESET
+            </Button>
           </Grid>
         </Grid>
         {/* Map Display */}
-        <Box className={classes.mapContainer}>
+        <Box className={classes.mapContainer} sx={{ marginTop: "2rem" }}>
           {geocodedDestinations.length === 0 && !loading ? (
             <Box
               display="flex"
@@ -625,12 +1133,140 @@ function Map() {
             >
               <MapEventsHandler onMapReady={handleMapReady} />
               <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                key={currentLayer}
+                url={MAP_LAYERS[currentLayer].url}
+                attribution={MAP_LAYERS[currentLayer].attribution}
                 maxZoom={19}
                 tileSize={256}
                 detectRetina={true}
               />
+
+              {/* User Location Marker */}
+              {userLocation && (
+                <Marker
+                  position={[userLocation.lat, userLocation.lon]}
+                  icon={createUserLocationIcon()}
+                >
+                  <Popup>
+                    <Box p={1}>
+                      <Typography variant="h6" gutterBottom>
+                        <LocationIcon sx={{ mr: 1, verticalAlign: "middle" }} />
+                        Your Location
+                      </Typography>
+                      <Typography variant="body2">
+                        Lat: {userLocation.lat.toFixed(6)}
+                        <br />
+                        Lng: {userLocation.lon.toFixed(6)}
+                      </Typography>
+                    </Box>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* User Location Accuracy Circle */}
+              {userLocation && (
+                <Circle
+                  center={[userLocation.lat, userLocation.lon]}
+                  radius={100}
+                  fillColor="blue"
+                  fillOpacity={0.1}
+                  color="blue"
+                  weight={1}
+                />
+              )}
+
+              {/* Route Visualization */}
+              {routeCoordinates.length > 0 && (
+                <>
+                  {/* Background route line (darker/thicker for outline effect) */}
+                  <Polyline
+                    positions={routeCoordinates}
+                    color="#0fa4af"
+                    weight={8}
+                    opacity={0.7}
+                  />
+                  {/* Main route line (bright and animated) */}
+                  <Polyline
+                    positions={routeCoordinates}
+                    color="#48d9f3"
+                    weight={5}
+                    opacity={1}
+                    dashArray="10, 5"
+                    className="route-line-animated"
+                  >
+                    <LeafletTooltip permanent={false} direction="center">
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Route to Destination</strong>
+                        <br />
+                        <span>
+                          {routeDistance} km • {routeDuration} min
+                        </span>
+                      </div>
+                    </LeafletTooltip>
+                  </Polyline>
+
+                  {/* Route start marker */}
+                  <Marker
+                    position={routeCoordinates[0]}
+                    icon={createRouteStartIcon()}
+                    zIndexOffset={1000}
+                  >
+                    <LeafletTooltip
+                      direction="top"
+                      permanent={false}
+                      opacity={1}
+                    >
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Start Point</strong>
+                        <br />
+                        <span>Your Location</span>
+                      </div>
+                    </LeafletTooltip>
+                  </Marker>
+
+                  {/* Route end marker */}
+                  <Marker
+                    position={routeCoordinates[routeCoordinates.length - 1]}
+                    icon={createRouteEndIcon()}
+                    zIndexOffset={1000}
+                  >
+                    <LeafletTooltip
+                      direction="top"
+                      permanent={false}
+                      opacity={1}
+                    >
+                      <div style={{ textAlign: "center", fontSize: "12px" }}>
+                        <strong>Destination</strong>
+                        <br />
+                        <span>
+                          {routeDistance} km • {routeDuration} min
+                        </span>
+                      </div>
+                    </LeafletTooltip>
+                  </Marker>
+
+                  {/* Route waypoint markers for distance indicators */}
+                  {routeWaypoints.map((waypoint, index) => (
+                    <Marker
+                      key={`waypoint-${index}`}
+                      position={waypoint.position}
+                      icon={createRouteWaypointIcon(waypoint.totalDistance)}
+                    >
+                      <LeafletTooltip
+                        direction="top"
+                        offset={[0, -10]}
+                        opacity={1}
+                      >
+                        <div style={{ textAlign: "center", fontSize: "11px" }}>
+                          <strong>{waypoint.totalDistance} km</strong>
+                          <br />
+                          <span>from start</span>
+                        </div>
+                      </LeafletTooltip>
+                    </Marker>
+                  ))}
+                </>
+              )}
               <MarkerClusterGroup
                 chunkedLoading
                 spiderfyOnMaxZoom={true}
@@ -648,46 +1284,176 @@ function Map() {
                         )
                       : 0;
 
+                  const isFavorite = favorites.includes(dest.destination_id);
+                  const distance = userLocation
+                    ? calculateDistance(
+                        userLocation.lat,
+                        userLocation.lon,
+                        dest.lat,
+                        dest.lon
+                      )
+                    : null;
+
                   return (
                     <Marker
                       key={dest.destination_id}
                       position={[dest.lat, dest.lon]}
-                      icon={createCustomIcon(capacityPercentage)}
+                      icon={createCustomIcon(
+                        capacityPercentage,
+                        dest.category,
+                        dest.rating
+                      )}
                     >
-                      <Popup maxWidth={300} closeButton={true}>
-                        <Box p={1}>
-                          <Typography variant="h6" gutterBottom>
-                            {dest.name}
-                          </Typography>
+                      <Popup maxWidth={350} closeButton={true}>
+                        <Box>
+                          {/* Destination Image */}
+                          {dest.photos && dest.photos[0] && (
+                            <CardMedia
+                              component="img"
+                              height="150"
+                              image={"/images/destinations/" + dest.photos[0]}
+                              alt={dest.name}
+                              sx={{ borderRadius: 1, mb: 2 }}
+                            />
+                          )}
+
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="flex-start"
+                            mb={1}
+                          >
+                            <Typography variant="h6" sx={{ flex: 1, mr: 1 }}>
+                              {dest.name}
+                            </Typography>
+                            <Box display="flex" gap={0.5}>
+                              <IconButton
+                                size="small"
+                                onClick={() =>
+                                  toggleFavorite(dest.destination_id)
+                                }
+                                sx={{ color: isFavorite ? "red" : "gray" }}
+                              >
+                                <FavoriteIcon fontSize="small" />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => shareDestination(dest)}
+                              >
+                                <ShareIcon fontSize="small" />
+                              </IconButton>
+                            </Box>
+                          </Box>
+
+                          {/* Rating */}
+                          {dest.rating && (
+                            <Box display="flex" alignItems="center" mb={1}>
+                              <Rating
+                                value={dest.rating}
+                                readOnly
+                                size="small"
+                              />
+                              <Typography variant="body2" sx={{ ml: 1 }}>
+                                ({dest.rating})
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Category */}
+                          {dest.category && (
+                            <Chip
+                              label={dest.category}
+                              size="small"
+                              sx={{ mb: 1 }}
+                            />
+                          )}
+
+                          {/* Distance */}
+                          {distance !== null && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              gutterBottom
+                            >
+                              <LocationIcon
+                                sx={{
+                                  fontSize: 14,
+                                  mr: 0.5,
+                                  verticalAlign: "middle",
+                                }}
+                              />
+                              {distance.toFixed(1)} km away
+                            </Typography>
+                          )}
+
+                          {/* Description */}
                           {dest.description && (
                             <Typography variant="body2" paragraph>
-                              {dest.description.length > 100
-                                ? `${dest.description.substring(0, 100)}...`
+                              {dest.description.length > 120
+                                ? `${dest.description.substring(0, 120)}...`
                                 : dest.description}
                             </Typography>
                           )}
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Visitors:</strong>{" "}
-                            {dest.current_visitors || 0} /{" "}
-                            {dest.capacity || "N/A"}
-                          </Typography>
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Status:</strong> {dest.status || "Unknown"}
-                          </Typography>
-                          <Typography variant="body2" gutterBottom>
-                            <strong>Capacity:</strong> {capacityPercentage}%
-                          </Typography>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() =>
-                              handleViewDetails(dest.destination_id)
-                            }
-                            sx={{ mt: 1 }}
-                            fullWidth
-                          >
-                            View Details
-                          </Button>
+
+                          {/* Stats */}
+                          <Grid container spacing={1} sx={{ mb: 2 }}>
+                            <Grid item xs={6}>
+                              <Box display="flex" alignItems="center">
+                                <PeopleIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                <Typography variant="body2">
+                                  {dest.current_visitors || 0}/
+                                  {dest.capacity || "N/A"}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Box display="flex" alignItems="center">
+                                <ScheduleIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                                <Typography variant="body2">
+                                  {capacityPercentage}%
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          </Grid>
+
+                          {/* Action Buttons */}
+                          <Grid container spacing={1}>
+                            <Grid item xs={6}>
+                              <Button
+                                variant="contained"
+                                size="small"
+                                onClick={() =>
+                                  handleViewDetails(dest.destination_id)
+                                }
+                                fullWidth
+                              >
+                                View Details
+                              </Button>
+                            </Grid>
+                            <Grid item xs={6}>
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => getDirections(dest)}
+                                disabled={!userLocation || isCalculatingRoute}
+                                startIcon={
+                                  isCalculatingRoute ? (
+                                    <CircularProgress
+                                      size={16}
+                                      color="inherit"
+                                    />
+                                  ) : (
+                                    <DirectionsIcon />
+                                  )
+                                }
+                                fullWidth
+                              >
+                                {isCalculatingRoute
+                                  ? "Calculating..."
+                                  : "Directions"}
+                              </Button>
+                            </Grid>
+                          </Grid>
                         </Box>
                       </Popup>
                     </Marker>
@@ -697,6 +1463,315 @@ function Map() {
             </MapContainer>
           )}
         </Box>
+
+        {/* Layer Control Drawer */}
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          PaperProps={{
+            sx: {
+              width: 300,
+              bgcolor: "#282f33",
+              "& .MuiDrawer-paper": {
+                bgcolor: "#282f33",
+                color: "#ffffff",
+                backgroundImage: "linear-gradient(135deg, #282f33, #374549)",
+              },
+            },
+          }}
+        >
+          <Box sx={{ p: 2, bgcolor: "#282f33", minHeight: "100vh" }}>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 600 }}
+            >
+              Map Controls
+            </Typography>
+            <Divider sx={{ mb: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+
+            {/* Layer Selection */}
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Map Layers
+            </Typography>
+            <List>
+              {Object.entries(MAP_LAYERS).map(([key, layer]) => (
+                <ListItem
+                  key={key}
+                  button
+                  onClick={() => handleLayerChange(key)}
+                  selected={currentLayer === key}
+                  sx={{
+                    borderRadius: 1,
+                    mb: 0.5,
+                    bgcolor:
+                      currentLayer === key
+                        ? "rgba(72, 217, 243, 0.3)"
+                        : "rgba(255, 255, 255, 0.05)",
+                    "&:hover": {
+                      bgcolor: "rgba(72, 217, 243, 0.1)",
+                    },
+                    "&.Mui-selected": {
+                      bgcolor: "rgba(72, 217, 243, 0.3)",
+                    },
+                    border:
+                      currentLayer === key
+                        ? "1px solid #48d9f3"
+                        : "1px solid transparent",
+                  }}
+                >
+                  <ListItemText
+                    primary={layer.name}
+                    primaryTypographyProps={{
+                      color: "#ffffff",
+                      fontWeight: currentLayer === key ? 600 : 400,
+                    }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+
+            <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+
+            {/* Display Options */}
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Display Options
+            </Typography>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={showHeatmap}
+                  onChange={(e) => setShowHeatmap(e.target.checked)}
+                  sx={{
+                    "& .MuiSwitch-switchBase.Mui-checked": {
+                      color: "#48d9f3",
+                    },
+                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                      bgcolor: "#48d9f3",
+                    },
+                    "& .MuiSwitch-track": {
+                      bgcolor: "rgba(255, 255, 255, 0.2)",
+                    },
+                  }}
+                />
+              }
+              label="Show Visitor Density"
+              sx={{
+                color: "#ffffff",
+                mb: 1,
+                "& .MuiFormControlLabel-label": {
+                  color: "#ffffff",
+                  fontSize: "0.95rem",
+                },
+              }}
+            />
+
+            {/* Route Instructions */}
+            {showRouteInstructions && (
+              <>
+                <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mb={1}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ color: "#ffffff", fontWeight: 500 }}
+                  >
+                    Route Instructions
+                  </Typography>
+                  <IconButton
+                    size="small"
+                    onClick={clearRoute}
+                    sx={{ color: "#ff9800" }}
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+
+                {/* Enhanced Route Summary */}
+                <Box
+                  sx={{
+                    bgcolor:
+                      "linear-gradient(135deg, rgba(15, 164, 175, 0.2), rgba(72, 217, 243, 0.2))",
+                    p: 2,
+                    borderRadius: 2,
+                    mb: 2,
+                    border: "2px solid rgba(72, 217, 243, 0.4)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: "#48d9f3",
+                      fontWeight: 600,
+                      mb: 1.5,
+                      textAlign: "center",
+                    }}
+                  >
+                    🗺️ Route Overview
+                  </Typography>
+
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <StraightenIcon
+                          sx={{ fontSize: 18, mr: 0.5, color: "#48d9f3" }}
+                        />
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#ffffff", fontWeight: 500 }}
+                        >
+                          {routeDistance} km
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Total Distance
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <Box display="flex" alignItems="center" mb={1}>
+                        <AccessTimeIcon
+                          sx={{ fontSize: 18, mr: 0.5, color: "#48d9f3" }}
+                        />
+                        <Typography
+                          variant="body1"
+                          sx={{ color: "#ffffff", fontWeight: 500 }}
+                        >
+                          {routeDuration} min
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Estimated Time
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  {routeWaypoints.length > 0 && (
+                    <Box
+                      mt={1.5}
+                      pt={1.5}
+                      borderTop="1px solid rgba(255,255,255,0.2)"
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#ffffff", mb: 0.5 }}
+                      >
+                        📍 {routeWaypoints.length} waypoint
+                        {routeWaypoints.length !== 1 ? "s" : ""} marked
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: "#bdd1d4" }}>
+                        Distance markers every 5km along the route
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Instructions List */}
+                <Box sx={{ maxHeight: 200, overflowY: "auto" }}>
+                  {routeInstructions.map((instruction, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        bgcolor: "rgba(255,255,255,0.05)",
+                        p: 1,
+                        borderRadius: 1,
+                        mb: 1,
+                        border: "1px solid rgba(255,255,255,0.1)",
+                      }}
+                    >
+                      <Box display="flex" alignItems="flex-start">
+                        <NavigationIcon
+                          sx={{
+                            fontSize: 14,
+                            mr: 1,
+                            mt: 0.2,
+                            color: "#48d9f3",
+                          }}
+                        />
+                        <Box flex={1}>
+                          <Typography
+                            variant="body2"
+                            sx={{ color: "#ffffff", fontSize: "0.85rem" }}
+                          >
+                            {instruction.instruction}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#bdd1d4" }}
+                          >
+                            {(instruction.distance / 1000).toFixed(1)} km
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              </>
+            )}
+
+            {/* Statistics */}
+            <Divider sx={{ my: 2, bgcolor: "rgba(255,255,255,0.3)" }} />
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ color: "#ffffff", fontWeight: 500 }}
+            >
+              Statistics
+            </Typography>
+            <Box
+              sx={{
+                bgcolor: "rgba(255,255,255,0.05)",
+                p: 1.5,
+                borderRadius: 1,
+                mb: 1,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "#bdd1d4", mb: 0.5 }}>
+                Total Destinations:{" "}
+                <span style={{ color: "#48d9f3", fontWeight: 600 }}>
+                  {geocodedDestinations.length}
+                </span>
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#bdd1d4", mb: 0.5 }}>
+                Favorites:{" "}
+                <span style={{ color: "#48d9f3", fontWeight: 600 }}>
+                  {favorites.length}
+                </span>
+              </Typography>
+              {userLocation && (
+                <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
+                  Location:{" "}
+                  <span style={{ color: "#4caf50", fontWeight: 600 }}>
+                    Enabled
+                  </span>
+                </Typography>
+              )}
+              {!userLocation && (
+                <Typography variant="body2" sx={{ color: "#bdd1d4" }}>
+                  Location:{" "}
+                  <span style={{ color: "#ff9800", fontWeight: 600 }}>
+                    Disabled
+                  </span>
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Drawer>
       </Container>
     </LocalizationProvider>
   );

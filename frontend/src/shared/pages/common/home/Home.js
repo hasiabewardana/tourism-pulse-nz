@@ -17,20 +17,17 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import TrendingSearches from "../../../components/search/TrendingSearches";
+import RecommendationsList from "../../../components/recommendations/RecommendationsList";
+import DestinationModal from "../../../components/destination/DestinationModal";
+import { useAuth } from "../../../context/AuthContext";
 import classes from "./Home.module.css";
 
-// Testimonials for credibility and user engagement
-const testimonials = [
-  { text: "TourismPulseNZ made planning my trip so easy!", author: "Jane Doe" },
-  {
-    text: "Real-time updates saved our business during peak season.",
-    author: "John Smith",
-  },
-];
-
 function Home() {
+  const { isAuthenticated, role } = useAuth();
   const [activeRole, setActiveRole] = useState("public"); // State to manage role-based content
   const [destinations, setDestinations] = useState([]); // State for fetched destinations
+  const [reviews, setReviews] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]); // State for filtered destinations
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
@@ -38,11 +35,16 @@ function Home() {
   const [selectedStatus, setSelectedStatus] = useState("All"); // Status filter
   const [sortBy, setSortBy] = useState("Name (A-Z)"); // Sort state
   const [selectedRegion, setSelectedRegion] = useState("All"); // Region filter
+  const [selectedDestinationId, setSelectedDestinationId] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch destinations from API and limit to 5
+  // Fetch destinations from API
   useEffect(() => {
     const fetchDestinations = async () => {
+      // Get current date in YYYY-MM-DD format
+      const currentDate = new Date().toISOString().split("T")[0];
+
       try {
         const response = await axios.get(
           "http://localhost:3000/dest/api/v1/destinations/public",
@@ -50,7 +52,7 @@ function Home() {
             params: {
               status: "Open",
               availability: "Available",
-              date: "2025-09-07",
+              date: currentDate,
             },
             headers: {
               "Content-Type": "application/json",
@@ -69,6 +71,28 @@ function Home() {
     };
 
     fetchDestinations();
+  }, []); // Empty dependency array to run only once on mount
+
+  // Fetch featured reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/dest/api/v1/reviews/featured",
+          {
+            params: { limit: 6 },
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        setReviews(response.data);
+      } catch (err) {
+        console.error("Failed to load reviews:", err);
+      }
+    };
+
+    fetchReviews();
   }, []);
 
   // Apply search and sort functionality
@@ -148,6 +172,24 @@ function Home() {
     setSelectedRegion("All");
   };
 
+  const handleTrendingSearchClick = (searchQuery) => {
+    setSearchTerm(searchQuery);
+  };
+
+  const handleDestinationClick = (destinationId) => {
+    setSelectedDestinationId(destinationId);
+    setOpenModal(true);
+  };
+
+  const handleViewDestinations = () => {
+    navigate("/destinations");
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedDestinationId(null);
+  };
+
   // Apply filters when dependencies change
   useEffect(() => {
     applySearchAndSort(destinations);
@@ -178,7 +220,7 @@ function Home() {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleLoginClick}
+          onClick={handleViewDestinations}
           className={classes.heroButton}
         >
           Explore Now
@@ -233,15 +275,49 @@ function Home() {
         </div>
       </div>
 
+      {/* Trending Searches Section */}
+      {isAuthenticated && (
+        <Box sx={{ mb: 4 }}>
+          <TrendingSearches onSearchClick={handleTrendingSearchClick} />
+        </Box>
+      )}
+
+      {/* Personalized Recommendations Section - Only for regular users/tourists */}
+      {isAuthenticated && role === "public" && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" className={classes.sectionTitle}>
+            Recommended For You
+          </Typography>
+          <RecommendationsList
+            preferences={{
+              categories: [], // Can be customized based on user preferences
+              preferredRegions:
+                selectedRegion !== "All" ? [selectedRegion] : [],
+              minRating: 3.5,
+            }}
+            onDestinationClick={handleDestinationClick}
+          />
+        </Box>
+      )}
+
       {/* Featured Destinations Section */}
       <Typography variant="h4" className={classes.sectionTitle}>
         Explore Destinations
       </Typography>
 
-      <Grid container spacing={3} className={classes.destinationGrid}>
+      <Grid
+        container
+        spacing={3}
+        className={classes.destinationGrid}
+        sx={{ marginBottom: "2rem" }}
+      >
         {filteredDestinations.map((dest, index) => (
           <Grid item xs={12} sm={6} md={4} key={index}>
-            <Card className={classes.destinationCard}>
+            <Card
+              className={classes.destinationCard}
+              onClick={handleViewDestinations}
+              sx={{ cursor: "pointer" }}
+            >
               <CardMedia
                 component="img"
                 height="200"
@@ -263,25 +339,44 @@ function Home() {
       </Grid>
 
       {/* Testimonials Section */}
-      <Typography variant="h4" className={classes.sectionTitle}>
+      <Typography
+        variant="h4"
+        className={classes.sectionTitle}
+        sx={{ marginTop: "2rem" }}
+      >
         What Our Users Say
       </Typography>
       <Grid container spacing={3} className={classes.testimonialGrid}>
-        {testimonials.map((testimonial, index) => (
-          <Grid item xs={12} sm={6} key={index}>
-            <Card className={classes.testimonialCard}>
-              <CardContent>
-                <Typography variant="body1">{testimonial.text}</Typography>
-                <Typography
-                  variant="caption"
-                  className={classes.testimonialAuthor}
-                >
-                  - {testimonial.author}
-                </Typography>
-              </CardContent>
-            </Card>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <Grid item xs={12} sm={6} key={review.review_id}>
+              <Card className={classes.testimonialCard}>
+                <CardContent>
+                  <Typography variant="body1">{review.comment}</Typography>
+                  <Typography
+                    variant="caption"
+                    className={classes.testimonialAuthor}
+                  >
+                    - {review.username || "Anonymous"}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: "block", mt: 0.5 }}
+                  >
+                    {"★".repeat(review.rating)}
+                    {"☆".repeat(5 - review.rating)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))
+        ) : (
+          <Grid item xs={12}>
+            <Typography variant="body2" align="center">
+              No reviews yet. Be the first to share your experience!
+            </Typography>
           </Grid>
-        ))}
+        )}
       </Grid>
 
       {/* Final Call-to-Action */}
@@ -289,12 +384,19 @@ function Home() {
         <Button
           variant="contained"
           color="secondary"
-          onClick={handleLoginClick}
+          onClick={handleViewDestinations}
           className={classes.loginButton}
         >
           Get Started Today
         </Button>
       </Box>
+
+      {/* Destination Modal for detailed view */}
+      <DestinationModal
+        open={openModal}
+        onClose={handleCloseModal}
+        destinationId={selectedDestinationId}
+      />
     </Container>
   );
 }

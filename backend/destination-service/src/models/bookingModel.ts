@@ -11,7 +11,23 @@ export const getAllBookings = async () => {
 // Get bookings by user ID (user only, their own)
 export const getBookingsByUserId = async (userId: number) => {
   const result = await query(
-    "SELECT * FROM dest.bookings WHERE user_id = $1 ORDER BY created_at DESC",
+    `SELECT b.*, o.name as offer_name, o.description as offer_description, 
+     oi.destination_id, d.name as destination_name,
+     CASE 
+       WHEN b.booking_date < CURRENT_DATE THEN 'expired'
+       ELSE 'active'
+     END as booking_status
+     FROM dest.bookings b
+     LEFT JOIN dest.offers o ON b.offer_id = o.offer_id
+     LEFT JOIN dest.offer_items oi ON o.offer_id = oi.offer_id
+     LEFT JOIN dest.destinations d ON oi.destination_id = d.destination_id
+     WHERE b.user_id = $1 
+     ORDER BY 
+       CASE 
+         WHEN b.booking_date < CURRENT_DATE THEN 1
+         ELSE 0
+       END,
+       b.booking_date DESC`,
     [userId]
   );
   return result;
@@ -29,7 +45,30 @@ export const getBookingsByOperatorId = async (operatorId: number) => {
 // Find a booking by ID
 export const findBookingById = async (bookingId: number) => {
   const result = await query(
-    "SELECT * FROM dest.bookings WHERE booking_id = $1",
+    `SELECT b.*, 
+     o.name as offer_name,
+     o.price as offer_price,
+     COALESCE(b.price, o.price * b.visitor_count) as total_price,
+     (
+       SELECT oi.destination_id 
+       FROM dest.offer_items oi 
+       WHERE oi.offer_id = b.offer_id 
+       LIMIT 1
+     ) as destination_id,
+     (
+       SELECT d.name 
+       FROM dest.destinations d 
+       WHERE d.destination_id = (
+         SELECT oi.destination_id 
+         FROM dest.offer_items oi 
+         WHERE oi.offer_id = b.offer_id 
+         LIMIT 1
+       )
+     ) as destination_name
+     FROM dest.bookings b
+     LEFT JOIN dest.offers o ON b.offer_id = o.offer_id
+     WHERE b.booking_id = $1
+     LIMIT 1`,
     [bookingId]
   );
   return result[0] || null;

@@ -1,0 +1,235 @@
+{
+  "collections": [
+    {
+      "name": "user_interactions",
+      "description": "Tracks all user interactions with destinations",
+      "timeseries": {
+        "timeField": "createdAt",
+        "metaField": "metadata",
+        "granularity": "seconds"
+      },
+      "indexes": [
+        {
+          "key": { "userId": 1, "createdAt": -1 },
+          "name": "userId_createdAt_idx"
+        },
+        {
+          "key": { "destinationId": 1, "createdAt": -1 },
+          "name": "destinationId_createdAt_idx"
+        },
+        {
+          "key": { "interactionType": 1 },
+          "name": "interactionType_idx"
+        },
+        {
+          "key": { "createdAt": 1 },
+          "name": "createdAt_idx",
+          "expireAfterSeconds": 15552000
+        }
+      ],
+      "schema": {
+        "userId": "number (required, indexed)",
+        "destinationId": "number (required, indexed)",
+        "interactionType": "string (enum: view, click, bookmark, share, search, filter)",
+        "durationSeconds": "number (default: 0)",
+        "rating": "number (1-5, optional)",
+        "metadata": {
+          "device": "string",
+          "browser": "string",
+          "referrer": "string",
+          "searchQuery": "string",
+          "filters": "object"
+        },
+        "createdAt": "date (auto, indexed, TTL: 180 days)"
+      }
+    },
+    {
+      "name": "destination_analytics",
+      "description": "Daily aggregated metrics for destinations",
+      "timeseries": {
+        "timeField": "date",
+        "metaField": "destinationId",
+        "granularity": "hours"
+      },
+      "indexes": [
+        {
+          "key": { "destinationId": 1, "date": -1 },
+          "name": "destinationId_date_idx",
+          "unique": true
+        }
+      ],
+      "schema": {
+        "destinationId": "number (required, indexed)",
+        "date": "date (required, indexed)",
+        "metrics": {
+          "views": "number",
+          "clicks": "number",
+          "bookings": "number",
+          "shares": "number",
+          "bookmarks": "number",
+          "averageViewDuration": "number",
+          "conversionRate": "number",
+          "bounceRate": "number"
+        },
+        "demographics": {
+          "byRegion": "object",
+          "byDevice": "object"
+        },
+        "hourlyDistribution": [
+          {
+            "hour": "number",
+            "count": "number"
+          }
+        ],
+        "updatedAt": "date"
+      }
+    },
+    {
+      "name": "user_sessions",
+      "description": "User browsing sessions for behavior analysis",
+      "indexes": [
+        {
+          "key": { "userId": 1, "startTime": -1 },
+          "name": "userId_startTime_idx"
+        },
+        {
+          "key": { "sessionId": 1 },
+          "name": "sessionId_idx",
+          "unique": true
+        },
+        {
+          "key": { "converted": 1 },
+          "name": "converted_idx"
+        },
+        {
+          "key": { "createdAt": 1 },
+          "name": "createdAt_ttl_idx",
+          "expireAfterSeconds": 7776000
+        }
+      ],
+      "schema": {
+        "userId": "number (indexed)",
+        "sessionId": "string (required, unique)",
+        "startTime": "date (required)",
+        "endTime": "date",
+        "duration": "number",
+        "actions": [
+          {
+            "timestamp": "date",
+            "action": "string",
+            "destinationId": "number",
+            "details": "object"
+          }
+        ],
+        "pathSequence": ["string"],
+        "deviceInfo": {
+          "type": "string",
+          "os": "string",
+          "browser": "string",
+          "screenResolution": "string"
+        },
+        "geoLocation": {
+          "country": "string",
+          "city": "string",
+          "coordinates": {
+            "type": "array[number]",
+            "index": "2dsphere"
+          }
+        },
+        "exitPage": "string",
+        "converted": "boolean (default: false)",
+        "createdAt": "date (TTL: 90 days)"
+      }
+    },
+    {
+      "name": "search_analytics",
+      "description": "Search queries and results analytics",
+      "timeseries": {
+        "timeField": "timestamp",
+        "metaField": "userId",
+        "granularity": "seconds"
+      },
+      "indexes": [
+        {
+          "key": { "searchQuery": "text" },
+          "name": "searchQuery_text_idx"
+        },
+        {
+          "key": { "timestamp": -1 },
+          "name": "timestamp_idx"
+        },
+        {
+          "key": { "noResultsFound": 1 },
+          "name": "noResultsFound_idx"
+        }
+      ],
+      "schema": {
+        "userId": "number",
+        "searchQuery": "string (required, text indexed)",
+        "filters": {
+          "regions": ["string"],
+          "categories": ["string"],
+          "priceRange": "string",
+          "dateRange": {
+            "start": "date",
+            "end": "date"
+          }
+        },
+        "resultsCount": "number (default: 0)",
+        "clickedResults": [
+          {
+            "destinationId": "number",
+            "position": "number",
+            "timestamp": "date"
+          }
+        ],
+        "noResultsFound": "boolean (default: false)",
+        "timestamp": "date"
+      }
+    },
+    {
+      "name": "recommendation_feedback",
+      "description": "Tracks effectiveness of recommendations",
+      "indexes": [
+        {
+          "key": { "userId": 1, "createdAt": -1 },
+          "name": "userId_createdAt_idx"
+        },
+        {
+          "key": { "recommendationType": 1 },
+          "name": "recommendationType_idx"
+        },
+        {
+          "key": { "createdAt": 1 },
+          "name": "createdAt_ttl_idx",
+          "expireAfterSeconds": 7776000
+        }
+      ],
+      "schema": {
+        "userId": "number (required, indexed)",
+        "recommendationId": "string",
+        "recommendationType": "string (enum: rule-based, collaborative, content-based, hybrid)",
+        "recommendedDestinations": [
+          {
+            "destinationId": "number",
+            "score": "number",
+            "position": "number"
+          }
+        ],
+        "interactions": [
+          {
+            "destinationId": "number",
+            "action": "string",
+            "timestamp": "date"
+          }
+        ],
+        "effectiveness": {
+          "clickThroughRate": "number",
+          "conversionRate": "number",
+          "relevanceScore": "number"
+        },
+        "createdAt": "date (TTL: 90 days)"
+      }
+    }
+  ]
+}

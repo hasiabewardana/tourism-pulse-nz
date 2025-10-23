@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Container,
   Grid,
   TextField,
   Button,
@@ -11,17 +10,21 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Snackbar,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import OperatorDestinationForm from "./OperatorDestinationForm";
 import OperatorDestination from "./OperatorDestination";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./OperatorDestination.module.css";
 
 function OperatorDestinationList() {
   const [assignments, setAssignments] = useState([]);
   const [filteredAssignments, setFilteredAssignments] = useState([]);
+  const [paginatedAssignments, setPaginatedAssignments] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -29,6 +32,13 @@ function OperatorDestinationList() {
   const [userName, setUserName] = useState("");
   const [destinations, setDestinations] = useState([]);
   const [alerts, setAlerts] = useState([]);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const ITEMS_PER_PAGE = 12;
 
   const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
@@ -55,6 +65,12 @@ function OperatorDestinationList() {
       const message = JSON.parse(event.data);
       if (message.type === "alert") {
         setAlerts((prev) => [...prev, message.message].slice(-5));
+        // Show toast notification for real-time alerts
+        setNotification({
+          open: true,
+          message: `🚨 ${message.message}`,
+          severity: "warning",
+        });
       } else if (message.type === "capacity") {
         setAssignments((prev) =>
           prev.map((assignment) => {
@@ -197,6 +213,16 @@ function OperatorDestinationList() {
     applySearchAndSort(assignments);
   }, [searchTerm, sortBy, assignments]);
 
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedAssignments(filteredAssignments.slice(startIndex, endIndex));
+  }, [filteredAssignments, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, selectedViewMode, selectedDate]);
+
   const handleSubmit = async (formData) => {
     if (!token) {
       setError("No authentication token found.");
@@ -222,6 +248,17 @@ function OperatorDestinationList() {
         throw new Error(`Failed to assign destination: ${response.statusText}`);
       setShowModal(false);
       fetchAssignments();
+
+      // Show success notification
+      const destinationName =
+        destinations.find(
+          (d) => d.destination_id === parseInt(formData.destinationId)
+        )?.name || "Destination";
+      setNotification({
+        open: true,
+        message: `✅ Successfully assigned ${destinationName} to your destinations`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error assigning destination:", err);
       setError("Failed to assign destination.");
@@ -247,6 +284,16 @@ function OperatorDestinationList() {
       if (!response.ok)
         throw new Error(`Failed to delete assignment: ${response.statusText}`);
       fetchAssignments();
+
+      // Show success notification
+      const destinationName =
+        assignments.find((a) => a.destinationId === destinationId)
+          ?.destinationName || "Destination";
+      setNotification({
+        open: true,
+        message: `✅ Successfully removed ${destinationName} from your destinations`,
+        severity: "success",
+      });
     } catch (err) {
       console.error("Error deleting assignment:", err);
       setError("Failed to delete assignment.");
@@ -289,11 +336,18 @@ function OperatorDestinationList() {
     setSortBy("User Name (A-Z)");
   };
 
+  const handleCloseNotification = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setNotification({ ...notification, open: false });
+  };
+
   if (loading) {
     return (
-      <Container className={classes.loadingContainer}>
+      <div className={classes.loadingContainer}>
         <CircularProgress color="primary" />
-      </Container>
+      </div>
     );
   }
 
@@ -307,26 +361,69 @@ function OperatorDestinationList() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container className={classes.container}>
-        <Typography variant="h3" className={classes.title}>
-          My Operator Destinations
-        </Typography>
-
-        <Typography variant="h6" color="error" sx={{ mb: 2 }}>
-          Alerts:
-          {alerts.length > 0 ? (
-            <ul>
+      <div>
+        {/* Alerts Section */}
+        {alerts.length > 0 && (
+          <div className={classes.alertsContainer}>
+            <Typography variant="h6" className={classes.alertsTitle}>
+              Recent Alerts
+            </Typography>
+            <div className={classes.alertsList}>
               {alerts.map((alert, index) => (
-                <li key={index}>{alert}</li>
+                <div key={index} className={classes.alertItem}>
+                  {alert}
+                </div>
               ))}
-            </ul>
-          ) : (
-            " No alerts"
-          )}
-        </Typography>
+            </div>
+          </div>
+        )}
 
         <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
+          {/* Primary Row */}
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={5}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Destination or User Name"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search assignments"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <FormControl fullWidth>
+                <InputLabel>Sort By</InputLabel>
+                <Select
+                  value={sortBy}
+                  label="Sort By"
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <MenuItem value="User Name (A-Z)">User Name (A-Z)</MenuItem>
+                  <MenuItem value="User Name (Z-A)">User Name (Z-A)</MenuItem>
+                  <MenuItem value="Destination Name (A-Z)">
+                    Destination Name (A-Z)
+                  </MenuItem>
+                  <MenuItem value="Destination Name (Z-A)">
+                    Destination Name (Z-A)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Button
+                variant="contained"
+                onClick={handleCreate}
+                className={classes.createButton}
+                fullWidth
+              >
+                Add Destination
+              </Button>
+            </Grid>
+          </Grid>
+          {/* Secondary Row */}
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>View Mode</InputLabel>
               <Select
@@ -340,99 +437,60 @@ function OperatorDestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={4}>
             <DatePicker
-              label="Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
+              label="Select Date"
+              value={selectedDate ? new Date(selectedDate) : null}
+              onChange={(newValue) => {
+                if (newValue) {
+                  const formattedDate = newValue.toLocaleDateString("en-CA", {
+                    timeZone: "Pacific/Auckland",
+                  });
+                  setSelectedDate(formattedDate);
+                }
+              }}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="User Name (A-Z)">User Name (A-Z)</MenuItem>
-                <MenuItem value="User Name (Z-A)">User Name (Z-A)</MenuItem>
-                <MenuItem value="Destination Name (A-Z)">
-                  Destination Name (A-Z)
-                </MenuItem>
-                <MenuItem value="Destination Name (Z-A)">
-                  Destination Name (Z-A)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid item xs={12} sm={6} md={2}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
-            >
-              Reset Filters
-            </Button>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchResetContainer}>
-          <Grid item xs={12} md={8}>
-            <TextField
               fullWidth
-              variant="outlined"
-              label="Search by User or Destination Name"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-              aria-label="Search assignments"
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Button
-              variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
             >
-              Reset Filters
+              Reset
             </Button>
           </Grid>
         </Grid>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCreate}
-          className={classes.createButton}
-        >
-          Assign New Destination
-        </Button>
 
         {filteredAssignments.length === 0 ? (
-          <Typography className={classes.noResults}>
-            No assignments found.
-          </Typography>
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No destinations found.
+            </Typography>
+          </div>
         ) : (
-          <Grid container spacing={3}>
-            {filteredAssignments.map((assignment) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={`${assignment.userId}-${assignment.destinationId}`}
-              >
+          <>
+            <div className={classes.destinationsGrid}>
+              {paginatedAssignments.map((assignment) => (
                 <OperatorDestination
+                  key={`${assignment.userId}-${assignment.destinationId}`}
                   assignment={assignment}
                   userName={userName}
                   onDelete={handleDelete}
                   onSubscribe={handleSubscribe}
                 />
-              </Grid>
-            ))}
-          </Grid>
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(
+                filteredAssignments.length / ITEMS_PER_PAGE
+              )}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         {showModal && (
@@ -447,7 +505,24 @@ function OperatorDestinationList() {
             </div>
           </div>
         )}
-      </Container>
+
+        {/* Global Notifications for WebSocket Alerts */}
+        <Snackbar
+          open={notification.open}
+          autoHideDuration={6000}
+          onClose={handleCloseNotification}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseNotification}
+            severity={notification.severity}
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {notification.message}
+          </Alert>
+        </Snackbar>
+      </div>
     </LocalizationProvider>
   );
 }

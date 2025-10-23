@@ -1,0 +1,121 @@
+:root {
+  --tp-primary-bg: #0fa4af;
+  --tp-primary-accent: #48d9f3;
+  --tp-primary-text: #ffffff;
+  --tp-secondary-text: #bdd1d4;
+  --tp-muted-text: #82c2ce;
+  --tp-surface-dark: #282f33;
+  --tp-surface-medium: #374549;
+  --tp-surface-light: #afddef;
+  --tp-surface-hover: #e0eff1;
+  --tp-status-warning: #ff9800;
+  --tp-status-success: #4caf50;
+  --tp-status-info: #2196f3;
+  --tp-space-xs: 0.5rem;
+  --tp-space-sm: 1rem;
+  --tp-space-md: 1.5rem;
+  --tp-space-lg: 2rem;
+  --tp-space-xl: 3rem;
+  --tp-radius-sm: 4px;
+  --tp-radius-md: 8px;
+  --tp-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --tp-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --tp-transition-fast: all 0.2s ease;
+}
+
+.container {
+  min-height: calc(100vh - 4rem);
+  padding: var(--tp-space-lg);
+  background-color: var(--tp-primary-bg);
+  color: var(--tp-secondary-text);
+  border-radius: 8px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.header {
+  margin-bottom: var(--tp-space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--tp-space-md);
+}
+
+.title {
+  color: var(--tp-primary-text);
+  font-size: 2.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--tp-space-xs);
+}
+
+.subtitle {
+  color: var(--tp-secondary-text);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.contentPaper {
+  background-color: var(--tp-surface-dark);
+  padding: var(--tp-space-lg);
+  border-radius: var(--tp-radius-md);
+  border: 1px solid rgba(72, 217, 243, 0.1);
+  box-shadow: var(--tp-shadow-md);
+  transition: var(--tp-transition-fast);
+}
+
+.contentPaper:hover {
+  border-color: rgba(72, 217, 243, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sectionTitle {
+  color: var(--tp-primary-text);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: var(--tp-space-md);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: var(--tp-space-sm);
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: var(--tp-space-xs);
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .contentPaper {
+    padding: var(--tp-space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: var(--tp-space-xs);
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .header {
+    margin-bottom: var(--tp-space-md);
+  }
+}

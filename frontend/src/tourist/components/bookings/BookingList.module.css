@@ -1,0 +1,25 @@
+.grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1.5rem !important;
+  margin-top: 1rem;
+}
+
+.noResults {
+  color: #ffffff;
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+}

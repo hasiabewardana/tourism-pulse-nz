@@ -1,90 +1,231 @@
-/* src/tourist/components/bookings/BookingCard.module.css */
 .card {
   height: 100%;
   transition: all 0.3s ease;
-  background: rgba(
-    255,
-    255,
-    255,
-    0.18
-  ) !important; /* Lighter card background */
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.15) !important; /* Softer border */
-  border-radius: 15px !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
-  background: rgba(255, 255, 255, 0.25) !important; /* Lighter hover state */
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #48c9b0 0%, #5dade2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderText {
+  color: #ffffff;
+  font-weight: 600;
+  text-align: center;
+  padding: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.statusBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-weight: 600;
+  border-radius: 4px !important;
+  padding: 4px 12px !important;
+  height: auto !important;
+}
+
+.statusOpen {
+  background-color: #6fbf73 !important;
+  color: #ffffff !important;
+}
+
+.statusClosed {
+  background-color: #e57373 !important;
+  color: #ffffff !important;
+}
+
+.statusPending {
+  background-color: #ffa726 !important;
+  color: #ffffff !important;
 }
 
 .cardContent {
-  padding: 1rem;
+  padding: 1rem !important;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  color: #e0e7ea; /* Lighter text for better contrast */
 }
 
 .cardTitle {
-  color: #ffffff; /* White accent for titles */
+  color: #4dd0e1;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  font-size: 1.1rem;
 }
 
 .cardDescription {
-  color: #e0e7ea; /* Lighter text */
+  color: #9e9e9e;
   margin-bottom: 1rem;
+  line-height: 1.5;
+  flex-grow: 1;
 }
 
-.cardInfo {
-  color: #e0e7ea; /* Lighter text */
-  margin-bottom: 0.5rem;
+.dateInfo {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+}
+
+.dateText {
+  color: #9e9e9e;
+  font-size: 0.85rem;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .actionButton {
-  margin: 0.25rem;
-  padding: 0.5rem 1rem;
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.25
-  ) !important; /* Lighter button background */
+  background-color: #4dd0e1 !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Softer border */
+  text-transform: none !important;
+  font-weight: 600 !important;
+  flex: 1;
+  min-width: 80px;
 }
 
 .actionButton:hover {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.35
-  ) !important; /* Lighter hover state */
+  background-color: #26c6da !important;
 }
 
-.statusChip.MuiChip-colorSuccess {
-  background-color: rgba(
-    0,
-    255,
-    0,
-    0.3
-  ) !important; /* Lighter green for confirmed */
-  color: #e0e7ea !important;
+.cancelButton {
+  border-color: #e57373 !important;
+  color: #e57373 !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  flex: 1;
+  min-width: 80px;
 }
 
-.statusChip.MuiChip-colorDefault {
-  background-color: rgba(
-    128,
-    128,
-    128,
-    0.3
-  ) !important; /* Lighter gray for others */
-  color: #e0e7ea !important;
+.cancelButton:hover {
+  background-color: rgba(229, 115, 115, 0.1) !important;
+}
+
+.reviewButton {
+  background-color: #ba68c8 !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  flex: 1;
+  min-width: 80px;
+}
+
+.reviewButton:hover {
+  background-color: #ab47bc !important;
+}
+
+.payButton {
+  background-color: #66bb6a !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  flex: 1;
+  min-width: 100px;
+}
+
+.payButton:hover {
+  background-color: #4caf50 !important;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #c0c0c0;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footerItem {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon {
+  color: #4dd0e1;
+  font-size: 1.2rem;
+}
+
+.footerText {
+  color: #424242;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  color: #2c3e50;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    width: 95%;
+    padding: 1rem;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeInUp 0.6s ease-out;
 }
 
 .modal {

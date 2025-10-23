@@ -19,21 +19,24 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
 import ManagerBookingList from "../../components/bookings/ManagerBookingList";
-import classes from "./ManagerBookingsPage.module.css"; // New CSS, can mirror tourist's
+import Pagination from "../../../shared/components/common/Pagination";
+import classes from "./ManagerBookingsPage.module.css";
 
 function ManagerBookingsPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [paginatedBookings, setPaginatedBookings] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedViewMode, setSelectedViewMode] = useState("Upcoming");
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
   const [sortBy, setSortBy] = useState("Booking Date (Asc)");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const ITEMS_PER_PAGE = 12;
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
   const operatorId = localStorage.getItem("userId"); // Assuming userId is operatorId for managers
@@ -87,15 +90,7 @@ function ManagerBookingsPage() {
 
   useEffect(() => {
     applyFiltersAndSort();
-  }, [
-    bookings,
-    selectedViewMode,
-    selectedStatus,
-    startDate,
-    endDate,
-    sortBy,
-    searchTerm,
-  ]);
+  }, [bookings, selectedViewMode, startDate, sortBy, searchTerm]);
 
   const applyFiltersAndSort = () => {
     const now = new Date();
@@ -113,21 +108,10 @@ function ManagerBookingsPage() {
       });
     }
 
-    if (selectedStatus !== "All") {
-      filtered = filtered.filter(
-        (b) => b.status === selectedStatus.toLowerCase()
-      );
-    }
-
     if (startDate)
       filtered = filtered.filter((b) => {
         const date = new Date(b.bookingDate);
         return date >= startDate && !isNaN(date);
-      });
-    if (endDate)
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date <= endDate && !isNaN(date);
       });
 
     if (searchTerm.trim()) {
@@ -168,11 +152,19 @@ function ManagerBookingsPage() {
     setFilteredBookings(filtered);
   };
 
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedBookings(filteredBookings.slice(startIndex, endIndex));
+  }, [filteredBookings, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedViewMode, startDate, sortBy, searchTerm]);
+
   const handleResetFilters = () => {
-    setSelectedViewMode("Upcoming");
-    setSelectedStatus("All");
+    setSelectedViewMode("All");
     setStartDate(null);
-    setEndDate(null);
     setSortBy("Booking Date (Asc)");
     setSearchTerm("");
   };
@@ -182,9 +174,9 @@ function ManagerBookingsPage() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container className={classes.container}>
-        <Typography variant="h4" className={classes.title}>
-          Operator Bookings
+      <Container maxWidth="lg" className={classes.container}>
+        <Typography variant="h3" className={classes.title}>
+          My Bookings
         </Typography>
 
         <Grid container spacing={2} className={classes.filtersContainer}>
@@ -193,41 +185,20 @@ function ManagerBookingsPage() {
               <InputLabel>View Mode</InputLabel>
               <Select
                 value={selectedViewMode}
+                label="View Mode"
                 onChange={(e) => setSelectedViewMode(e.target.value)}
               >
+                <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Upcoming">Upcoming</MenuItem>
                 <MenuItem value="Expired">Expired</MenuItem>
-                <MenuItem value="All">All</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Confirmed">Confirmed</MenuItem>
-                <MenuItem value="Cancelled">Cancelled</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={3}>
             <DatePicker
-              label="Start Date"
+              label="Filter by Date"
               value={startDate}
               onChange={setStartDate}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={setEndDate}
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
@@ -236,6 +207,7 @@ function ManagerBookingsPage() {
               <InputLabel>Sort By</InputLabel>
               <Select
                 value={sortBy}
+                label="Sort By"
                 onChange={(e) => setSortBy(e.target.value)}
               >
                 <MenuItem value="Booking Date (Asc)">
@@ -252,12 +224,8 @@ function ManagerBookingsPage() {
                 <MenuItem value="Visitor Count (High-Low)">
                   Visitor Count (High-Low)
                 </MenuItem>
-                <MenuItem value="Tourist Name (A-Z)">
-                  Tourist Name (A-Z)
-                </MenuItem>
-                <MenuItem value="Tourist Name (Z-A)">
-                  Tourist Name (Z-A)
-                </MenuItem>
+                <MenuItem value="Tourist Name (A-Z)">User Name (A-Z)</MenuItem>
+                <MenuItem value="Tourist Name (Z-A)">User Name (Z-A)</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -266,29 +234,57 @@ function ManagerBookingsPage() {
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
+              fullWidth
             >
               Reset Filters
             </Button>
           </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Offer Name, Description, Tourist Name, or Email"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
-            />
+          <Grid container spacing={2} style={{ marginBottom: "1rem" }}>
+            <Grid item xs={12} md={8}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Search by Offer, User Name, or Email"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={classes.searchInput}
+                aria-label="Search bookings"
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/operator/offers")}
+                className={classes.createButton}
+                fullWidth
+                size="large"
+              >
+                Manage Offers
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
 
-        <ManagerBookingList
-          bookings={filteredBookings}
-          onRefresh={fetchBookings}
-        />
+        {filteredBookings.length === 0 ? (
+          <div className={classes.noResultsContainer}>
+            <Typography className={classes.noResults}>
+              No bookings found yet. Bookings will appear here once customers
+              book your offers!
+            </Typography>
+          </div>
+        ) : (
+          <>
+            <ManagerBookingList
+              bookings={paginatedBookings}
+              onRefresh={fetchBookings}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
+              onPageChange={setCurrentPage}
+            />
+          </>
+        )}
       </Container>
     </LocalizationProvider>
   );

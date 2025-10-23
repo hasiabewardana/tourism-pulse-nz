@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import classes from "./Footer.module.css"; // Import CSS module
+import classes from "./Footer.module.css";
 
 function Footer() {
   return (
@@ -10,8 +10,11 @@ function Footer() {
         </p>
         <p className={classes.contact}>
           Email:{" "}
-          <a href="mailto:support@tourismpulsenz.com">
-            support@tourismpulsenz.com
+          <a
+            className={classes.anchor}
+            href="mailto:hah15@students.waikato.ac.nz"
+          >
+            info@tourismpulsenz.com
           </a>{" "}
           | Hours: 9:00 AM - 5:00 PM NZST
         </p>

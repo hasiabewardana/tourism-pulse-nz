@@ -1,34 +1,57 @@
 import express from "express";
+import cors from "cors";
 import mongoose from "mongoose";
 import { Server } from "ws";
 import http from "http";
 import dotenv from "dotenv";
 import { query } from "./services/db";
-import analyticsRoutes from "./routes/analyticsRoutes";
 import subscribeRoutes from "./routes/subscribeRoutes";
 import healthRoutes from "./routes/healthRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 import { URL } from "url";
+import { connectMongoDB } from "./config/mongodb";
+import { initializeScheduledJobs } from "./jobs/scheduledJobs";
+import { startDataSyncJobs, performFullSync } from "./jobs/dataSync";
 
 dotenv.config();
 const CAPACITY_THRESHOLD = Number(process.env.CAPACITY_THRESHOLD) || 80;
 
 const app = express();
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3006",
+      "http://localhost:3001",
+      "http://localhost:3000",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose
-  .connect(
-    process.env.MONGODB_URI ||
-      "mongodb://host.docker.internal:27017/tourismpulsenz_analytics"
-  )
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+// Establish MongoDB connection and initialize data synchronization
+connectMongoDB()
+  .then(() => {
+    console.log("✓ MongoDB connected successfully");
+    performFullSync();
+    startDataSyncJobs();
+    console.log("✓ Analytics data sync started");
+  })
+  .catch((err) => {
+    console.error("✗ Failed to connect to MongoDB:", err);
+    process.exit(1);
+  });
 
-// WebSocket setup
+initializeScheduledJobs();
+console.log("✓ Scheduled jobs initialized");
+
+// Configure WebSocket server for real-time analytics updates
 const server = http.createServer(app);
 const wss = new Server({ server });
 
-// Store WebSocket connections by operator_id
+// Track active WebSocket connections per operator
 const operatorConnections = new Map();
 
 wss.on("connection", (ws, req) => {
@@ -46,9 +69,9 @@ wss.on("connection", (ws, req) => {
   operatorConnections.get(operatorId).add(ws);
   console.log(`Client connected for operator ${operatorId}`);
 
+  // Send real-time capacity updates every few seconds
   const interval = setInterval(async () => {
     try {
-      // Fetch capacity data
       const result = await query(
         `SELECT d.destination_id, d.name, d.capacity, 
                 COALESCE(SUM(b.visitor_count), 0) as current_visitors,
@@ -66,7 +89,6 @@ wss.on("connection", (ws, req) => {
       );
       const data = result;
 
-      // Send capacity data to all connected clients for this operator
       operatorConnections
         .get(operatorId)
         ?.forEach((client: import("ws").WebSocket) => {
@@ -88,6 +110,9 @@ wss.on("connection", (ws, req) => {
             type: "alert",
             message: `Capacity exceeded ${CAPACITY_THRESHOLD}% at ${item.name} (ID: ${item.destination_id})`,
           });
+          console.log(
+            `⚠ Capacity alert: ${item.name} at ${item.occupancy_percentage}%`
+          );
           operatorConnections
             .get(operatorId)
             ?.forEach((client: import("ws").WebSocket) => {
@@ -113,10 +138,34 @@ wss.on("connection", (ws, req) => {
 
 // Mount routes
 app.use("/analytics-service/api", healthRoutes);
-app.use("/analytics-service/api", analyticsRoutes);
+app.use("/analytics-service/api", dashboardRoutes);
 app.use("/analytics-service/api", subscribeRoutes);
+
+// Global error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[ANALYTICS-SERVICE ERROR] ${err.message}`, {
+      url: req.url,
+      method: req.method,
+    });
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  }
+);
 
 const PORT = 3003;
 server.listen(PORT, () => {
-  console.log(`Analytics service running on port ${PORT}`);
+  console.log(`✓ Analytics service running on port ${PORT}`);
+  console.log(`✓ WebSocket server ready on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
 });

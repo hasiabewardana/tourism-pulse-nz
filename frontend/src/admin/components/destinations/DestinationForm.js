@@ -14,6 +14,7 @@ import {
 import { readAndCompressImage } from "browser-image-resizer";
 import classes from "./DestinationForm.module.css";
 import slugify from "slugify";
+import { NZ_REGIONS, extractRegion } from "../../../util/regionParser";
 
 // Image compression configurations
 const thumbnailConfig = {
@@ -42,6 +43,7 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
     lat: 0,
     lon: 0,
     status: destination?.status?.toLowerCase() || "open",
+    region: destination?.region || "",
   });
 
   const [thumbnail, setThumbnail] = useState(null);
@@ -295,10 +297,11 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         locationName: selectedOption.name,
         lat: selectedOption.lat,
         lon: selectedOption.lon,
+        region: extractRegion(selectedOption.name),
       }));
       setErrors((prev) => ({ ...prev, locationName: null }));
 
-      // Mark location as modified if coordinates changed
+      // Mark location and region as modified if coordinates changed
       if (destination) {
         const originalLocation = `POINT(${
           destination.location?.match(/POINT\(([^ ]+) ([^ ]+)\)/)?.[1]
@@ -306,6 +309,11 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
         const newLocation = `POINT(${selectedOption.lon} ${selectedOption.lat})`;
         if (originalLocation !== newLocation) {
           setModifiedFields((prev) => new Set([...prev, "location"]));
+        }
+
+        const newRegion = extractRegion(selectedOption.name);
+        if (newRegion !== destination.region) {
+          setModifiedFields((prev) => new Set([...prev, "region"]));
         }
       }
     }
@@ -373,6 +381,9 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
       description: formData.description,
       capacity: parseInt(formData.capacity),
       status: currentStatus,
+      region:
+        formData.region ||
+        extractRegion(formData.locationName || formData.name),
     };
 
     // Include location if coordinates are available
@@ -511,6 +522,35 @@ function DestinationForm({ destination, onSubmit, onCancel }) {
           margin="normal"
         />
       </Box>
+
+      <FormControl fullWidth margin="normal" sx={getFieldStyle("region")}>
+        <InputLabel>
+          Region {modifiedFields.has("region") ? "✎" : ""}
+        </InputLabel>
+        <Select
+          name="region"
+          value={formData.region}
+          onChange={handleChange}
+          label={`Region ${modifiedFields.has("region") ? "✎" : ""}`}
+        >
+          <MenuItem value="">
+            <em>Auto-detect from location</em>
+          </MenuItem>
+          {NZ_REGIONS.map((region) => (
+            <MenuItem key={region} value={region}>
+              {region}
+            </MenuItem>
+          ))}
+        </Select>
+        {modifiedFields.has("region") && (
+          <Typography
+            variant="caption"
+            sx={{ color: "#48d9f3", marginTop: "4px" }}
+          >
+            Modified
+          </Typography>
+        )}
+      </FormControl>
 
       <TextField
         label={`Capacity ${modifiedFields.has("capacity") ? "✎" : ""}`}

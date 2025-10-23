@@ -1,0 +1,1937 @@
+openapi: 3.0.3
+info:
+  title: TourismPulseNZ API
+  description: |
+    TourismPulseNZ is a comprehensive tourism management platform for New Zealand, 
+    providing smart recommendations, real-time analytics, demand forecasting, and 
+    destination management capabilities.
+
+    ## Features
+    - Smart destination recommendations using ML algorithms
+    - Real-time analytics and visitor tracking
+    - Demand forecasting and peak season predictions
+    - Weather-based destination filtering
+    - Multi-role access control (Public, Tourist, Operator, Admin)
+    - Booking and offer management
+
+    ## Authentication
+    Most endpoints require JWT authentication. Include the token in the Authorization header:
+    `Authorization: Bearer <your_jwt_token>`
+
+  version: 1.0.0
+  contact:
+    name: TourismPulseNZ Support
+    email: support@tourismpulse.nz
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.tourismpulse.nz
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Destinations
+    description: Destination management and retrieval
+  - name: Recommendations
+    description: Smart recommendation system
+  - name: Bookings
+    description: Booking management
+  - name: Offers
+    description: Special offers and promotions
+  - name: Analytics
+    description: Analytics and visitor tracking
+  - name: Forecasting
+    description: Demand forecasting and predictions
+  - name: Staffing
+    description: Staffing analytics and optimization
+  - name: Integration
+    description: External API integrations
+  - name: Health
+    description: Service health checks
+
+paths:
+  # Authentication Endpoints
+  /auth/api/v1/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account in the system
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegistration"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/api/v1/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and receive JWT token
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/api/v1/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get user profile
+      description: Retrieve authenticated user's profile information
+      operationId: getUserProfile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Authentication
+      summary: Update user profile
+      description: Update authenticated user's profile information
+      operationId: updateUserProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/api/v1/users:
+    get:
+      tags:
+        - Authentication
+      summary: Get all users (Admin only)
+      description: Retrieve list of all users in the system
+      operationId: getAllUsers
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Destination Endpoints
+  /dest/api/v1/destinations:
+    get:
+      tags:
+        - Destinations
+      summary: Get all destinations
+      description: Retrieve list of destinations with optional filtering
+      operationId: getDestinations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+            example: Adventure
+        - name: region
+          in: query
+          description: Filter by region
+          schema:
+            type: string
+            example: Queenstown
+        - name: minRating
+          in: query
+          description: Minimum rating filter
+          schema:
+            type: number
+            format: float
+            minimum: 0
+            maximum: 5
+            example: 4.0
+        - name: maxPrice
+          in: query
+          description: Maximum price filter
+          schema:
+            type: number
+            format: float
+            example: 500
+        - name: tags
+          in: query
+          description: Filter by tags (comma-separated)
+          schema:
+            type: string
+            example: hiking,scenic
+      responses:
+        "200":
+          description: Destinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationsListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Destinations
+      summary: Create destination (Admin only)
+      description: Add a new destination to the system
+      operationId: createDestination
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationCreate"
+      responses:
+        "201":
+          description: Destination created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /dest/api/v1/destinations/public:
+    get:
+      tags:
+        - Destinations
+      summary: Get public destinations
+      description: Retrieve publicly accessible destinations (no authentication required)
+      operationId: getPublicDestinations
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: region
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public destinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationsListResponse"
+
+  /dest/api/v1/destinations/{id}:
+    get:
+      tags:
+        - Destinations
+      summary: Get destination by ID
+      description: Retrieve detailed information about a specific destination
+      operationId: getDestinationById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Destination ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        "200":
+          description: Destination retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationDetailResponse"
+        "404":
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Destinations
+      summary: Update destination (Admin only)
+      description: Update an existing destination
+      operationId: updateDestination
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationUpdate"
+      responses:
+        "200":
+          description: Destination updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Destinations
+      summary: Delete destination (Admin only)
+      description: Remove a destination from the system
+      operationId: deleteDestination
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Destination deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Recommendation Endpoints
+  /dest/api/recommendations:
+    get:
+      tags:
+        - Recommendations
+      summary: Get personalized recommendations
+      description: Get smart destination recommendations based on user preferences and context
+      operationId: getRecommendations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: topN
+          in: query
+          description: Number of recommendations to return
+          schema:
+            type: integer
+            default: 10
+            example: 5
+        - name: categories
+          in: query
+          description: Preferred categories
+          schema:
+            type: string
+            example: Adventure,Nature
+        - name: tags
+          in: query
+          description: Preferred tags
+          schema:
+            type: string
+        - name: minRating
+          in: query
+          description: Minimum rating
+          schema:
+            type: number
+            format: float
+        - name: maxPrice
+          in: query
+          description: Maximum price
+          schema:
+            type: number
+            format: float
+        - name: weatherCondition
+          in: query
+          description: Current weather condition
+          schema:
+            type: string
+            enum: [sunny, rainy, cloudy, snowy]
+        - name: season
+          in: query
+          description: Current season
+          schema:
+            type: string
+            enum: [summer, autumn, winter, spring]
+        - name: preferredRegions
+          in: query
+          description: Preferred regions
+          schema:
+            type: string
+        - name: excludeVisited
+          in: query
+          description: Exclude previously visited destinations
+          schema:
+            type: boolean
+            default: true
+      responses:
+        "200":
+          description: Recommendations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationsResponse"
+        "500":
+          description: Failed to generate recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /dest/api/recommendations/similar/{destinationId}:
+    get:
+      tags:
+        - Recommendations
+      summary: Get similar destinations
+      description: Find destinations similar to a specific destination
+      operationId: getSimilarDestinations
+      parameters:
+        - name: destinationId
+          in: path
+          required: true
+          description: Destination ID to find similar destinations for
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          description: Number of similar destinations to return
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Similar destinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SimilarDestinationsResponse"
+        "404":
+          description: Destination not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /dest/api/recommendations/trending:
+    get:
+      tags:
+        - Recommendations
+      summary: Get trending destinations
+      description: Retrieve currently trending destinations based on recent activity
+      operationId: getTrendingDestinations
+      parameters:
+        - name: limit
+          in: query
+          description: Number of trending destinations
+          schema:
+            type: integer
+            default: 10
+        - name: timeWindow
+          in: query
+          description: Time window for trending analysis
+          schema:
+            type: string
+            enum: [24h, 7d, 30d]
+            default: 7d
+      responses:
+        "200":
+          description: Trending destinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendingDestinationsResponse"
+
+  # Booking Endpoints
+  /dest/api/v1/bookings:
+    get:
+      tags:
+        - Bookings
+      summary: Get user bookings
+      description: Retrieve authenticated user's bookings
+      operationId: getBookings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Filter by booking status
+          schema:
+            type: string
+            enum: [pending, confirmed, cancelled]
+        - name: startDate
+          in: query
+          description: Filter bookings from this date
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Filter bookings until this date
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Bookings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingsListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Bookings
+      summary: Create booking
+      description: Create a new booking for a destination
+      operationId: createBooking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingCreate"
+      responses:
+        "201":
+          description: Booking created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Offers Endpoints
+  /dest/api/v1/offers:
+    get:
+      tags:
+        - Offers
+      summary: Get offers
+      description: Retrieve available offers for destinations
+      operationId: getOffers
+      parameters:
+        - name: destination_id
+          in: query
+          description: Filter by destination ID
+          schema:
+            type: integer
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [active, expired]
+      responses:
+        "200":
+          description: Offers retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OffersListResponse"
+
+  # Analytics Endpoints
+  /analytics/api/v1/analytics:
+    post:
+      tags:
+        - Analytics
+      summary: Create analytics entry
+      description: Log analytics data for tracking user interactions
+      operationId: createAnalytics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyticsCreate"
+      responses:
+        "201":
+          description: Analytics data recorded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Forecasting Endpoints
+  /analytics/api/v1/forecast/demand:
+    post:
+      tags:
+        - Forecasting
+      summary: Generate demand forecast
+      description: Generate demand forecasts using ML models
+      operationId: generateDemandForecast
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForecastRequest"
+      responses:
+        "200":
+          description: Forecast generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForecastResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /analytics/api/v1/forecast/peaks/{region}/{year}:
+    get:
+      tags:
+        - Forecasting
+      summary: Get peak season forecast
+      description: Retrieve peak season predictions for a region
+      operationId: getPeakSeasonForecast
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: region
+          in: path
+          required: true
+          description: Region name
+          schema:
+            type: string
+            example: Queenstown
+        - name: year
+          in: path
+          required: true
+          description: Year for forecast
+          schema:
+            type: integer
+            example: 2025
+      responses:
+        "200":
+          description: Peak season forecast retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PeakSeasonResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /analytics/api/v1/forecast/trends:
+    get:
+      tags:
+        - Forecasting
+      summary: Get demand trends
+      description: Retrieve demand trend analysis
+      operationId: getDemandTrends
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: region
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Trends retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrendsResponse"
+
+  /analytics/api/v1/forecast/accuracy:
+    get:
+      tags:
+        - Forecasting
+      summary: Get forecast accuracy
+      description: Retrieve accuracy metrics for forecasting models
+      operationId: getForecastAccuracy
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Accuracy metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccuracyResponse"
+
+  # Staffing Endpoints
+  /analytics/api/v1/staffing/recommendations:
+    post:
+      tags:
+        - Staffing
+      summary: Generate staffing recommendations
+      description: Get staffing level recommendations based on demand
+      operationId: generateStaffingRecommendations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StaffingRequest"
+      responses:
+        "200":
+          description: Staffing recommendations generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffingResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /analytics/api/v1/staffing/optimization/{businessId}:
+    get:
+      tags:
+        - Staffing
+      summary: Get staffing optimization
+      description: Retrieve staffing optimization analysis
+      operationId: getStaffingOptimization
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Optimization data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizationResponse"
+
+  /analytics/api/v1/staffing/history/{businessId}:
+    get:
+      tags:
+        - Staffing
+      summary: Get staffing history
+      description: Retrieve historical staffing data
+      operationId: getStaffingHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: History retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffingHistoryResponse"
+
+  /analytics/api/v1/staffing/compare:
+    post:
+      tags:
+        - Staffing
+      summary: Compare staffing scenarios
+      description: Compare different staffing scenarios
+      operationId: compareStaffingScenarios
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScenarioCompareRequest"
+      responses:
+        "200":
+          description: Comparison completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScenarioCompareResponse"
+
+  # Integration Endpoints
+  /integration/api/weather:
+    get:
+      tags:
+        - Integration
+      summary: Get weather data
+      description: Retrieve real-time weather data for a location
+      operationId: getWeather
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: Latitude
+          schema:
+            type: number
+            format: float
+            example: -45.0312
+        - name: lon
+          in: query
+          required: true
+          description: Longitude
+          schema:
+            type: number
+            format: float
+            example: 168.6626
+      responses:
+        "200":
+          description: Weather data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeatherResponse"
+        "500":
+          description: Failed to fetch weather data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # Health Check Endpoints
+  /auth/api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Auth service health check
+      operationId: authHealthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /dest/api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Destination service health check
+      operationId: destinationHealthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /analytics/api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Analytics service health check
+      operationId: analyticsHealthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+
+  schemas:
+    # Authentication Schemas
+    UserRegistration:
+      type: object
+      required:
+        - email
+        - password
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: securepassword123
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [tourist, operator, admin]
+          default: tourist
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          example: securepassword123
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [public, tourist, operator, admin]
+          example: tourist
+
+    UserProfile:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        user:
+          allOf:
+            - $ref: "#/components/schemas/User"
+            - type: object
+              properties:
+                created_at:
+                  type: string
+                  format: date-time
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+
+    UserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: User registered successfully
+        user:
+          $ref: "#/components/schemas/User"
+
+    UsersListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 150
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+
+    # Destination Schemas
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: float
+          example: -45.0312
+        longitude:
+          type: number
+          format: float
+          example: 168.6626
+
+    ContactInfo:
+      type: object
+      properties:
+        phone:
+          type: string
+          example: "+64 3 249 7416"
+        email:
+          type: string
+          format: email
+        website:
+          type: string
+          format: uri
+
+    Destination:
+      type: object
+      properties:
+        destination_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Milford Sound
+        description:
+          type: string
+        category:
+          type: string
+          example: Nature & Wildlife
+        region:
+          type: string
+          example: Southland
+        location:
+          $ref: "#/components/schemas/Location"
+        rating:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 5
+          example: 4.8
+        estimated_cost:
+          type: number
+          format: float
+          example: 250
+        tags:
+          type: array
+          items:
+            type: string
+          example: [scenic, boat-tours, wildlife]
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+        status:
+          type: string
+          enum: [active, inactive, Open, Closed]
+          example: active
+        accessibility_features:
+          type: boolean
+        family_friendly:
+          type: boolean
+        pet_friendly:
+          type: boolean
+        opening_hours:
+          type: string
+        contact_info:
+          $ref: "#/components/schemas/ContactInfo"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    DestinationCreate:
+      type: object
+      required:
+        - name
+        - description
+        - category
+        - region
+        - location
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        region:
+          type: string
+        location:
+          $ref: "#/components/schemas/Location"
+        estimated_cost:
+          type: number
+          format: float
+        tags:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: string
+        accessibility_features:
+          type: boolean
+        family_friendly:
+          type: boolean
+        pet_friendly:
+          type: boolean
+        opening_hours:
+          type: string
+        contact_info:
+          $ref: "#/components/schemas/ContactInfo"
+
+    DestinationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        region:
+          type: string
+        estimated_cost:
+          type: number
+        status:
+          type: string
+          enum: [active, inactive]
+        tags:
+          type: array
+          items:
+            type: string
+
+    DestinationsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+          example: 15
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Destination"
+
+    DestinationDetailResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        destination:
+          $ref: "#/components/schemas/Destination"
+
+    DestinationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        destination:
+          type: object
+          properties:
+            destination_id:
+              type: integer
+            name:
+              type: string
+            status:
+              type: string
+            created_at:
+              type: string
+              format: date-time
+
+    # Recommendation Schemas
+    RecommendedDestination:
+      allOf:
+        - $ref: "#/components/schemas/Destination"
+        - type: object
+          properties:
+            score:
+              type: number
+              format: float
+              minimum: 0
+              maximum: 1
+              example: 0.92
+            reasons:
+              type: array
+              items:
+                type: string
+              example:
+                - Matches your preferred categories
+                - Highly rated (4.7/5)
+                - Perfect for current weather conditions
+
+    RecommendationsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecommendedDestination"
+
+    SimilarDestination:
+      allOf:
+        - $ref: "#/components/schemas/Destination"
+        - type: object
+          properties:
+            similarity_score:
+              type: number
+              format: float
+              example: 0.88
+            reasons:
+              type: array
+              items:
+                type: string
+
+    SimilarDestinationsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        destinationId:
+          type: integer
+        count:
+          type: integer
+        similar:
+          type: array
+          items:
+            $ref: "#/components/schemas/SimilarDestination"
+
+    TrendingDestination:
+      allOf:
+        - $ref: "#/components/schemas/Destination"
+        - type: object
+          properties:
+            trending_score:
+              type: number
+              format: float
+              example: 0.95
+            view_count:
+              type: integer
+              example: 12500
+            booking_count:
+              type: integer
+              example: 450
+            growth_rate:
+              type: number
+              format: float
+              example: 2.3
+            reasons:
+              type: array
+              items:
+                type: string
+
+    TrendingDestinationsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+        timeWindow:
+          type: string
+        trending:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendingDestination"
+
+    # Booking Schemas
+    BookingItem:
+      type: object
+      properties:
+        offer_id:
+          type: integer
+        offer_name:
+          type: string
+        quantity:
+          type: integer
+        unit_price:
+          type: number
+          format: float
+        subtotal:
+          type: number
+          format: float
+
+    Booking:
+      type: object
+      properties:
+        booking_id:
+          type: integer
+        user_id:
+          type: integer
+        destination_id:
+          type: integer
+        destination_name:
+          type: string
+        booking_date:
+          type: string
+          format: date
+        number_of_people:
+          type: integer
+        total_cost:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [pending, confirmed, cancelled]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BookingItem"
+        created_at:
+          type: string
+          format: date-time
+
+    BookingCreate:
+      type: object
+      required:
+        - destination_id
+        - booking_date
+        - number_of_people
+        - items
+      properties:
+        destination_id:
+          type: integer
+        booking_date:
+          type: string
+          format: date
+        number_of_people:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              offer_id:
+                type: integer
+              quantity:
+                type: integer
+        notes:
+          type: string
+
+    BookingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+        booking:
+          type: object
+          properties:
+            booking_id:
+              type: integer
+            destination_id:
+              type: integer
+            booking_date:
+              type: string
+              format: date
+            total_cost:
+              type: number
+            status:
+              type: string
+            confirmation_code:
+              type: string
+
+    BookingsListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+        bookings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Booking"
+
+    # Offer Schemas
+    Offer:
+      type: object
+      properties:
+        offer_id:
+          type: integer
+        destination_id:
+          type: integer
+        operator_id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        original_price:
+          type: number
+          format: float
+        discounted_price:
+          type: number
+          format: float
+        discount_percentage:
+          type: number
+          format: float
+        valid_from:
+          type: string
+          format: date
+        valid_until:
+          type: string
+          format: date
+        terms_conditions:
+          type: string
+        max_participants:
+          type: integer
+        status:
+          type: string
+          enum: [active, expired]
+
+    OffersListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        count:
+          type: integer
+        offers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Offer"
+
+    # Analytics Schemas
+    AnalyticsCreate:
+      type: object
+      required:
+        - user_id
+        - destination_id
+        - interaction_type
+      properties:
+        user_id:
+          type: integer
+        destination_id:
+          type: integer
+        interaction_type:
+          type: string
+          enum: [view, click, bookmark, share, search, filter]
+        duration_seconds:
+          type: integer
+        metadata:
+          type: object
+          properties:
+            device:
+              type: string
+            browser:
+              type: string
+            referrer:
+              type: string
+
+    # Forecasting Schemas
+    ForecastRequest:
+      type: object
+      required:
+        - region
+        - startDate
+        - endDate
+        - forecastType
+      properties:
+        region:
+          type: string
+          example: Queenstown
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        forecastType:
+          type: string
+          enum: [daily, weekly, monthly, seasonal]
+
+    PredictedDemand:
+      type: object
+      properties:
+        accommodation:
+          type: number
+        activities:
+          type: number
+        transportation:
+          type: number
+        restaurants:
+          type: number
+
+    ConfidenceInterval:
+      type: object
+      properties:
+        lower:
+          type: number
+          format: float
+        upper:
+          type: number
+          format: float
+        accuracy:
+          type: number
+          format: float
+
+    Trends:
+      type: object
+      properties:
+        direction:
+          type: string
+          enum: [increasing, decreasing, stable]
+        rate:
+          type: number
+        seasonality:
+          type: array
+          items:
+            type: string
+
+    ForecastResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        forecast:
+          type: object
+          properties:
+            id:
+              type: string
+            region:
+              type: string
+            dateRange:
+              type: object
+              properties:
+                startDate:
+                  type: string
+                  format: date
+                endDate:
+                  type: string
+                  format: date
+            forecastType:
+              type: string
+            predictedDemand:
+              $ref: "#/components/schemas/PredictedDemand"
+            confidenceInterval:
+              $ref: "#/components/schemas/ConfidenceInterval"
+            trends:
+              $ref: "#/components/schemas/Trends"
+        predictions:
+          type: array
+          items:
+            type: object
+        seasonalPatterns:
+          type: object
+
+    PeakSeasonResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        region:
+          type: string
+        year:
+          type: integer
+        peakSeasons:
+          type: array
+          items:
+            type: object
+            properties:
+              season:
+                type: string
+              startDate:
+                type: string
+                format: date
+              endDate:
+                type: string
+                format: date
+              predictedVisitors:
+                type: integer
+              confidence:
+                type: number
+              factors:
+                type: array
+                items:
+                  type: string
+              recommendations:
+                type: array
+                items:
+                  type: string
+
+    TrendsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        region:
+          type: string
+        period:
+          type: object
+        trends:
+          type: object
+
+    AccuracyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        accuracy:
+          type: object
+
+    # Staffing Schemas
+    StaffingRequest:
+      type: object
+      required:
+        - business_id
+        - startDate
+        - endDate
+        - current_staff
+      properties:
+        business_id:
+          type: integer
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        current_staff:
+          type: integer
+        roles:
+          type: array
+          items:
+            type: string
+
+    StaffingResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        recommendations:
+          type: object
+
+    OptimizationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        business_id:
+          type: integer
+        optimization:
+          type: object
+
+    StaffingHistoryResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        business_id:
+          type: integer
+        history:
+          type: array
+          items:
+            type: object
+
+    ScenarioCompareRequest:
+      type: object
+      required:
+        - business_id
+        - scenarios
+      properties:
+        business_id:
+          type: integer
+        scenarios:
+          type: array
+          items:
+            type: object
+
+    ScenarioCompareResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        comparison:
+          type: array
+          items:
+            type: object
+        recommendation:
+          type: string
+
+    # Weather Schema
+    WeatherResponse:
+      type: object
+      properties:
+        coord:
+          type: object
+          properties:
+            lon:
+              type: number
+            lat:
+              type: number
+        weather:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              main:
+                type: string
+              description:
+                type: string
+              icon:
+                type: string
+        main:
+          type: object
+          properties:
+            temp:
+              type: number
+            feels_like:
+              type: number
+            temp_min:
+              type: number
+            temp_max:
+              type: number
+            pressure:
+              type: integer
+            humidity:
+              type: integer
+        wind:
+          type: object
+          properties:
+            speed:
+              type: number
+            deg:
+              type: integer
+        name:
+          type: string
+
+    # Common Schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: healthy
+        service:
+          type: string
+        database:
+          type: string
+          example: connected
+        timestamp:
+          type: string
+          format: date-time

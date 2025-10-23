@@ -5,7 +5,7 @@ export function action() {
   localStorage.removeItem("userId");
   localStorage.removeItem("token");
   localStorage.removeItem("role");
-  // FIX: Also clear expiration for consistency, even if not currently validated.
+  localStorage.removeItem("userEmail");
   localStorage.removeItem("expiration");
 
   // FIX: Dispatch a synthetic storage event to trigger the AuthContext handler in the same tab,

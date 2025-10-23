@@ -49,6 +49,7 @@
   background-color: var(--tp-primary-bg);
   color: var(--tp-secondary-text);
   position: relative;
+  border-radius: 8px;
 }
 
 /* Responsive design */

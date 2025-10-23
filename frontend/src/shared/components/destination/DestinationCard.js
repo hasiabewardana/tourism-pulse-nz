@@ -70,9 +70,9 @@ function DestinationCard({
         <div className={classes.statsContainer}>
           <div className={classes.statItem}>
             <LocationOnIcon className={classes.statIcon} />
-            <span className={classes.statLabel}>Location</span>
+            <span className={classes.statLabel}>Region</span>
             <span className={classes.statValue}>
-              {destination.locationName || "N/A"}
+              {destination.region || "Unknown"}
             </span>
           </div>
           <div className={classes.statItem}>

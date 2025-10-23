@@ -8,6 +8,7 @@ function Destinations() {
       <Typography variant="h3" className={classes.title}>
         Explore Destinations
       </Typography>
+
       <DestinationList />
     </Container>
   );

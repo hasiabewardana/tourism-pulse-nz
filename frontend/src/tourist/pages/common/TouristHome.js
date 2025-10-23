@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Container,
@@ -6,174 +7,65 @@ import {
   Grid,
   Card,
   CardContent,
-  Button,
-  TextField,
-  InputAdornment,
-  Chip,
-  LinearProgress,
-  Alert,
   Avatar,
-  Divider,
+  Badge,
 } from "@mui/material";
 import {
-  Search,
   LocationOn,
-  AccessTime,
-  People,
-  TrendingUp,
-  Nature,
+  Map as MapIcon,
+  LocalOffer,
+  BookOnline,
+  Payment,
 } from "@mui/icons-material";
 import { useAuth } from "../../../shared/context/AuthContext";
+import { usePendingPayments } from "../../hooks/usePendingPayments";
 import classes from "./TouristHome.module.css";
 
-// Mock data for popular destinations
-const popularDestinations = [
+const navigationCards = [
   {
-    id: 1,
-    name: "Milford Sound",
-    region: "Fiordland",
-    currentCapacity: 85,
-    maxCapacity: 2500,
-    status: "busy",
-    waitTime: "45 mins",
-    image: "🏔️",
-    highlights: ["Fjord cruises", "Scenic flights", "Kayaking"],
-    sustainabilityScore: 7,
-    weatherCondition: "Partly cloudy, 12°C",
+    title: "Destinations",
+    description: "Explore popular destinations across New Zealand",
+    icon: LocationOn,
+    path: "/destinations",
+    color: "#1976d2",
   },
   {
-    id: 2,
-    name: "Bay of Islands",
-    region: "Northland",
-    currentCapacity: 60,
-    maxCapacity: 1800,
-    status: "moderate",
-    waitTime: "15 mins",
-    image: "🏝️",
-    highlights: ["Dolphin tours", "Historic sites", "Sailing"],
-    sustainabilityScore: 8,
-    weatherCondition: "Sunny, 18°C",
+    title: "Map",
+    description: "View destinations on an interactive map",
+    icon: MapIcon,
+    path: "/map",
+    color: "#388e3c",
   },
   {
-    id: 3,
-    name: "Rotorua",
-    region: "Bay of Plenty",
-    currentCapacity: 40,
-    maxCapacity: 3200,
-    status: "available",
-    waitTime: "No wait",
-    image: "♨️",
-    highlights: ["Geothermal parks", "Māori culture", "Adventure sports"],
-    sustainabilityScore: 9,
-    weatherCondition: "Overcast, 15°C",
+    title: "Offers",
+    description: "Discover exclusive deals and special offers",
+    icon: LocalOffer,
+    path: "/tourist/offers",
+    color: "#f57c00",
   },
   {
-    id: 4,
-    name: "Queenstown",
-    region: "Otago",
-    currentCapacity: 75,
-    maxCapacity: 4000,
-    status: "busy",
-    waitTime: "30 mins",
-    image: "🏔️",
-    highlights: ["Adventure sports", "Wine tours", "Scenic views"],
-    sustainabilityScore: 6,
-    weatherCondition: "Clear, 8°C",
-  },
-];
-
-const quickActions = [
-  {
-    title: "Find Destinations",
-    description: "Search and discover New Zealand's best spots",
-    icon: "🔍",
-    action: "search",
-    color: "primary",
+    title: "My Bookings",
+    description: "Manage your bookings and reservations",
+    icon: BookOnline,
+    path: "/tourist/bookings",
+    color: "#7b1fa2",
   },
   {
-    title: "Check Availability",
-    description: "Real-time capacity for popular destinations",
-    icon: "📊",
-    action: "availability",
-    color: "secondary",
-  },
-  {
-    title: "Plan Your Trip",
-    description: "Create personalized itineraries",
-    icon: "📋",
-    action: "plan",
-    color: "success",
-  },
-  {
-    title: "Sustainable Options",
-    description: "Eco-friendly travel recommendations",
-    icon: "🌱",
-    action: "sustainable",
-    color: "info",
-  },
-];
-
-const travelInsights = [
-  {
-    title: "Peak Season Alert",
-    message:
-      "Summer months (Dec-Feb) see 40% higher visitor numbers. Consider shoulder seasons for better experiences.",
-    type: "warning",
-    icon: "📈",
-  },
-  {
-    title: "Weather Update",
-    message:
-      "Current conditions are ideal for outdoor activities in most regions. Check destination-specific forecasts.",
-    type: "info",
-    icon: "🌤️",
-  },
-  {
-    title: "Sustainability Tip",
-    message:
-      "Choose destinations with high sustainability scores to minimize your environmental impact.",
-    type: "success",
-    icon: "♻️",
+    title: "Pending Payments",
+    description: "Complete payment for your pending bookings",
+    icon: Payment,
+    path: "/tourist/pending-payments",
+    color: "#d32f2f",
   },
 ];
 
 function TouristHome() {
-  const { user, role } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRegion, setSelectedRegion] = useState("all");
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "available":
-        return "#4CAF50";
-      case "moderate":
-        return "#FF9800";
-      case "busy":
-        return "#F44336";
-      default:
-        return "#9E9E9E";
-    }
-  };
-
-  const getCapacityPercentage = (current, max) => {
-    return (current / max) * 100;
-  };
-
-  const handleQuickAction = (action) => {
-    // Handle different actions
-    console.log(`Quick action: ${action}`);
-    // In real app, navigate to appropriate pages or open modals
-  };
-
-  const filteredDestinations = popularDestinations.filter(
-    (dest) =>
-      selectedRegion === "all" ||
-      dest.region.toLowerCase().includes(selectedRegion.toLowerCase())
-  );
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { count: pendingPaymentCount } = usePendingPayments();
 
   return (
     <Container maxWidth="lg" className={classes.touristContainer}>
-      {/* Welcome Header */}
       <Box className={classes.welcomeHeader}>
         <Box className={classes.welcomeContent}>
           <Typography variant="h2" className={classes.welcomeTitle}>
@@ -181,7 +73,7 @@ function TouristHome() {
           </Typography>
           <Typography variant="h5" className={classes.welcomeSubtitle}>
             {user?.name ? `Hello ${user.name}!` : "Hello Traveler!"} Discover
-            New Zealand's best destinations with real-time insights
+            and explore New Zealand's finest destinations
           </Typography>
         </Box>
         <Box className={classes.userAvatar}>
@@ -194,334 +86,74 @@ function TouristHome() {
               fontSize: "2rem",
             }}
           >
-            {user?.name ? user.name.charAt(0).toUpperCase() : "🧳"}
+            {user?.name ? user.name.charAt(0).toUpperCase() : "T"}
           </Avatar>
         </Box>
       </Box>
 
-      {/* Search Bar */}
-      <Box className={classes.searchSection}>
-        <Card className={classes.searchCard}>
-          <CardContent>
-            <TextField
-              fullWidth
-              placeholder="Search destinations, activities, or regions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search sx={{ color: "#0fa4af" }} />
-                  </InputAdornment>
-                ),
-              }}
-              className={classes.searchInput}
-            />
-            <Box className={classes.filterChips}>
-              {[
-                "All Regions",
-                "Northland",
-                "Auckland",
-                "Bay of Plenty",
-                "Fiordland",
-                "Otago",
-              ].map((region) => (
-                <Chip
-                  key={region}
-                  label={region}
-                  onClick={() =>
-                    setSelectedRegion(region === "All Regions" ? "all" : region)
-                  }
-                  className={classes.filterChip}
-                  variant={
-                    selectedRegion ===
-                    (region === "All Regions" ? "all" : region)
-                      ? "filled"
-                      : "outlined"
-                  }
-                />
-              ))}
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-
-      {/* Quick Actions */}
       <Box className={classes.section}>
-        <Typography variant="h3" className={classes.sectionTitle}>
-          Quick Actions
-        </Typography>
-        <Grid container spacing={3} justifyContent="center">
-          {quickActions.map((action, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card
-                className={classes.actionCard}
-                onClick={() => handleQuickAction(action.action)}
-              >
-                <CardContent>
-                  <Box className={classes.actionIcon}>{action.icon}</Box>
-                  <Typography variant="h6" className={classes.actionTitle}>
-                    {action.title}
-                  </Typography>
-                  <Typography className={classes.actionDescription}>
-                    {action.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Real-time Destination Status */}
-      <Box className={classes.section}>
-        <Typography variant="h3" className={classes.sectionTitle}>
-          Popular Destinations - Live Status
-        </Typography>
-        <Grid container spacing={3} justifyContent="center">
-          {filteredDestinations.map((destination) => (
-            <Grid item xs={12} md={6} lg={6} key={destination.id}>
-              <Card className={classes.destinationCard}>
-                <CardContent>
-                  <Box className={classes.destinationHeader}>
-                    <Box className={classes.destinationInfo}>
-                      <Box className={classes.destinationIcon}>
-                        {destination.image}
-                      </Box>
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          className={classes.destinationName}
+        <Grid
+          container
+          spacing={4}
+          justifyContent="center"
+          sx={{ maxWidth: "900px", margin: "0 auto" }}
+        >
+          {navigationCards.map((card, index) => {
+            const IconComponent = card.icon;
+            return (
+              <Grid item xs={12} sm={6} md={6} lg={6} key={index}>
+                <Card
+                  className={classes.navCard}
+                  onClick={() => navigate(card.path)}
+                  sx={{
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      transform: "translateY(-8px)",
+                      boxShadow: "0 12px 24px rgba(0,0,0,0.3)",
+                    },
+                  }}
+                >
+                  <CardContent className={classes.navCardContent}>
+                    <Box
+                      className={classes.iconWrapper}
+                      sx={{ backgroundColor: card.color }}
+                    >
+                      {card.title === "Pending Payments" &&
+                      pendingPaymentCount > 0 ? (
+                        <Badge
+                          badgeContent={pendingPaymentCount}
+                          color="error"
+                          sx={{
+                            "& .MuiBadge-badge": {
+                              fontSize: "1rem",
+                              height: "24px",
+                              minWidth: "24px",
+                            },
+                          }}
                         >
-                          {destination.name}
-                        </Typography>
-                        <Typography className={classes.destinationRegion}>
-                          {destination.region}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Chip
-                      label={destination.status}
-                      sx={{
-                        backgroundColor: getStatusColor(destination.status),
-                        color: "#ffffff",
-                        fontWeight: 600,
-                        textTransform: "capitalize",
-                      }}
-                    />
-                  </Box>
-
-                  <Box className={classes.capacitySection}>
-                    <Box className={classes.capacityHeader}>
-                      <Typography className={classes.capacityLabel}>
-                        Current Capacity: {destination.currentCapacity}% (
-                        {(destination.currentCapacity *
-                          destination.maxCapacity) /
-                          100}{" "}
-                        / {destination.maxCapacity})
-                      </Typography>
-                      <Typography className={classes.waitTime}>
-                        <AccessTime sx={{ fontSize: "1rem", mr: 0.5 }} />
-                        {destination.waitTime}
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={destination.currentCapacity}
-                      sx={{
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: "rgba(255,255,255,0.2)",
-                        "& .MuiLinearProgress-bar": {
-                          backgroundColor: getStatusColor(destination.status),
-                          borderRadius: 4,
-                        },
-                      }}
-                    />
-                  </Box>
-
-                  <Box className={classes.destinationDetails}>
-                    <Box className={classes.weatherInfo}>
-                      <Typography className={classes.weatherText}>
-                        🌤️ {destination.weatherCondition}
-                      </Typography>
-                      <Box className={classes.sustainabilityScore}>
-                        <Nature
-                          sx={{ fontSize: "1rem", color: "#4CAF50", mr: 0.5 }}
+                          <IconComponent
+                            sx={{ fontSize: "3rem", color: "#ffffff" }}
+                          />
+                        </Badge>
+                      ) : (
+                        <IconComponent
+                          sx={{ fontSize: "3rem", color: "#ffffff" }}
                         />
-                        <Typography className={classes.scoreText}>
-                          Sustainability: {destination.sustainabilityScore}/10
-                        </Typography>
-                      </Box>
+                      )}
                     </Box>
-
-                    <Box className={classes.highlights}>
-                      {destination.highlights.map((highlight, idx) => (
-                        <Chip
-                          key={idx}
-                          label={highlight}
-                          size="small"
-                          className={classes.highlightChip}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-
-                  <Box className={classes.destinationActions}>
-                    <Button
-                      variant="contained"
-                      className={classes.primaryButton}
-                      startIcon={<LocationOn />}
-                    >
-                      View Details
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      className={classes.secondaryButton}
-                    >
-                      Plan Visit
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                    <Typography variant="h6" className={classes.navCardTitle}>
+                      {card.title}
+                    </Typography>
+                    <Typography className={classes.navCardDescription}>
+                      {card.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
-      </Box>
-
-      {/* Travel Insights */}
-      <Box className={classes.section}>
-        <Typography variant="h3" className={classes.sectionTitle}>
-          Travel Insights & Updates
-        </Typography>
-        <Grid container spacing={3}>
-          {travelInsights.map((insight, index) => (
-            <Grid item xs={12} md={4} key={index}>
-              <Alert
-                severity={insight.type}
-                className={classes.insightAlert}
-                icon={
-                  <span style={{ fontSize: "1.5rem" }}>{insight.icon}</span>
-                }
-              >
-                <Typography variant="h6" className={classes.insightTitle}>
-                  {insight.title}
-                </Typography>
-                <Typography className={classes.insightMessage}>
-                  {insight.message}
-                </Typography>
-              </Alert>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Tourism Statistics */}
-      <Box className={classes.section}>
-        <Typography variant="h3" className={classes.sectionTitle}>
-          New Zealand Tourism Insights
-        </Typography>
-        <Card className={classes.statsCard}>
-          <CardContent>
-            <Grid container spacing={4}>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box className={classes.statItem}>
-                  <Typography variant="h4" className={classes.statNumber}>
-                    3.8M
-                  </Typography>
-                  <Typography className={classes.statLabel}>
-                    Annual Visitors
-                  </Typography>
-                  <Typography className={classes.statTrend}>
-                    <TrendingUp
-                      sx={{ fontSize: "1rem", mr: 0.5, color: "#4CAF50" }}
-                    />
-                    +7% this year
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box className={classes.statItem}>
-                  <Typography variant="h4" className={classes.statNumber}>
-                    $44.4B
-                  </Typography>
-                  <Typography className={classes.statLabel}>
-                    Tourism Revenue
-                  </Typography>
-                  <Typography className={classes.statTrend}>
-                    <TrendingUp
-                      sx={{ fontSize: "1rem", mr: 0.5, color: "#4CAF50" }}
-                    />
-                    Economic impact
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box className={classes.statItem}>
-                  <Typography variant="h4" className={classes.statNumber}>
-                    150+
-                  </Typography>
-                  <Typography className={classes.statLabel}>
-                    Monitored Destinations
-                  </Typography>
-                  <Typography className={classes.statTrend}>
-                    <People
-                      sx={{ fontSize: "1rem", mr: 0.5, color: "#2196F3" }}
-                    />
-                    Real-time tracking
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box className={classes.statItem}>
-                  <Typography variant="h4" className={classes.statNumber}>
-                    89%
-                  </Typography>
-                  <Typography className={classes.statLabel}>
-                    Satisfaction Rate
-                  </Typography>
-                  <Typography className={classes.statTrend}>
-                    <Nature
-                      sx={{ fontSize: "1rem", mr: 0.5, color: "#4CAF50" }}
-                    />
-                    Sustainable tourism
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Box>
-
-      {/* Footer CTA */}
-      <Box className={classes.ctaSection}>
-        <Card className={classes.ctaCard}>
-          <CardContent>
-            <Typography variant="h4" className={classes.ctaTitle}>
-              Ready to Explore New Zealand?
-            </Typography>
-            <Typography className={classes.ctaDescription}>
-              Start planning your sustainable journey with real-time insights
-              and personalized recommendations.
-            </Typography>
-            <Box className={classes.ctaButtons}>
-              <Button
-                variant="contained"
-                size="large"
-                className={classes.ctaButton}
-              >
-                Start Planning
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                className={classes.ctaSecondaryButton}
-              >
-                Explore Destinations
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
       </Box>
     </Container>
   );

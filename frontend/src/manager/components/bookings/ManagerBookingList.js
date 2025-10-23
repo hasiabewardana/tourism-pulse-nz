@@ -1,7 +1,7 @@
 // src/manager/components/bookings/ManagerBookingList.js
 import { Grid, Typography } from "@mui/material";
 import ManagerBookingCard from "./ManagerBookingCard";
-import classes from "../../../tourist/pages/bookings/BookingsPage.module.css"; // Reuse tourist's for consistency
+import classes from "./ManagerBookingList.module.css";
 
 function ManagerBookingList({ bookings, onRefresh }) {
   if (bookings.length === 0) {
@@ -11,13 +11,15 @@ function ManagerBookingList({ bookings, onRefresh }) {
   }
 
   return (
-    <Grid container spacing={3}>
+    <div className={classes.bookingsGrid}>
       {bookings.map((booking) => (
-        <Grid item xs={12} sm={6} md={4} key={booking.id}>
-          <ManagerBookingCard booking={booking} onRefresh={onRefresh} />
-        </Grid>
+        <ManagerBookingCard
+          key={booking.id}
+          booking={booking}
+          onRefresh={onRefresh}
+        />
       ))}
-    </Grid>
+    </div>
   );
 }
 

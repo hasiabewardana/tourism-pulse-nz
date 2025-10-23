@@ -20,8 +20,8 @@ RUN npm run build
 # Copy server.js
 COPY server.js .
 
-# Expose port 3005
-EXPOSE 3005
+# Expose port 3006
+EXPOSE 3006
 
 # Run the Express server
 CMD ["node", "server.js"]

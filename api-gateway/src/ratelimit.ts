@@ -1,17 +1,18 @@
-import rateLimit from "express-rate-limit"; // Importing rate-limit middleware for request throttling
-import express from "express"; // Importing express for type definitions
-import { RouteConfig } from "./routes/routes"; // Importing route configuration interface
+import rateLimit from "express-rate-limit";
+import express from "express";
+import { RouteConfig } from "./routes/routes";
 
+/**
+ * Apply rate limiting to routes that have it configured.
+ * This prevents abuse by limiting the number of requests from a single client.
+ */
 export const setupRateLimit = (
   app: express.Application,
   routes: RouteConfig[]
 ) => {
-  // Function to configure rate limiting
   routes.forEach((r) => {
-    // Iterating over each route to apply rate limiting
     if (r.rateLimit) {
-      // Checking if rate limiting is configured for the route
-      app.use(r.url, rateLimit(r.rateLimit)); // Applying rate limiting with specified constraints
+      app.use(r.url, rateLimit(r.rateLimit));
     }
   });
 };

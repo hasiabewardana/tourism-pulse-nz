@@ -1,0 +1,46 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.navButton {
+  min-width: 100px;
+  height: 40px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.pageNumbers {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pageButton {
+  min-width: 40px;
+  height: 40px;
+  padding: 8px;
+}
+
+.activePageButton {
+  min-width: 40px;
+  height: 40px;
+  padding: 8px;
+  background-color: #1976d2;
+  color: white;
+}
+
+.activePageButton:hover {
+  background-color: #1565c0;
+}
+
+.ellipsis {
+  padding: 0 8px;
+  color: #666;
+  font-size: 18px;
+  line-height: 40px;
+}

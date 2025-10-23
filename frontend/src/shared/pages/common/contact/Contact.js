@@ -1,4 +1,3 @@
-// src/shared/pages/common/Contact.js
 import React, { useState } from "react";
 import {
   Typography,
@@ -16,6 +15,10 @@ import {
 } from "@mui/material";
 import classes from "./Contact.module.css";
 
+/**
+ * Contact page for TourismPulseNZ.
+ * Provides contact information and a form for inquiries.
+ */
 function Contact() {
   const [formData, setFormData] = useState({
     name: "",
@@ -42,7 +45,7 @@ function Contact() {
     {
       icon: "📧",
       title: "Project Email",
-      value: "tourism.pulse.nz@gmail.com",
+      value: "info@tourismpulsenz.com",
       description: "General inquiries and project information",
       available: "24/7 (Response within 24-48 hours)",
     },
@@ -102,30 +105,48 @@ function Contact() {
     setSubmitStatus(null);
 
     try {
-      // Simulate API call - replace with actual backend integration
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await fetch(
+        "http://localhost:3004/integration-service/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      console.log("Form submitted:", formData);
+      const data = await response.json();
 
-      setSubmitStatus({
-        type: "success",
-        message:
-          "Thank you for your message! We will get back to you within 24-48 hours.",
-      });
+      if (response.ok && data.success) {
+        setSubmitStatus({
+          type: "success",
+          message:
+            data.message ||
+            "Thank you for your message! We will get back to you within 24-48 hours.",
+        });
 
-      setFormData({
-        name: "",
-        email: "",
-        organization: "",
-        contactType: "",
-        subject: "",
-        message: "",
-      });
+        setFormData({
+          name: "",
+          email: "",
+          organization: "",
+          contactType: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        // Log detailed validation errors
+        if (data.details) {
+          console.error("Validation errors:", data.details);
+        }
+        throw new Error(data.error || "Failed to send message");
+      }
     } catch (error) {
+      console.error("Error submitting contact form:", error);
       setSubmitStatus({
         type: "error",
         message:
-          "Sorry, there was an error sending your message. Please try again or contact us directly via email.",
+          "Sorry, there was an error sending your message. Please try again or contact us directly via email at info@tourismpulsenz.com",
       });
     } finally {
       setIsSubmitting(false);
@@ -211,33 +232,36 @@ function Contact() {
             )}
 
             <form onSubmit={handleSubmit} className={classes.form}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+              {/* Form fields arranged in vertical stack - Updated */}
+              <Grid container spacing={2} sx={{ width: "100%" }}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="name"
-                    label="Full Name *"
+                    label="Full Name **"
                     value={formData.name}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="email"
-                    label="Email Address *"
+                    label="Email Address **"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="organization"
@@ -246,19 +270,21 @@ function Contact() {
                     onChange={handleChange}
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     select
                     name="contactType"
-                    label="Inquiry Type *"
+                    label="Inquiry Type **"
                     value={formData.contactType}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                     SelectProps={{
                       native: true,
                     }}
@@ -271,23 +297,24 @@ function Contact() {
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="subject"
-                    label="Subject *"
+                    label="Subject **"
                     value={formData.subject}
                     onChange={handleChange}
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} style={{ width: "100%", maxWidth: "100%" }}>
                   <TextField
                     fullWidth
                     name="message"
-                    label="Message *"
+                    label="Message **"
                     multiline
                     rows={6}
                     value={formData.message}
@@ -295,6 +322,7 @@ function Contact() {
                     required
                     className={classes.input}
                     disabled={isSubmitting}
+                    sx={{ width: "100%" }}
                     placeholder="Please provide details about your inquiry..."
                   />
                 </Grid>

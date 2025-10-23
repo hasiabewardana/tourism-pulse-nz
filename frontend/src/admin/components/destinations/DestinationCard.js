@@ -9,9 +9,11 @@ import {
 } from "@mui/material";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PeopleIcon from "@mui/icons-material/People";
+import { useNavigate } from "react-router-dom";
 import classes from "./DestinationCard.module.css";
 
 function DestinationCard({ destination, onEdit, onDelete, selectedDate }) {
+  const navigate = useNavigate();
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "open":
@@ -79,16 +81,29 @@ function DestinationCard({ destination, onEdit, onDelete, selectedDate }) {
             <LocationOnIcon className={classes.statIcon} />
             <div>
               <Typography variant="body2" className={classes.statLabel}>
-                Location
+                Region
               </Typography>
               <Typography variant="body1" className={classes.statValue}>
-                {destination.locationName || destination.location || "N/A"}
+                {destination.region || "Unknown"}
               </Typography>
             </div>
           </div>
         </Box>
 
         <div className={classes.actions}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() =>
+              navigate(
+                `/admin/destinations/${destination.destination_id}/analytics`
+              )
+            }
+            className={classes.analyticsButton}
+            size="small"
+          >
+            Analytics
+          </Button>
           <Button
             variant="outlined"
             onClick={() => onEdit(destination)}

@@ -17,17 +17,22 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import User from "./User"; // Import User component
-import UserForm from "./UserForm"; // Import UserForm for create/edit
-import classes from "./User.module.css"; // Import CSS module for styling
+import User from "./User";
+import UserForm from "./UserForm";
+import Pagination from "../../../shared/components/common/Pagination";
+import classes from "./User.module.css";
 
 function UserList() {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
+  const [paginatedUsers, setPaginatedUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+
+  const ITEMS_PER_PAGE = 12;
 
   // Filter and search states
   const [selectedRole, setSelectedRole] = useState("All");
@@ -111,6 +116,16 @@ function UserList() {
 
     setFilteredUsers(filtered);
   };
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedUsers(filteredUsers.slice(startIndex, endIndex));
+  }, [filteredUsers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, sortBy, selectedRole]);
 
   // Re-apply filters when search/sort criteria change
   useEffect(() => {
@@ -324,7 +339,7 @@ function UserList() {
             Showing {filteredUsers.length} of {users.length} users
           </Typography>
           <div className={classes.grid}>
-            {filteredUsers.map((user) => (
+            {paginatedUsers.map((user) => (
               <User
                 key={user.user_id}
                 user={user}
@@ -333,6 +348,11 @@ function UserList() {
               />
             ))}
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)}
+            onPageChange={setCurrentPage}
+          />
         </div>
       )}
 

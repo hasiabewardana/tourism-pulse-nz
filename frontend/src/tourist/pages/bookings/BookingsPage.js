@@ -1,4 +1,3 @@
-// src/tourist/pages/bookings/BookingsPage.js
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,28 +12,44 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Box,
+  Chip,
 } from "@mui/material";
+import { Payment as PaymentIcon } from "@mui/icons-material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
-import axios from "axios"; // New import for API calls
+import axios from "axios";
 import BookingList from "../../components/bookings/BookingList";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./BookingsPage.module.css";
 
 function BookingsPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [activeBookings, setActiveBookings] = useState([]);
+  const [expiredBookings, setExpiredBookings] = useState([]);
   const [filteredBookings, setFilteredBookings] = useState([]);
+  const [paginatedActiveBookings, setPaginatedActiveBookings] = useState([]);
+  const [paginatedExpiredBookings, setPaginatedExpiredBookings] = useState([]);
+  const [paginatedFilteredBookings, setPaginatedFilteredBookings] = useState(
+    []
+  );
+  const [currentActivePage, setCurrentActivePage] = useState(1);
+  const [currentExpiredPage, setCurrentExpiredPage] = useState(1);
+  const [currentFilteredPage, setCurrentFilteredPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedViewMode, setSelectedViewMode] = useState("Upcoming");
+  const [selectedViewMode, setSelectedViewMode] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [sortBy, setSortBy] = useState("Booking Date (Asc)");
+  const [sortBy, setSortBy] = useState("Booking Date (Desc)");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const ITEMS_PER_PAGE = 12;
 
   const token = isAuthenticated ? localStorage.getItem("token") : null;
   const userId = localStorage.getItem("userId");
@@ -62,20 +77,49 @@ function BookingsPage() {
         }
       );
       const data = res.data;
-      console.log("API Response:", data); // Debug log
-      setBookings(
-        data.map((b) => ({
-          id: b.booking_id,
-          bookingDate: b.booking_date,
-          visitorCount: b.visitor_count,
-          status: b.status,
-          offerName: b.offer?.name || "",
-          offer: b.offer || {
-            name: b.offerName,
-            description: "No description",
-          }, // Fallback
-        }))
+      console.log("API Response:", data);
+
+      const reviewsRes = await axios.get(
+        `http://localhost:3000/dest/api/v1/users/${userId}/reviews`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
+      const reviews = reviewsRes.data;
+      const reviewedBookingIds = new Set(reviews.map((r) => r.booking_id));
+
+      const now = new Date();
+      const allBookings = data.map((b) => ({
+        id: b.booking_id,
+        bookingDate: b.booking_date,
+        visitorCount: b.visitor_count,
+        status: b.status,
+        offerName: b.offer_name || "",
+        offerId: b.offer_id || null,
+        destinationId: b.destination_id || null,
+        paymentStatus: b.payment_status || "unpaid",
+        offer: {
+          name: b.offer_name || "",
+          description: b.offer_description || "No description",
+        },
+        hasReview: reviewedBookingIds.has(b.booking_id),
+      }));
+
+      const active = allBookings.filter((b) => {
+        const bookingDate = new Date(b.bookingDate);
+        return bookingDate > now;
+      });
+      const expired = allBookings.filter((b) => {
+        const bookingDate = new Date(b.bookingDate);
+        return bookingDate <= now;
+      });
+
+      setBookings(allBookings);
+      setActiveBookings(active);
+      setExpiredBookings(expired);
     } catch (err) {
       setError(
         err.response?.data?.message || err.message || "Failed to fetch bookings"
@@ -89,6 +133,8 @@ function BookingsPage() {
     applyFiltersAndSort();
   }, [
     bookings,
+    activeBookings,
+    expiredBookings,
     selectedViewMode,
     selectedStatus,
     startDate,
@@ -99,19 +145,19 @@ function BookingsPage() {
 
   const applyFiltersAndSort = () => {
     const now = new Date();
-    let filtered = [...bookings];
+    let sourceData = [];
 
+    // Select which bookings to filter based on view mode
     if (selectedViewMode === "Upcoming") {
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date >= now && !isNaN(date);
-      });
+      sourceData = [...activeBookings];
     } else if (selectedViewMode === "Expired") {
-      filtered = filtered.filter((b) => {
-        const date = new Date(b.bookingDate);
-        return date < now && !isNaN(date);
-      });
+      sourceData = [...expiredBookings];
+    } else {
+      // For "All", we'll handle this differently in the render
+      return;
     }
+
+    let filtered = sourceData;
 
     if (selectedStatus !== "All") {
       filtered = filtered.filter(
@@ -169,12 +215,43 @@ function BookingsPage() {
     setFilteredBookings(sorted);
   };
 
+  useEffect(() => {
+    const startIndex = (currentActivePage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedActiveBookings(activeBookings.slice(startIndex, endIndex));
+  }, [activeBookings, currentActivePage]);
+
+  useEffect(() => {
+    const startIndex = (currentExpiredPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedExpiredBookings(expiredBookings.slice(startIndex, endIndex));
+  }, [expiredBookings, currentExpiredPage]);
+
+  useEffect(() => {
+    const startIndex = (currentFilteredPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedFilteredBookings(filteredBookings.slice(startIndex, endIndex));
+  }, [filteredBookings, currentFilteredPage]);
+
+  useEffect(() => {
+    setCurrentActivePage(1);
+    setCurrentExpiredPage(1);
+    setCurrentFilteredPage(1);
+  }, [
+    selectedViewMode,
+    selectedStatus,
+    startDate,
+    endDate,
+    sortBy,
+    searchTerm,
+  ]);
+
   const handleResetFilters = () => {
-    setSelectedViewMode("Upcoming");
+    setSelectedViewMode("All");
     setSelectedStatus("All");
     setStartDate(null);
     setEndDate(null);
-    setSortBy("Booking Date (Asc)");
+    setSortBy("Booking Date (Desc)");
     setSearchTerm("");
   };
 
@@ -186,106 +263,203 @@ function BookingsPage() {
       </Alert>
     );
 
+  const pendingPaymentCount = bookings.filter(
+    (b) =>
+      b.status === "pending" &&
+      (!b.paymentStatus || b.paymentStatus === "unpaid") &&
+      new Date(b.bookingDate) > new Date()
+  ).length;
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container className={classes.container}>
-        <Typography variant="h4" className={classes.title}>
-          My Bookings
-        </Typography>
+        <Box className={classes.headerContainer}>
+          <Typography variant="h4" className={classes.title}>
+            My Bookings
+          </Typography>
+          {pendingPaymentCount > 0 && (
+            <Chip
+              icon={<PaymentIcon />}
+              label={`${pendingPaymentCount} Pending Payment${
+                pendingPaymentCount > 1 ? "s" : ""
+              }`}
+              color="warning"
+              onClick={() => navigate("/tourist/pending-payments")}
+              className={classes.pendingChip}
+              clickable
+            />
+          )}
+        </Box>
 
-        <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>View Mode</InputLabel>
-              <Select
-                value={selectedViewMode}
-                onChange={(e) => setSelectedViewMode(e.target.value)}
-              >
-                <MenuItem value="Upcoming">Upcoming</MenuItem>
-                <MenuItem value="Expired">Expired</MenuItem>
-                <MenuItem value="All">All</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Confirmed">Confirmed</MenuItem>
-                <MenuItem value="Cancelled">Cancelled</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="Start Date"
-              value={startDate}
-              onChange={setStartDate}
-              slotProps={{ textField: { fullWidth: true } }}
+        <Box className={classes.filterPanel}>
+          <Box className={classes.topRow}>
+            <TextField
+              fullWidth
+              variant="outlined"
+              placeholder="Search by Offer Name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={classes.searchInput}
             />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="End Date"
-              value={endDate}
-              onChange={setEndDate}
-              slotProps={{ textField: { fullWidth: true } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                <MenuItem value="Booking Date (Asc)">
-                  Booking Date (Asc)
-                </MenuItem>
-                <MenuItem value="Booking Date (Desc)">
-                  Booking Date (Desc)
-                </MenuItem>
-                <MenuItem value="Offer Name (A-Z)">Offer Name (A-Z)</MenuItem>
-                <MenuItem value="Offer Name (Z-A)">Offer Name (Z-A)</MenuItem>
-                <MenuItem value="Visitor Count (Low-High)">
-                  Visitor Count (Low-High)
-                </MenuItem>
-                <MenuItem value="Visitor Count (High-Low)">
-                  Visitor Count (High-Low)
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
+
+            <Box className={classes.sortByContainer}>
+              <Typography className={classes.sortByLabel}>Sort By</Typography>
+              <FormControl className={classes.sortBySelect}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="Booking Date (Desc)">
+                    Booking Date (Newest)
+                  </MenuItem>
+                  <MenuItem value="Booking Date (Asc)">
+                    Booking Date (Oldest)
+                  </MenuItem>
+                  <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                  <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                  <MenuItem value="Visitor Count (Low-High)">
+                    Visitors (Low-High)
+                  </MenuItem>
+                  <MenuItem value="Visitor Count (High-Low)">
+                    Visitors (High-Low)
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          <Box className={classes.bottomRow}>
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>Status</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Pending">Pending</MenuItem>
+                  <MenuItem value="Confirmed">Confirmed</MenuItem>
+                  <MenuItem value="Cancelled">Cancelled</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>View Mode</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedViewMode}
+                  onChange={(e) => setSelectedViewMode(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Upcoming">Upcoming</MenuItem>
+                  <MenuItem value="Expired">Past</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>
+                Start Date
+              </Typography>
+              <DatePicker
+                value={startDate}
+                onChange={setStartDate}
+                slotProps={{
+                  textField: {
+                    className: classes.datePicker,
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>End Date</Typography>
+              <DatePicker
+                value={endDate}
+                onChange={setEndDate}
+                slotProps={{
+                  textField: {
+                    className: classes.datePicker,
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
             >
-              Reset Filters
+              RESET
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Search by Offer Name or Description"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={classes.searchInput}
+        {selectedViewMode === "All" ? (
+          <>
+            {activeBookings.length > 0 && (
+              <div className={classes.bookingsSection}>
+                <Typography variant="h5" className={classes.sectionTitle}>
+                  Upcoming Bookings
+                </Typography>
+                <BookingList
+                  bookings={paginatedActiveBookings}
+                  onRefresh={fetchBookings}
+                />
+                <Pagination
+                  currentPage={currentActivePage}
+                  totalPages={Math.ceil(activeBookings.length / ITEMS_PER_PAGE)}
+                  onPageChange={setCurrentActivePage}
+                />
+              </div>
+            )}
+
+            {expiredBookings.length > 0 && (
+              <div className={classes.bookingsSection}>
+                <Typography variant="h5" className={classes.sectionTitle}>
+                  Past Bookings
+                </Typography>
+                <BookingList
+                  bookings={paginatedExpiredBookings}
+                  onRefresh={fetchBookings}
+                />
+                <Pagination
+                  currentPage={currentExpiredPage}
+                  totalPages={Math.ceil(
+                    expiredBookings.length / ITEMS_PER_PAGE
+                  )}
+                  onPageChange={setCurrentExpiredPage}
+                />
+              </div>
+            )}
+
+            {activeBookings.length === 0 && expiredBookings.length === 0 && (
+              <Alert severity="info" className={classes.noResults}>
+                No bookings found.
+              </Alert>
+            )}
+          </>
+        ) : (
+          <div className={classes.bookingsSection}>
+            <BookingList
+              bookings={paginatedFilteredBookings}
+              onRefresh={fetchBookings}
             />
-          </Grid>
-        </Grid>
-
-        <BookingList bookings={filteredBookings} onRefresh={fetchBookings} />
+            {filteredBookings.length > 0 && (
+              <Pagination
+                currentPage={currentFilteredPage}
+                totalPages={Math.ceil(filteredBookings.length / ITEMS_PER_PAGE)}
+                onPageChange={setCurrentFilteredPage}
+              />
+            )}
+          </div>
+        )}
       </Container>
     </LocalizationProvider>
   );

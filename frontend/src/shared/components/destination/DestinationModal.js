@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,8 @@ import PauseIcon from "@mui/icons-material/Pause";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import analyticsService from "../../../util/analyticsService";
+import SimilarDestinations from "../recommendations/SimilarDestinations";
 import classes from "./DestinationModal.module.css";
 
 function DestinationModal({
@@ -41,6 +43,7 @@ function DestinationModal({
   const [isZoomed, setIsZoomed] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(null);
+  const viewStartTime = useRef(null);
 
   const getPhotosArray = (dest) => {
     console.log("Processing photos for destination:", dest.name);
@@ -257,11 +260,48 @@ function DestinationModal({
 
   const handleBookNow = () => {
     if (isAuthenticated) {
-      navigate(`/booking/${destinationId}`);
+      // Navigate to offers page with destination ID to show relevant offers
+      navigate(`/tourist/offers/${destinationId}`);
+      onClose(); // Close the modal after navigation
     } else {
-      navigate("/login");
+      navigate("/auth");
     }
   };
+
+  // Track view when modal opens
+  useEffect(() => {
+    if (open && destinationId) {
+      viewStartTime.current = Date.now();
+
+      // Track view interaction
+      analyticsService.trackInteraction({
+        destinationId: destinationId,
+        interactionType: "view",
+        metadata: { source: "modal" },
+      });
+    }
+
+    // Track view duration when modal closes
+    return () => {
+      if (viewStartTime.current && destinationId) {
+        const durationSeconds = Math.floor(
+          (Date.now() - viewStartTime.current) / 1000
+        );
+
+        if (durationSeconds > 2) {
+          // Only track if viewed for more than 2 seconds
+          analyticsService.trackInteraction({
+            destinationId: destinationId,
+            interactionType: "view",
+            durationSeconds: durationSeconds,
+            metadata: { source: "modal" },
+          });
+        }
+
+        viewStartTime.current = null;
+      }
+    };
+  }, [open, destinationId]);
 
   if (!open) return null;
 
@@ -410,6 +450,15 @@ function DestinationModal({
 
                     <Box className={classes.infoItem}>
                       <Typography variant="body2" className={classes.infoLabel}>
+                        Region
+                      </Typography>
+                      <Typography variant="body1" className={classes.infoValue}>
+                        {destination.region || "Unknown"}
+                      </Typography>
+                    </Box>
+
+                    <Box className={classes.infoItem}>
+                      <Typography variant="body2" className={classes.infoLabel}>
                         Capacity
                       </Typography>
                       <Typography variant="body1" className={classes.infoValue}>
@@ -475,6 +524,27 @@ function DestinationModal({
                     )}
                   </Box>
                 </Box>
+
+                {/* Similar Destinations Section */}
+                {destination && (
+                  <Box sx={{ mt: 4 }}>
+                    <SimilarDestinations
+                      destinationId={destination.destination_id}
+                      onDestinationClick={(dest) => {
+                        // Close current modal and open new one
+                        onClose();
+                        // Use a small delay to ensure smooth transition
+                        setTimeout(() => {
+                          window.dispatchEvent(
+                            new CustomEvent("openDestinationModal", {
+                              detail: { destinationId: dest.destination_id },
+                            })
+                          );
+                        }, 100);
+                      }}
+                    />
+                  </Box>
+                )}
               </Box>
             </Box>
           </Box>

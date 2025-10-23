@@ -23,19 +23,26 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import DestinationCard from "./DestinationCard";
 import DestinationForm from "./DestinationForm";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./DestinationList.module.css";
+import { NZ_REGIONS } from "../../../util/regionParser";
 
 function DestinationList() {
   const [destinations, setDestinations] = useState([]);
   const [filteredDestinations, setFilteredDestinations] = useState([]);
+  const [paginatedDestinations, setPaginatedDestinations] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedDestination, setSelectedDestination] = useState(null);
 
+  const ITEMS_PER_PAGE = 12;
+
   // Filter states
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
+  const [selectedRegion, setSelectedRegion] = useState("All");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
   );
@@ -61,6 +68,7 @@ function DestinationList() {
       if (selectedStatus !== "All") params.status = selectedStatus;
       if (selectedAvailability !== "All")
         params.availability = selectedAvailability;
+      if (selectedRegion !== "All") params.region = selectedRegion;
       if (selectedDate) params.date = selectedDate;
 
       const config = {
@@ -92,7 +100,7 @@ function DestinationList() {
 
   useEffect(() => {
     fetchDestinations();
-  }, [selectedStatus, selectedAvailability, selectedDate]);
+  }, [selectedStatus, selectedAvailability, selectedRegion, selectedDate]);
 
   const applySearchAndSort = (data) => {
     let filtered = data.filter((dest) =>
@@ -124,6 +132,23 @@ function DestinationList() {
   useEffect(() => {
     applySearchAndSort(destinations);
   }, [searchTerm, sortBy, destinations]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedDestinations(filteredDestinations.slice(startIndex, endIndex));
+  }, [filteredDestinations, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    sortBy,
+    selectedStatus,
+    selectedAvailability,
+    selectedRegion,
+    selectedDate,
+  ]);
 
   const handleSubmit = async (destData) => {
     const token = localStorage.getItem("token");
@@ -201,6 +226,7 @@ function DestinationList() {
   const handleResetFilters = () => {
     setSelectedStatus("All");
     setSelectedAvailability("All");
+    setSelectedRegion("All");
     setSelectedDate(
       new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" })
     );
@@ -308,7 +334,24 @@ function DestinationList() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={3}>
+            <FormControl fullWidth>
+              <InputLabel>Region</InputLabel>
+              <Select
+                value={selectedRegion}
+                label="Region"
+                onChange={(e) => setSelectedRegion(e.target.value)}
+              >
+                <MenuItem value="All">All Regions</MenuItem>
+                {NZ_REGIONS.map((region) => (
+                  <MenuItem key={region} value={region}>
+                    {region}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
             <DatePicker
               label="Date"
               value={selectedDate ? new Date(selectedDate) : null}
@@ -323,14 +366,14 @@ function DestinationList() {
               slotProps={{ textField: { fullWidth: true } }}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
+          <Grid item xs={12}>
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
               fullWidth
             >
-              Reset
+              Reset Filters
             </Button>
           </Grid>
         </Grid>
@@ -342,17 +385,26 @@ function DestinationList() {
             </Typography>
           </div>
         ) : (
-          <div className={classes.destinationsGrid}>
-            {filteredDestinations.map((destination) => (
-              <DestinationCard
-                key={destination.destination_id}
-                destination={destination}
-                selectedDate={selectedDate}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
+          <>
+            <div className={classes.destinationsGrid}>
+              {paginatedDestinations.map((destination) => (
+                <DestinationCard
+                  key={destination.destination_id}
+                  destination={destination}
+                  selectedDate={selectedDate}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(
+                filteredDestinations.length / ITEMS_PER_PAGE
+              )}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         <Dialog

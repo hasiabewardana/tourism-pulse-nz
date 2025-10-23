@@ -1,32 +1,33 @@
-import express, { Request, Response, NextFunction } from "express"; // Importing Express and its types for middleware
-import { RouteConfig } from "./routes/routes"; // Importing route configuration interface
+import express, { Request, Response, NextFunction } from "express";
+import { RouteConfig } from "./routes/routes";
 
+/**
+ * Simulate a credit check for premium features.
+ * This is a placeholder for future payment integration.
+ */
 const checkCredit = (req: Request) => {
-  // Function to simulate credit check for premium access
   return new Promise((resolve, reject) => {
-    // Using Promise for asynchronous credit validation
-    console.log("Checking credit with token", req.headers["authorization"]); // Logging the authorization header
+    console.log("Checking credit with token", req.headers["authorization"]);
     setTimeout(() => {
-      // Simulating delay for credit check process
-      reject("No sufficient credits"); // Rejecting with error if credits are insufficient
+      reject("No sufficient credits");
     }, 500);
   });
 };
 
+/**
+ * Apply credit check middleware to routes that require payment.
+ * Returns 402 Payment Required if credits are insufficient.
+ */
 export const setupCreditCheck = (
   app: express.Application,
   routes: RouteConfig[]
 ) => {
-  // Function to configure credit check middleware
   routes.forEach((r) => {
-    // Iterating over each route to apply credit check
     if (r.creditCheck) {
-      // Checking if credit check is required for the route
       app.use(r.url, (req: Request, res: Response, next: NextFunction) => {
-        // Defining custom middleware
-        checkCredit(req) // Executing credit check
-          .then(() => next()) // Proceeding to next middleware if credit check passes
-          .catch((error) => res.status(402).send({ error })); // Sending error response if credit check fails
+        checkCredit(req)
+          .then(() => next())
+          .catch((error) => res.status(402).send({ error }));
       });
     }
   });

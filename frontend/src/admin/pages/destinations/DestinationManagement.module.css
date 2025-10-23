@@ -1,7 +1,7 @@
 .container {
   padding: 2rem;
   background-color: #0fa4af;
-  border-radius: 4px;
+  border-radius: 8px;
   color: #ffffff;
   min-height: calc(100vh - 4rem);
 }

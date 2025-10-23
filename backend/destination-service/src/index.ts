@@ -6,6 +6,9 @@ import destinationRoutes from "./routes/destinationRoutes"; // Import destinatio
 import bookingRoutes from "./routes/bookingRoutes"; // Import booking routes
 import operatorDestinationRoutes from "./routes/operatorDestinationRoutes"; // Import operator destination routes
 import offerRoutes from "./routes/offerRoutes"; // Import offer routes
+import recommendationRoutes from "./routes/recommendationRoutes"; // Import recommendation routes
+import advancedFilterRoutes from "./routes/advancedFilterRoutes"; // Import advanced filter routes
+import reviewRoutes from "./routes/reviewRoutes"; // Import review routes
 
 const app = express(); // Create Express application
 
@@ -18,8 +21,34 @@ app.use("/dest-service/api", destinationRoutes); // Mount destination routes und
 app.use("/dest-service/api", bookingRoutes); // Mount booking routes under /api
 app.use("/dest-service/api", operatorDestinationRoutes); // Mount operator destination routes under /api
 app.use("/dest-service/api", offerRoutes); // Mount offer routes under /api
+app.use("/dest-service/api/recommendations", recommendationRoutes); // Mount recommendation routes
+app.use("/dest-service/api/destinations", advancedFilterRoutes); // Mount advanced filter routes
+app.use("/dest-service/api", reviewRoutes); // Mount review routes
+
+// Global error handler
+app.use(
+  (
+    err: any,
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    console.error(`[DESTINATION-SERVICE ERROR] ${err.message}`, {
+      url: req.url,
+      method: req.method,
+    });
+    res.status(err.status || 500).json({
+      success: false,
+      error:
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
+          : err.message,
+    });
+  }
+);
 
 const PORT = process.env.PORT || 3002; // Use PORT from .env or default to 3002
-app.listen(PORT, () =>
-  console.log(`Destination service running on port ${PORT}`)
-); // Start server
+app.listen(PORT, () => {
+  console.log(`✓ Destination service running on port ${PORT}`);
+  console.log(`✓ Environment: ${process.env.NODE_ENV || "development"}`);
+}); // Start server

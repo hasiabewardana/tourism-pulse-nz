@@ -4,8 +4,6 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-dotenv.config();
-
 const app = express();
 
 // Middleware for static files (serve React build)
@@ -53,10 +51,11 @@ app.post("/save-image", upload.single("file"), (req, res) => {
 });
 
 // Serve React index.html for all other routes (SPA fallback)
-app.get("*", (req, res) => {
+app.get("/*catchAll", (req, res) => {
   res.sendFile(path.join(__dirname, "build", "index.html"));
 });
 
-app.listen(process.env.PORT || 3005, () => {
+const PORT = process.env.PORT || 3006;
+app.listen(PORT, () => {
   console.log(`Frontend server with file upload on port ${PORT}`);
 });

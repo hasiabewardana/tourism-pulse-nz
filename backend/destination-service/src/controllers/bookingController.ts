@@ -55,7 +55,19 @@ export const getUserBookings = async (req: Request, res: Response) => {
   try {
     const userId = parseInt(req.params.userId, 10);
     const bookings = await getBookingsByUserId(userId);
-    res.json(bookings);
+
+    const enrichedBookings = bookings.map((booking: any) => ({
+      booking_id: booking.booking_id,
+      booking_date: booking.booking_date,
+      visitor_count: booking.visitor_count,
+      status: booking.status,
+      offer_id: booking.offer_id,
+      offer_name: booking.offer_name,
+      offer_description: booking.offer_description,
+      destination_id: booking.destination_id,
+    }));
+
+    res.json(enrichedBookings);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal server error" });
@@ -78,18 +90,34 @@ export const getOperatorBookings = async (req: Request, res: Response) => {
 export const getBookingById = async (req: Request, res: Response) => {
   try {
     const bookingId = parseInt(req.params.id, 10);
+    console.log(`[getBookingById] Fetching booking ID: ${bookingId}`);
     const booking = await findBookingById(bookingId);
-    if (!booking) return res.status(404).json({ error: "Booking not found" });
+    if (!booking) {
+      console.log(`[getBookingById] Booking not found: ${bookingId}`);
+      return res.status(404).json({ error: "Booking not found" });
+    }
+    console.log(`[getBookingById] Booking found:`, booking);
     res.json(booking);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("[getBookingById] Error:", error);
+    console.error(
+      "[getBookingById] Stack:",
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
 // Add a new booking
 export const addBooking = async (req: Request, res: Response) => {
   try {
+    console.log(
+      "[addBooking] Request body:",
+      JSON.stringify(req.body, null, 2)
+    );
     const data = createBookingSchema.parse(req.body);
 
     if (!data.userId) {
@@ -99,12 +127,17 @@ export const addBooking = async (req: Request, res: Response) => {
     // Fetch offer to calculate price
     const offer = await getOfferById(data.offerId);
     if (!offer) {
+      console.log(
+        `[addBooking] Booking failed: Offer not found - OfferID: ${data.offerId}`
+      );
       return res.status(404).json({ error: "Offer not found" });
     }
     const calculatedPrice = offer.price * data.visitorCount;
     const operatorId = data.operatorId ?? offer.operator_id;
 
-    // TODO: Auto-set operatorId from offer if omitted (e.g., data.operatorId ?? offer.operator_id)
+    console.log(
+      `[addBooking] Creating booking - OfferID: ${data.offerId}, UserID: ${data.userId}, Price: ${calculatedPrice}, OperatorID: ${operatorId}`
+    );
 
     const bookingId = await createBooking(
       data.offerId,
@@ -115,17 +148,28 @@ export const addBooking = async (req: Request, res: Response) => {
       calculatedPrice,
       operatorId
     );
+    console.log(
+      `✓ Booking created: ID ${bookingId} by User ${data.userId} - ${data.visitorCount} visitors`
+    );
     res
       .status(201)
       .json({ bookingId, message: "Booking created successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error("[addBooking] Validation error:", error.issues);
       return res
         .status(400)
         .json({ error: error.issues.map((e) => e.message).join(", ") });
     }
-    console.error(error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error(`[addBooking] Error:`, error);
+    console.error(
+      `[addBooking] Error stack:`,
+      error instanceof Error ? error.stack : "No stack trace"
+    );
+    res.status(500).json({
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
@@ -161,12 +205,16 @@ export const modifyBooking = async (req: Request, res: Response) => {
       ? calculatedPrice
       : data.price ?? existingBooking.price;
 
-    // Use existing values for unspecified fields
+    const existingBookingDate =
+      existingBooking.booking_date instanceof Date
+        ? existingBooking.booking_date.toISOString()
+        : existingBooking.booking_date;
+
     const updatedId = await updateBooking(
       bookingId,
       data.offerId ?? existingBooking.offer_id,
       data.userId ?? existingBooking.user_id,
-      data.bookingDate ?? existingBooking.booking_date.toISOString(),
+      data.bookingDate ?? existingBookingDate,
       data.visitorCount ?? existingBooking.visitor_count,
       data.status ?? existingBooking.status,
       finalPrice,
@@ -200,9 +248,10 @@ export const removeBooking = async (req: Request, res: Response) => {
     }
 
     await deleteBooking(bookingId);
+    console.log(`✓ Booking cancelled/deleted: ID ${bookingId}`);
     res.status(204).json({ message: "Booking deleted successfully" }).end();
   } catch (error) {
-    console.error(error);
+    console.error(`Booking deletion error: ${error}`);
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,11 +1,11 @@
-/* src/pages/manager/ManagerHome.module.css */
+/* Manager Home Page Styles */
 
 .managerContainer {
   padding: 2rem;
   background: linear-gradient(135deg, #0c8a94 0%, #0a6f7a 100%);
   color: #ffffff;
   min-height: calc(100vh - 4rem);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 /* Welcome Header */
@@ -13,7 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border-radius: 20px;
@@ -45,260 +45,136 @@
   margin-left: 2rem;
 }
 
-/* Search Section */
-.searchSection {
-  margin-bottom: 4rem;
-}
-
-.searchCard {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 15px !important;
-}
-
-.searchInput {
-  margin-bottom: 1.5rem;
-}
-
-.searchInput :global(.MuiInputBase-root) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 12px !important;
-  color: #ffffff !important;
-}
-
-.searchInput :global(.MuiInputBase-input::placeholder) {
-  color: #bdd1d4 !important;
-  opacity: 1;
-}
-
-.filterChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.filterChip {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  transition: all 0.2s ease;
-}
-
-.filterChip:hover {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-.filterChip[variant="filled"] {
-  background-color: #ffffff !important;
-  color: #0c8a94 !important;
-}
-
 /* Sections */
 .section {
   margin-bottom: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.sectionTitle {
-  color: #ffffff !important;
-  font-size: 2.5rem;
-  font-weight: 600;
+/* Navigation Cards */
+.navCard {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-radius: 16px !important;
+  height: 280px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.navCardContent {
   text-align: center;
-  margin-bottom: 3rem;
-}
-
-/* Grid centering */
-.section :global(.MuiGrid-container) {
-  justify-content: center !important;
-}
-
-.section :global(.MuiGrid-item) {
+  padding: 2.5rem 1.5rem !important;
   display: flex !important;
-  justify-content: center !important;
-}
-
-/* Quick Actions */
-.actionCard {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 15px !important;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  height: 100%;
-  text-align: center;
-  display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex: 1;
+  height: 100%;
 }
 
-.actionCard:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
-  background: rgba(255, 255, 255, 0.15) !important;
-}
-
-.actionIcon {
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
+.iconWrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
   display: flex;
-  justify-content: center;
   align-items: center;
-}
-
-.actionTitle {
-  color: #ffffff !important;
-  font-weight: 600;
+  justify-content: center;
   margin-bottom: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
-.actionDescription {
-  color: #bdd1d4 !important;
-  font-size: 0.9rem;
+.navCardTitle {
+  color: #1a1a1a !important;
+  font-weight: 600 !important;
+  font-size: 1.25rem !important;
+  margin-bottom: 0.5rem;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navCardDescription {
+  color: #666666 !important;
+  font-size: 0.9rem !important;
   line-height: 1.5;
+  min-height: 54px;
+  max-height: 54px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
-/* Destination Cards */
-.destinationCard {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 15px !important;
-  transition: all 0.3s ease;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+/* Responsive Styles */
+@media (max-width: 960px) {
+  .welcomeHeader {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .welcomeTitle {
+    font-size: 2rem;
+  }
+
+  .welcomeSubtitle {
+    font-size: 1rem;
+  }
+
+  .userAvatar {
+    margin-left: 0;
+    margin-top: 1.5rem;
+  }
 }
 
-.destinationCard .MuiCardContent-root {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: space-between;
-}
+@media (max-width: 600px) {
+  .managerContainer {
+    padding: 1rem;
+  }
 
-.destinationCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
-  background: rgba(255, 255, 255, 0.12) !important;
-}
+  .welcomeHeader {
+    padding: 2rem 1.5rem;
+    margin-bottom: 2rem;
+  }
 
-.destinationHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
+  .welcomeTitle {
+    font-size: 1.75rem;
+  }
 
-.destinationInfo {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  text-align: left;
-}
+  .section {
+    margin-bottom: 2rem;
+  }
 
-.destinationIcon {
-  font-size: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  .navCard {
+    height: 240px;
+  }
 
-.destinationName {
-  color: #ffffff !important;
-  font-weight: 600;
-  margin-bottom: 0.2rem;
-}
+  .navCardContent {
+    padding: 2rem 1rem !important;
+  }
 
-.destinationRegion {
-  color: #bdd1d4 !important;
-  font-size: 0.9rem;
-}
+  .iconWrapper {
+    width: 60px;
+    height: 60px;
+  }
 
-/* Capacity Section */
-.capacitySection {
-  margin-bottom: 1.5rem;
-}
+  .iconWrapper svg {
+    font-size: 2rem !important;
+  }
 
-.capacityHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.8rem;
-}
+  .navCardTitle {
+    font-size: 1.1rem !important;
+  }
 
-.capacityLabel {
-  color: #bdd1d4 !important;
-  font-size: 0.9rem;
-}
-
-.waitTime {
-  color: #ffffff !important;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-}
-
-/* Destination Details */
-.destinationDetails {
-  margin-bottom: 1.5rem;
-}
-
-.highlights {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.highlightChip {
-  background-color: rgba(255, 255, 255, 0.15) !important;
-  color: #ffffff !important;
-  font-size: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Destination Actions */
-.destinationActions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: auto;
-}
-
-.primaryButton {
-  background-color: #ffffff !important;
-  color: #0c8a94 !important;
-  font-weight: 600;
-  flex: 1;
-  border-radius: 8px;
-}
-
-.primaryButton:hover {
-  background-color: #f0f0f0 !important;
-  transform: translateY(-2px);
-}
-
-.secondaryButton {
-  border-color: rgba(255, 255, 255, 0.5) !important;
-  color: #ffffff !important;
-  font-weight: 600;
-  flex: 1;
-  border-radius: 8px;
-}
-
-.secondaryButton:hover {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border-color: #ffffff !important;
-}
-
-/* Insights */
-.insightAlert {
-  background: rgba(255, 255, 255, 0.08) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 15px !important;
+  .navCardDescription {
+    font-size: 0.85rem !important;
+  }
 }
 
 /* Statistics */

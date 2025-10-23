@@ -14,14 +14,16 @@ import {
   Select,
   MenuItem,
   Chip,
+  Box,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { useAuth } from "../../../shared/context/AuthContext";
-import axios from "axios"; // New import for API calls
+import axios from "axios";
 import OfferCard from "../../components/offers/OfferCard";
 import BookingForm from "../../components/bookings/BookingForm";
+import Pagination from "../../../shared/components/common/Pagination";
 import classes from "./OffersPage.module.css";
 
 function OffersPage() {
@@ -30,6 +32,8 @@ function OffersPage() {
   const { isAuthenticated } = useAuth();
   const [offers, setOffers] = useState([]);
   const [filteredOffers, setFilteredOffers] = useState([]);
+  const [paginatedOffers, setPaginatedOffers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedViewMode, setSelectedViewMode] = useState("Active");
@@ -40,8 +44,28 @@ function OffersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [destinationName, setDestinationName] = useState("");
 
+  const ITEMS_PER_PAGE = 12;
   const token = isAuthenticated ? localStorage.getItem("token") : null;
+
+  // Fetch destination name if destinationId is provided
+  useEffect(() => {
+    const fetchDestinationName = async () => {
+      if (!destinationId) return;
+      try {
+        const url = isAuthenticated
+          ? `http://localhost:3000/dest/api/v1/destinations/${destinationId}`
+          : `http://localhost:3000/dest/api/v1/destinations/${destinationId}/public`;
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await axios.get(url, { headers });
+        setDestinationName(res.data.name || "");
+      } catch (err) {
+        console.error("Failed to fetch destination name:", err);
+      }
+    };
+    fetchDestinationName();
+  }, [destinationId, token]);
 
   useEffect(() => {
     if (!token) {
@@ -50,11 +74,122 @@ function OffersPage() {
       return;
     }
     fetchOffers();
+    // eslint-disable-next-line
   }, [destinationId, token]);
 
   useEffect(() => {
-    applyFiltersAndSort();
+    console.log("useEffect triggered - sortBy:", sortBy);
+    const applyFiltersAndSortInner = () => {
+      let filtered = [...offers];
+
+      // View mode filter
+      if (selectedViewMode !== "All") {
+        filtered = filtered.filter(
+          (offer) => offer.status === selectedViewMode.toLowerCase()
+        );
+      }
+
+      // Date filter
+      if (selectedDate) {
+        const dateStr = selectedDate.toISOString().split("T")[0];
+        filtered = filtered.filter((offer) => {
+          const from = new Date(offer.available_from)
+            .toISOString()
+            .split("T")[0];
+          const to = new Date(offer.available_to).toISOString().split("T")[0];
+          return from <= dateStr && to >= dateStr;
+        });
+      }
+
+      // Search filter
+      if (searchTerm.trim()) {
+        const lowerSearch = searchTerm.toLowerCase();
+        filtered = filtered.filter(
+          (offer) =>
+            offer.name.toLowerCase().includes(lowerSearch) ||
+            offer.description.toLowerCase().includes(lowerSearch) ||
+            offer.destinationNames.some((name) =>
+              name.toLowerCase().includes(lowerSearch)
+            )
+        );
+      }
+
+      // Sort
+      let sorted = [...filtered];
+      console.log("Sorting by:", sortBy);
+      console.log(
+        "Before sort:",
+        sorted.map((o) => ({ name: o.name, price: o.price }))
+      );
+
+      switch (sortBy) {
+        case "Destination":
+          sorted.sort((a, b) => {
+            const aHasDest = a.destinations && a.destinations.length > 0;
+            const bHasDest = b.destinations && b.destinations.length > 0;
+
+            if (!aHasDest && !bHasDest) return 0;
+            if (!aHasDest) return 1;
+            if (!bHasDest) return -1;
+
+            const aName = a.destinations[0].name || "";
+            const bName = b.destinations[0].name || "";
+            return aName.localeCompare(bName);
+          });
+          break;
+        case "Offer Name (A-Z)":
+        case "Name (A-Z)":
+          sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+          break;
+        case "Offer Name (Z-A)":
+        case "Name (Z-A)":
+          sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+          break;
+        case "Price (Low to High)":
+          sorted.sort(
+            (a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0)
+          );
+          break;
+        case "Price (High to Low)":
+          sorted.sort(
+            (a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0)
+          );
+          break;
+        case "Available From (Earliest)":
+          sorted.sort((a, b) => {
+            const dateA = a.available_from
+              ? new Date(a.available_from)
+              : new Date(0);
+            const dateB = b.available_from
+              ? new Date(b.available_from)
+              : new Date(0);
+            return dateA - dateB;
+          });
+          break;
+        default:
+          console.log("No matching sort case for:", sortBy);
+          break;
+      }
+
+      console.log(
+        "After sort:",
+        sorted.map((o) => ({ name: o.name, price: o.price }))
+      );
+      setFilteredOffers(sorted);
+    };
+
+    applyFiltersAndSortInner();
   }, [offers, selectedViewMode, selectedDate, sortBy, searchTerm]);
+
+  useEffect(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    setPaginatedOffers(filteredOffers.slice(startIndex, endIndex));
+  }, [filteredOffers, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedViewMode, selectedDate, sortBy, searchTerm]);
 
   const fetchOffers = async () => {
     if (!token) return;
@@ -72,13 +207,24 @@ function OffersPage() {
         },
       });
       const data = res.data;
+      console.log("Raw offer data:", data);
       // Map to include destinationNames for display
-      const mappedData = data.map((offer) => ({
-        ...offer,
-        id: offer.offer_id,
-        destinationNames:
-          offer.destinations?.map((d) => d.name).filter(Boolean) || [],
-      }));
+      const mappedData = data.map((offer) => {
+        const destNames =
+          offer.destinations?.map((d) => d.name).filter(Boolean) || [];
+        console.log(
+          `Offer ${offer.name} destinations:`,
+          offer.destinations,
+          "mapped to:",
+          destNames
+        );
+        return {
+          ...offer,
+          id: offer.offer_id,
+          destinationNames: destNames,
+        };
+      });
+      console.log("Mapped offer data:", mappedData);
       setOffers(mappedData);
     } catch (err) {
       setError(
@@ -87,79 +233,6 @@ function OffersPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const applyFiltersAndSort = () => {
-    let filtered = [...offers];
-
-    // View mode filter
-    if (selectedViewMode !== "All") {
-      filtered = filtered.filter(
-        (offer) => offer.status === selectedViewMode.toLowerCase()
-      );
-    }
-
-    // Date filter
-    if (selectedDate) {
-      const dateStr = selectedDate.toISOString().split("T")[0];
-      filtered = filtered.filter((offer) => {
-        const from = new Date(offer.available_from).toISOString().split("T")[0];
-        const to = new Date(offer.available_to).toISOString().split("T")[0];
-        return from <= dateStr && to >= dateStr;
-      });
-    }
-
-    // Search filter
-    if (searchTerm.trim()) {
-      const lowerSearch = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (offer) =>
-          offer.name.toLowerCase().includes(lowerSearch) ||
-          offer.description.toLowerCase().includes(lowerSearch) ||
-          offer.destinationNames.some((name) =>
-            name.toLowerCase().includes(lowerSearch)
-          )
-      );
-    }
-
-    // Sort
-    let sorted = [...filtered];
-    switch (sortBy) {
-      case "Destination":
-        // Single destination first, sorted by dest name; then multi by first dest
-        const single = sorted
-          .filter((o) => o.destinations.length === 1)
-          .sort((a, b) =>
-            a.destinations[0].name.localeCompare(b.destinations[0].name)
-          );
-        const multi = sorted
-          .filter((o) => o.destinations.length > 1)
-          .sort((a, b) =>
-            a.destinations[0].name.localeCompare(b.destinations[0].name)
-          );
-        sorted = [...single, ...multi];
-        break;
-      case "Offer Name (A-Z)":
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "Offer Name (Z-A)":
-        sorted.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "Price (Low to High)":
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case "Price (High to Low)":
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case "Available From (Earliest)":
-        sorted.sort(
-          (a, b) => new Date(a.available_from) - new Date(b.available_from)
-        );
-        break;
-      default:
-        break;
-    }
-    setFilteredOffers(sorted);
   };
 
   const handleResetFilters = () => {
@@ -176,14 +249,22 @@ function OffersPage() {
 
   const handleBookingSubmit = async (bookingData) => {
     const token = localStorage.getItem("token");
+    const userId = parseInt(localStorage.getItem("userId"));
+
+    const payload = {
+      offerId: bookingData.offerId,
+      userId: userId,
+      bookingDate: bookingData.bookingDate,
+      visitorCount: bookingData.visitorCount,
+      status: "pending",
+    };
+
+    console.log("Booking payload:", payload);
+
     try {
       const res = await axios.post(
         "http://localhost:3000/dest/api/v1/bookings",
-        {
-          ...bookingData,
-          userId: parseInt(localStorage.getItem("userId")),
-          status: "pending",
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -191,11 +272,16 @@ function OffersPage() {
           },
         }
       );
+      console.log("Booking created successfully:", res.data);
       setShowBookingModal(false);
       navigate("/tourist/bookings");
     } catch (err) {
+      console.error("Booking error:", err.response?.data || err.message);
       setError(
-        err.response?.data?.message || err.message || "Failed to create booking"
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to create booking"
       );
     }
   };
@@ -212,116 +298,122 @@ function OffersPage() {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container className={classes.container}>
         <Typography variant="h4" className={classes.title}>
-          {destinationId ? "Offers for Destination" : "All Offers"}
+          {destinationId && destinationName
+            ? `Offers for ${destinationName}`
+            : destinationId
+            ? "Offers for Selected Destination"
+            : "All Offers"}
         </Typography>
 
-        <Grid container spacing={2} className={classes.filtersContainer}>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>View Mode</InputLabel>
-              <Select
-                value={selectedViewMode}
-                label="View Mode"
-                onChange={(e) => setSelectedViewMode(e.target.value)}
-              >
-                <MenuItem value="All">All</MenuItem>
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <DatePicker
-              label="Filter by Date"
-              value={selectedDate}
-              onChange={(newValue) => setSelectedDate(newValue)}
-              slotProps={{ textField: { fullWidth: true } }}
-              clearable
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <FormControl fullWidth>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                label="Sort By"
-                onChange={(e) => setSortBy(e.target.value)}
-              >
-                {destinationId ? (
-                  <>
-                    <MenuItem value="Price (Low to High)">
-                      Price (Low to High)
-                    </MenuItem>
-                    <MenuItem value="Price (High to Low)">
-                      Price (High to Low)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (A-Z)">
-                      Offer Name (A-Z)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (Z-A)">
-                      Offer Name (Z-A)
-                    </MenuItem>
-                    <MenuItem value="Available From (Earliest)">
-                      Available From (Earliest)
-                    </MenuItem>
-                  </>
-                ) : (
-                  <>
-                    <MenuItem value="Destination">
-                      Destination (Singles First)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (A-Z)">
-                      Offer Name (A-Z)
-                    </MenuItem>
-                    <MenuItem value="Offer Name (Z-A)">
-                      Offer Name (Z-A)
-                    </MenuItem>
-                    <MenuItem value="Price (Low to High)">
-                      Price (Low to High)
-                    </MenuItem>
-                    <MenuItem value="Price (High to Low)">
-                      Price (High to Low)
-                    </MenuItem>
-                    <MenuItem value="Available From (Earliest)">
-                      Available From (Earliest)
-                    </MenuItem>
-                  </>
-                )}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <Button
+        {destinationId && (
+          <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+            <Chip
+              label={`Filtered by: ${destinationName || "Destination"}`}
+              onDelete={() => navigate("/tourist/offers")}
+              color="primary"
               variant="outlined"
-              onClick={handleResetFilters}
-              className={classes.resetButton}
-            >
-              Reset Filters
-            </Button>
-          </Grid>
-        </Grid>
+            />
+          </Box>
+        )}
 
-        <Grid container spacing={2} className={classes.searchContainer}>
-          <Grid item xs={12} md={8}>
+        <Box className={classes.filterPanel}>
+          <Box className={classes.topRow}>
             <TextField
               fullWidth
               variant="outlined"
-              label="Search by Offer Name, Description, or Destination"
+              placeholder="Search by Offer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={classes.searchInput}
+              sx={{ flex: 1 }}
             />
-          </Grid>
-          <Grid item xs={12} md={4}>
+            <Box className={classes.sortByContainer}>
+              <Typography className={classes.sortByLabel}>Sort By</Typography>
+              <FormControl className={classes.sortBySelect}>
+                <Select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  {destinationId ? (
+                    <>
+                      <MenuItem value="Price (Low to High)">
+                        Price (Low to High)
+                      </MenuItem>
+                      <MenuItem value="Price (High to Low)">
+                        Price (High to Low)
+                      </MenuItem>
+                      <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                      <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                      <MenuItem value="Available From (Earliest)">
+                        Available From (Earliest)
+                      </MenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <MenuItem value="Destination">Destination</MenuItem>
+                      <MenuItem value="Offer Name (A-Z)">Name (A-Z)</MenuItem>
+                      <MenuItem value="Offer Name (Z-A)">Name (Z-A)</MenuItem>
+                      <MenuItem value="Price (Low to High)">
+                        Price (Low to High)
+                      </MenuItem>
+                      <MenuItem value="Price (High to Low)">
+                        Price (High to Low)
+                      </MenuItem>
+                      <MenuItem value="Available From (Earliest)">
+                        Available From (Earliest)
+                      </MenuItem>
+                    </>
+                  )}
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+
+          <Box className={classes.bottomRow}>
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>Status</Typography>
+              <FormControl className={classes.filterSelect}>
+                <Select
+                  value={selectedViewMode}
+                  onChange={(e) => setSelectedViewMode(e.target.value)}
+                  displayEmpty
+                  variant="outlined"
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  <MenuItem value="Active">Active</MenuItem>
+                  <MenuItem value="Inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box className={classes.filterGroup}>
+              <Typography className={classes.filterLabel}>
+                Select Date
+              </Typography>
+              <DatePicker
+                value={selectedDate}
+                onChange={(newValue) => setSelectedDate(newValue)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    placeholder: "10/10/2025",
+                    className: classes.datePicker,
+                  },
+                }}
+              />
+            </Box>
+
             <Button
               variant="outlined"
               onClick={handleResetFilters}
               className={classes.resetButton}
             >
-              Reset Search
+              RESET
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         {filteredOffers.length === 0 ? (
           <Typography
@@ -333,16 +425,24 @@ function OffersPage() {
             No offers found matching your criteria.
           </Typography>
         ) : (
-          <Grid container spacing={3} className={classes.grid}>
-            {filteredOffers.map((offer) => (
-              <Grid item xs={12} sm={6} md={4} key={offer.id}>
-                <OfferCard
-                  offer={offer}
-                  onBookNow={() => handleOpenBookingModal(offer)}
-                />
-              </Grid>
-            ))}
-          </Grid>
+          <>
+            <Grid container spacing={3} className={classes.grid}>
+              {paginatedOffers.map((offer) => (
+                <Grid item xs={12} sm={6} md={4} key={offer.id}>
+                  <OfferCard
+                    offer={offer}
+                    onBookNow={() => handleOpenBookingModal(offer)}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(filteredOffers.length / ITEMS_PER_PAGE)}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
 
         {showBookingModal && selectedOffer && (

@@ -7,27 +7,33 @@ import {
   updateDestination,
   deleteDestination,
 } from "../models/destinationModel";
+import { extractRegion } from "../utils/regionParser";
 
-// Zod schema for destination validation
+// Input validation schema for destination data
 const destinationSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  location: z.string().optional(), // GeoJSON or WKT string
+  location: z.string().optional(),
   capacity: z.number().min(0),
   photos: z.array(z.string()).min(1).optional(),
+  region: z.string().optional(),
 });
 
-// Get all destinations
+/**
+ * Retrieve all destinations with optional filtering.
+ * Supports filtering by status, availability, date, and region.
+ */
 export const getDestinations = async (req: Request, res: Response) => {
   try {
-    const { status, availability, date } = req.query;
+    const { status, availability, date, region } = req.query;
 
-    // Basic validation
     let validatedFilters: {
       status?: string;
       availability?: "Full" | "Available";
       date?: string;
+      region?: string;
     } = {};
+
     if (status && !["Open", "Closed"].includes(status as string)) {
       return res
         .status(400)
@@ -47,15 +53,15 @@ export const getDestinations = async (req: Request, res: Response) => {
         .json({ error: "Invalid date format. Use YYYY-MM-DD." });
     }
 
-    // Populate only if valid
     if (status) validatedFilters.status = status as string;
     if (availability)
       validatedFilters.availability = availability as "Full" | "Available";
     if (date) validatedFilters.date = date as string;
+    if (region) validatedFilters.region = region as string;
 
     const destinations = await getAllDestinations(validatedFilters);
 
-    // Map for thumbnail (as before)
+    // Add thumbnail to each destination
     const response = destinations.map((d: any) => ({
       ...d,
       thumbnail:
@@ -71,12 +77,14 @@ export const getDestinations = async (req: Request, res: Response) => {
     console.error("Destinations fetch error:", {
       message: error.message,
       stack: error.stack,
-    }); // Enhanced logging
+    });
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Get destination by ID
+/**
+ * Retrieve a specific destination by ID.
+ */
 export const getDestinationById = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
@@ -89,16 +97,23 @@ export const getDestinationById = async (req: Request, res: Response) => {
   }
 };
 
-// Add new destination
+/**
+ * Create a new destination.
+ * Automatically extracts region from the destination name if not provided.
+ */
 export const addDestination = async (req: Request, res: Response) => {
   try {
     const data = destinationSchema.parse(req.body);
+
+    const region = data.region || extractRegion(data.name || "");
+
     const destinationId = await createDestination(
       data.name,
       data.description,
       data.location ?? null,
       data.capacity,
-      data.photos || ["https://default-destination-thumbnail.jpg"]
+      data.photos || ["https://default-destination-thumbnail.jpg"],
+      region
     );
     res.status(201).json({ destinationId });
   } catch (error) {
@@ -108,18 +123,24 @@ export const addDestination = async (req: Request, res: Response) => {
   }
 };
 
-// Update existing destination
+/**
+ * Update an existing destination with new information.
+ */
 export const modifyDestination = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
     const data = destinationSchema.parse(req.body);
+
+    const region = data.region || extractRegion(data.name || "");
+
     const updatedId = await updateDestination(
       destinationId,
       data.name,
       data.description,
       data.location ?? null,
       data.capacity,
-      data.photos || ["https://default-destination-thumbnail.jpg"]
+      data.photos || ["https://default-destination-thumbnail.jpg"],
+      region
     );
     res.json({ destinationId: updatedId });
   } catch (error) {
@@ -129,7 +150,9 @@ export const modifyDestination = async (req: Request, res: Response) => {
   }
 };
 
-// Delete destination
+/**
+ * Delete a destination from the database.
+ */
 export const removeDestination = async (req: Request, res: Response) => {
   try {
     const destinationId = parseInt(req.params.id, 10);
